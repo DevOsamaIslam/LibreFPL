@@ -1,4 +1,4 @@
-import { Status, type ISnapshot, type Team } from "../lib/types"
+import { Status, type ISnapshot, type Player, type Team } from "../lib/types"
 import {
   elementTypeToPosition,
   W1,
@@ -9,7 +9,7 @@ import {
   BUDGET,
 } from "./settings"
 
-export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Element[] => {
+export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Player[] => {
   const teamMap = new Map<number, Team>()
   fpl.teams.forEach((t) => teamMap.set(t.id, t))
 
@@ -22,8 +22,6 @@ export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Element[] => {
       const team = teamMap.get(p.team)
       if (!team) return null
 
-      // Simulated fixture: assume first upcoming game, and team B = random avg strength team
-      const isHome = true // placeholder - replace with actual fixture data if available
       const opponent = getAverageOpponent(fpl.teams, team.id)
 
       const teamAttack =
@@ -42,7 +40,7 @@ export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Element[] => {
     .filter(Boolean)
     .sort((a, b) => b!.score - a!.score)
 
-  const picked: Element[] = []
+  const picked: Player[] = []
   const teamCount: Record<number, number> = {}
   const positionCount: Record<string, number> = {
     GK: 0,
@@ -58,13 +56,22 @@ export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Element[] => {
     if (positionCount[position] >= POSITION_LIMITS[position]) continue
     if ((teamCount[element.team] ?? 0) >= TEAM_LIMIT) continue
     if (totalCost + element.now_cost > BUDGET) continue
+    if (picked.length === 10 && totalCost + element.now_cost > 820) continue // make sure we don't exceed 82 mil for XI
 
+    if (picked.length >= 11 && totalCost >= 820) {
+      if (position === "GK" && element.now_cost > 40) continue // Limit bench GK cost
+      if (position === "DEF" && element.now_cost > 40) continue // Limit bench defender cost
+      if (position === "MID" && element.now_cost > 45) continue // Limit bench midfielder cost
+      if (position === "FWD" && element.now_cost > 45) continue // Limit bench forward cost
+    }
     picked.push(element)
     totalCost += element.now_cost
     positionCount[position] += 1
     teamCount[element.team] = (teamCount[element.team] ?? 0) + 1
 
-    if (picked.length === 15) break
+    if (picked.length === 15) {
+      break
+    }
   }
 
   return picked

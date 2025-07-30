@@ -7,6 +7,12 @@ export const elementTypeToPosition = {
   3: "MID",
   4: "FWD",
 } as const
+export const positionToElementType = {
+  GK: 1,
+  DEF: 2,
+  MID: 3,
+  FWD: 4,
+} as const
 
 export const W1 = 4.0 // ep_next
 export const W2 = 2.0 // form
