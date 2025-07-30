@@ -14,6 +14,13 @@ export const positionToElementType = {
   FWD: 4,
 } as const
 
+export const MIN_POSITIONS_XI = {
+  GK: 1,
+  DEF: 3,
+  MID: 3,
+  FWD: 1,
+}
+
 export const W1 = 4.0 // ep_next
 export const W2 = 2.0 // form
 export const W3 = 3.0 // team advantage

@@ -24,6 +24,7 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
       (player) => player.element_type === positionToElementType.FWD
     ),
   }
+  console.log(formation)
 
   return (
     <div>

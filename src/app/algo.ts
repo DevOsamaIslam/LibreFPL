@@ -7,6 +7,7 @@ import {
   POSITION_LIMITS,
   TEAM_LIMIT,
   BUDGET,
+  positionToElementType,
 } from "./settings"
 
 export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Player[] => {
@@ -48,15 +49,27 @@ export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Player[] => {
     MID: 0,
     FWD: 0,
   }
+
   let totalCost = 0
+
+  const remainingPositions = Object.assign({}, POSITION_LIMITS)
 
   for (const player of players) {
     if (!player) continue // skip nulls
     const { element, position } = player
     if (positionCount[position] >= POSITION_LIMITS[position]) continue
+    if (
+      element.element_type === positionToElementType.GK &&
+      picked.find(
+        (picked) => picked.element_type === positionToElementType.GK
+      ) &&
+      picked.length < 11
+    )
+      continue
     if ((teamCount[element.team] ?? 0) >= TEAM_LIMIT) continue
     if (totalCost + element.now_cost > BUDGET) continue
     if (picked.length === 10 && totalCost + element.now_cost > 820) continue // make sure we don't exceed 82 mil for XI
+    if (remainingPositions[position] <= 0) continue
 
     if (picked.length >= 11 && totalCost >= 820) {
       if (position === "GK" && element.now_cost > 40) continue // Limit bench GK cost
@@ -68,6 +81,7 @@ export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Player[] => {
     totalCost += element.now_cost
     positionCount[position] += 1
     teamCount[element.team] = (teamCount[element.team] ?? 0) + 1
+    remainingPositions[position] -= 1
 
     if (picked.length === 15) {
       break
