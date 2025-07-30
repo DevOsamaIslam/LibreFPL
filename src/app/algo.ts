@@ -1,25 +1,26 @@
 import {
   Status,
+  type IOptimalTeamPlayer,
   type ISnapshot,
   type Player,
+  type PositionCount,
   type Team,
   type TeamCount,
-  type PositionCount,
 } from "../lib/types"
 import {
+  BENCH_DEF_COST_LIMIT,
+  BENCH_FWD_COST_LIMIT,
+  BENCH_GK_COST_LIMIT,
+  BENCH_MID_COST_LIMIT,
+  BUDGET,
+  BUDGET_FOR_XI,
   elementTypeToPosition,
+  POSITION_LIMITS,
+  positionToElementType,
+  TEAM_LIMIT,
   W1,
   W2,
   W3,
-  POSITION_LIMITS,
-  TEAM_LIMIT,
-  BUDGET,
-  positionToElementType,
-  BENCH_GK_COST_LIMIT,
-  BENCH_DEF_COST_LIMIT,
-  BENCH_MID_COST_LIMIT,
-  BENCH_FWD_COST_LIMIT,
-  BUDGET_FOR_XI,
 } from "./settings"
 
 /**
@@ -30,18 +31,20 @@ import {
  * and then picks the best players to form a team within the given constraints (budget, team limits, position limits).
  *
  */
-export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Player[] => {
+export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot) => {
   const { players } = filterAndScorePlayers(fpl)
 
-  const picked = selectTeam(
-    players.filter(Boolean) as {
-      element: Player
-      score: number
-      position: string
-    }[]
-  )
+  return players as IOptimalTeamPlayer[]
 
-  return picked
+  // const picked = selectTeam(
+  //   players.filter(Boolean) as {
+  //     element: Player
+  //     score: number
+  //     position: string
+  //   }[]
+  // )
+
+  // return picked
 }
 
 /**
@@ -56,22 +59,20 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
   // Filter and map players to calculate their score
   const players = fpl.elements
-    .filter(
-      (player) =>
-        player.status === Status.A && player.now_cost > 0 && player.minutes > 0
-    ) // Filter out players who are unavailable, have no cost, or haven't played
+    .filter((player) => player.status === Status.A && player.now_cost > 0) // Filter out players who are unavailable, have no cost, or haven't played
     .map((player) => {
       const position = elementTypeToPosition[player.element_type] // Get the player's position
       const ep = parseFloat(player.ep_next) || 0 // Expected points for the next game
       const form = parseFloat(player.form) || 0 // Player's form
       const team = teamMap.get(player.team) // Get the player's team
+
       if (!team) return null
 
       const opponent = getAverageOpponent(fpl.teams, team.id) // Get the average opponent
 
       const teamAdvantageScore = calculateTeamAdvantageScore(team, opponent)
 
-      const score = W1 * ep + W2 * form + (W3 * teamAdvantageScore) / 100 // Calculate the player's score
+      const score = W1 * ep + W2 * form + (W3 * teamAdvantageScore) / 100
 
       return { element: player, score, position }
     })
@@ -106,23 +107,39 @@ const calculateTeamAdvantageScore = (team: Team, opponent: Team) => {
  *
  * This function iterates over the players and picks the best ones to form the team, taking into account the budget, team limits, and position limits.
  */
-const selectTeam = (
-  players: { element: Player; score: number; position: string }[]
-) => {
+export const selectTeam = (params: {
+  players: IOptimalTeamPlayer[]
+  desiredFormation?: string
+  budget?: number
+  benchBoostEnabled?: boolean
+  tripleCaptainEnabled?: boolean
+  numberEnablers?: number
+}) => {
+  const {
+    players,
+    benchBoostEnabled,
+    budget,
+    desiredFormation,
+    tripleCaptainEnabled,
+    numberEnablers,
+  } = params
+
+  const goalkeepers = players.filter((player) => player.position === "GK")
+  const firstGK = goalkeepers[0] // Select the first goalkeeper as the main goalkeeper
   // Initialize data structures for team selection
-  const picked: Player[] = [] // Array to store the picked players
-  const teamCount: TeamCount = {} // Object to store the number of players from each team
+  const picked: IOptimalTeamPlayer[] = [firstGK] // Array to store the picked players
+  const teamCount: TeamCount = {
+    [firstGK.element.team]: 1,
+  } // Object to store the number of players from each team
   const positionCount: PositionCount = {
     // Object to store the number of players in each position
-    GK: 0,
+    GK: 1,
     DEF: 0,
     MID: 0,
     FWD: 0,
   }
 
-  let totalCost = 0 // Total cost of the picked team
-
-  const remainingPositions = Object.assign({}, POSITION_LIMITS) // Object to store the remaining positions to be filled (used to ensure we have the correct number of players in each position)
+  let totalCost = firstGK.element.now_cost // Total cost of the picked team
 
   // Iterate over the players and pick the best ones to form the team
   for (const player of players) {
@@ -136,7 +153,7 @@ const selectTeam = (
     if (
       element.element_type === positionToElementType.GK &&
       picked.find(
-        (picked) => picked.element_type === positionToElementType.GK
+        (picked) => picked.element.element_type === positionToElementType.GK
       ) &&
       picked.length < 11
     )
@@ -145,8 +162,6 @@ const selectTeam = (
     if (totalCost + element.now_cost > BUDGET) continue // Skip if the budget is exceeded
     if (picked.length === 10 && totalCost + element.now_cost > BUDGET_FOR_XI)
       continue // make sure we don't exceed 82 mil for XI
-    if (remainingPositions[position as "GK" | "DEF" | "MID" | "FWD"] <= 0)
-      continue
 
     if (picked.length >= 11 && totalCost >= BUDGET_FOR_XI) {
       // Once we have 11 players, we start limiting the cost of bench players
@@ -158,11 +173,10 @@ const selectTeam = (
       if (position === "FWD" && element.now_cost > BENCH_FWD_COST_LIMIT)
         continue // Limit bench forward cost
     }
-    picked.push(element) // Add the player to the picked team
+    picked.push(player) // Add the player to the picked team
     totalCost += element.now_cost // Update the total cost
     positionCount[position as "GK" | "DEF" | "MID" | "FWD"] += 1 // Update the position count
     teamCount[element.team] = (teamCount[element.team] ?? 0) + 1 // Update the team count
-    remainingPositions[position as "GK" | "DEF" | "MID" | "FWD"] -= 1 // Update the remaining positions
 
     const MAX_TEAM_SIZE = 15
     if (picked.length === MAX_TEAM_SIZE) {

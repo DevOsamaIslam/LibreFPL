@@ -1,3 +1,8 @@
+import { create } from "zustand"
+import type { IOptimalTeamPlayer, ISnapshot } from "../lib/types"
+import { pickOptimalFPLTeamAdvanced } from "./algo"
+import snapshot from "../snapshot.json"
+
 export const BUDGET = 1000
 export const TEAM_LIMIT = 3
 export const POSITION_LIMITS = { GK: 2, DEF: 5, MID: 5, FWD: 3 }
@@ -26,10 +31,40 @@ export const W2 = 2.0 // form
 export const W3 = 3.0 // team advantage
 export const W4 = 1.5 // xGI
 export const W5 = -0.5 // xGC
-export const W6 = 0.1 // BPS
+export const W6 = 0.5 // BPS
 
 export const BENCH_GK_COST_LIMIT = 40
 export const BENCH_DEF_COST_LIMIT = 40
 export const BENCH_MID_COST_LIMIT = 45
 export const BENCH_FWD_COST_LIMIT = 45
 export const BUDGET_FOR_XI = 820
+
+interface SettingsState {
+  desiredFormation: string
+  benchBoostEnabled: boolean
+  tripleCaptainEnabled: boolean
+  numberEnablers: number
+  snapshot: ISnapshot | null
+  sortedPlayers: IOptimalTeamPlayer[]
+  setDesiredFormation: (formation: string) => void
+  setBenchBoostEnabled: (enabled: boolean) => void
+  setTripleCaptainEnabled: (enabled: boolean) => void
+  setNumberEnablers: (number: number) => void
+  setSnapshot: (snapshot: ISnapshot) => void
+  setSortedPlayers: (players: IOptimalTeamPlayer[]) => void
+}
+
+export const useSettingsStore = create<SettingsState>((set) => ({
+  desiredFormation: "4-4-2",
+  benchBoostEnabled: false,
+  tripleCaptainEnabled: false,
+  numberEnablers: 4,
+  snapshot: snapshot as unknown as ISnapshot,
+  sortedPlayers: [],
+  setSortedPlayers: (players) => set({ sortedPlayers: players }),
+  setDesiredFormation: (formation) => set({ desiredFormation: formation }),
+  setBenchBoostEnabled: (enabled) => set({ benchBoostEnabled: enabled }),
+  setTripleCaptainEnabled: (enabled) => set({ tripleCaptainEnabled: enabled }),
+  setNumberEnablers: (number) => set({ numberEnablers: number }),
+  setSnapshot: (snapshot) => set({ snapshot: snapshot }),
+}))

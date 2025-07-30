@@ -7,7 +7,7 @@ interface PlayerBoxProps {
   team: string
 }
 
-function PlayerBox({ player, position, team }: PlayerBoxProps) {
+function PlayerBox({ player, position }: PlayerBoxProps) {
   return (
     <Card
       sx={{
@@ -19,10 +19,7 @@ function PlayerBox({ player, position, team }: PlayerBoxProps) {
       }}>
       <CardContent>
         <Typography variant="h6" component="div">
-          {player.web_name}
-        </Typography>
-        <Typography sx={{ mb: 1.5 }} color="text.secondary">
-          {team} - {position}
+          {player.web_name} - {position}
         </Typography>
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           <Typography variant="body2">

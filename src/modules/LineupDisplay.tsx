@@ -1,9 +1,9 @@
 import { elementTypeToPosition, positionToElementType } from "../app/settings"
 import PlayerBox from "../components/PlayerBox"
-import type { Player } from "../lib/types"
+import type { IOptimalTeamPlayer } from "../lib/types"
 
 interface LineupDisplayProps {
-  lineup: Player[]
+  lineup: IOptimalTeamPlayer[]
 }
 
 function LineupDisplay({ lineup }: LineupDisplayProps) {
@@ -12,16 +12,16 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
 
   const formation = {
     gk: starters.find(
-      (player) => player.element_type === positionToElementType.GK
+      (player) => player.element.element_type === positionToElementType.GK
     ),
     def: starters.filter((player) => {
-      return player.element_type === positionToElementType.DEF
+      return player.element.element_type === positionToElementType.DEF
     }),
     mid: starters.filter(
-      (player) => player.element_type === positionToElementType.MID
+      (player) => player.element.element_type === positionToElementType.MID
     ),
     att: starters.filter(
-      (player) => player.element_type === positionToElementType.FWD
+      (player) => player.element.element_type === positionToElementType.FWD
     ),
   }
 
@@ -38,9 +38,9 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
         <div style={{ display: "flex" }}>
           {formation.att.map((player) => (
             <PlayerBox
-              key={player.id}
-              player={player}
-              position={elementTypeToPosition[player.element_type]}
+              key={player.element.id}
+              player={player.element}
+              position={elementTypeToPosition[player.element.element_type]}
               team="Unknown"
             />
           ))}
@@ -48,9 +48,9 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
         <div style={{ display: "flex" }}>
           {formation.mid.map((player) => (
             <PlayerBox
-              key={player.id}
-              player={player}
-              position={elementTypeToPosition[player.element_type]}
+              key={player.element.id}
+              player={player.element}
+              position={elementTypeToPosition[player.element.element_type]}
               team="Unknown"
             />
           ))}
@@ -58,15 +58,19 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
         <div style={{ display: "flex" }}>
           {formation.def.map((player) => (
             <PlayerBox
-              key={player.id}
-              player={player}
-              position={elementTypeToPosition[player.element_type]}
+              key={player.element.id}
+              player={player.element}
+              position={elementTypeToPosition[player.element.element_type]}
               team="Unknown"
             />
           ))}
         </div>
         {formation.gk && (
-          <PlayerBox player={formation.gk} position="GK" team="Unknown" />
+          <PlayerBox
+            player={formation.gk.element}
+            position="GK"
+            team="Unknown"
+          />
         )}
       </div>
 
@@ -75,8 +79,8 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
         {bench.map((player, index: number) => (
           <PlayerBox
             key={index}
-            player={player}
-            position={elementTypeToPosition[player.element_type]}
+            player={player.element}
+            position={elementTypeToPosition[player.element.element_type]}
             team="Unknown"
           />
         ))}

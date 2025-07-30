@@ -11,8 +11,16 @@ import Button from "@mui/material/Button"
 import Container from "@mui/material/Container"
 import theme from "./app/theme"
 import CssBaseline from "@mui/material/CssBaseline"
+import { useSettingsStore } from "./app/settings"
+import { useEffect } from "react"
+import { pickOptimalFPLTeamAdvanced } from "./app/algo"
 
 function App() {
+  const { setSortedPlayers, snapshot } = useSettingsStore()
+  useEffect(() => {
+    if (snapshot) setSortedPlayers(pickOptimalFPLTeamAdvanced(snapshot))
+  }, [])
+
   return (
     <>
       <CssBaseline />
@@ -37,7 +45,7 @@ function App() {
               </Button>
             </Toolbar>
           </AppBar>
-          <Container maxWidth="md">
+          <Container maxWidth="xl">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/players" element={<Players />} />
