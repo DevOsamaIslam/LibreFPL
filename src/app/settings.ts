@@ -24,3 +24,12 @@ export const MIN_POSITIONS_XI = {
 export const W1 = 4.0 // ep_next
 export const W2 = 2.0 // form
 export const W3 = 3.0 // team advantage
+export const W4 = 1.5 // xGI
+export const W5 = -0.5 // xGC
+export const W6 = 0.1 // BPS
+
+export const BENCH_GK_COST_LIMIT = 40
+export const BENCH_DEF_COST_LIMIT = 40
+export const BENCH_MID_COST_LIMIT = 45
+export const BENCH_FWD_COST_LIMIT = 45
+export const BUDGET_FOR_XI = 820

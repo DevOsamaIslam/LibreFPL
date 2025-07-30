@@ -1,4 +1,11 @@
-import { Status, type ISnapshot, type Player, type Team } from "../lib/types"
+import {
+  Status,
+  type ISnapshot,
+  type Player,
+  type Team,
+  type TeamCount,
+  type PositionCount,
+} from "../lib/types"
 import {
   elementTypeToPosition,
   W1,
@@ -8,56 +15,124 @@ import {
   TEAM_LIMIT,
   BUDGET,
   positionToElementType,
+  BENCH_GK_COST_LIMIT,
+  BENCH_DEF_COST_LIMIT,
+  BENCH_MID_COST_LIMIT,
+  BENCH_FWD_COST_LIMIT,
+  BUDGET_FOR_XI,
 } from "./settings"
 
+/**
+ * pickOptimalFPLTeamAdvanced
+ *
+ * This function takes an ISnapshot of FPL data and returns an array of Players representing the optimal FPL team.
+ * It filters players based on status, cost, and minutes played, calculates a score for each player based on their EP, form, and team advantage,
+ * and then picks the best players to form a team within the given constraints (budget, team limits, position limits).
+ *
+ */
 export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Player[] => {
+  const { players } = filterAndScorePlayers(fpl)
+
+  const picked = selectTeam(
+    players.filter(Boolean) as {
+      element: Player
+      score: number
+      position: string
+    }[]
+  )
+
+  return picked
+}
+
+/**
+ * filterAndScorePlayers
+ *
+ * This function filters players based on their status, cost, and minutes played, and calculates a score for each player based on their expected points (EP), form, and team advantage.
+ */
+const filterAndScorePlayers = (fpl: ISnapshot) => {
+  // Create a map of team IDs to Team objects for easy lookup
   const teamMap = new Map<number, Team>()
   fpl.teams.forEach((t) => teamMap.set(t.id, t))
 
+  // Filter and map players to calculate their score
   const players = fpl.elements
-    .filter((p) => p.status === Status.A && p.now_cost > 0 && p.minutes > 0)
-    .map((p) => {
-      const position = elementTypeToPosition[p.element_type]
-      const ep = parseFloat(p.ep_next) || 0
-      const form = parseFloat(p.form) || 0
-      const team = teamMap.get(p.team)
+    .filter(
+      (player) =>
+        player.status === Status.A && player.now_cost > 0 && player.minutes > 0
+    ) // Filter out players who are unavailable, have no cost, or haven't played
+    .map((player) => {
+      const position = elementTypeToPosition[player.element_type] // Get the player's position
+      const ep = parseFloat(player.ep_next) || 0 // Expected points for the next game
+      const form = parseFloat(player.form) || 0 // Player's form
+      const team = teamMap.get(player.team) // Get the player's team
       if (!team) return null
 
-      const opponent = getAverageOpponent(fpl.teams, team.id)
+      const opponent = getAverageOpponent(fpl.teams, team.id) // Get the average opponent
 
-      const teamAttack =
-        (team.strength_attack_home + team.strength_attack_away) / 2
-      const teamMid = team.strength
-      const oppDef =
-        (opponent.strength_defence_home + opponent.strength_defence_away) / 2
-      const oppMid = opponent.strength
+      const teamAdvantageScore = calculateTeamAdvantageScore(team, opponent)
 
-      const teamAdvantageScore = teamAttack + teamMid - (oppDef + oppMid)
+      const score = W1 * ep + W2 * form + (W3 * teamAdvantageScore) / 100 // Calculate the player's score
 
-      const score = W1 * ep + W2 * form + (W3 * teamAdvantageScore) / 100
-
-      return { element: p, score, position }
+      return { element: player, score, position }
     })
-    .filter(Boolean)
-    .sort((a, b) => b!.score - a!.score)
+    .filter(Boolean) // Filter out players that returned null in the previous step
+    .sort((a, b) => b!.score - a!.score) // Sort players by score in descending order (highest score first)
 
-  const picked: Player[] = []
-  const teamCount: Record<number, number> = {}
-  const positionCount: Record<string, number> = {
+  return { players, teamMap }
+}
+
+/**
+ * calculateTeamAdvantageScore
+ *
+ * This function calculates a score representing the team's advantage based on its attack and midfield strengths compared to the opponent's defence and midfield strengths.
+ */
+const calculateTeamAdvantageScore = (team: Team, opponent: Team) => {
+  const teamAttackStrength =
+    (team.strength_attack_home + team.strength_attack_away) / 2
+  const teamMidfieldStrength = team.strength
+  const opponentDefenceStrength =
+    (opponent.strength_defence_home + opponent.strength_defence_away) / 2
+  const opponentMidfieldStrength = opponent.strength
+
+  const teamAdvantageScore =
+    teamAttackStrength +
+    teamMidfieldStrength -
+    (opponentDefenceStrength + opponentMidfieldStrength)
+  return teamAdvantageScore
+}
+
+/**
+ * selectTeam
+ *
+ * This function iterates over the players and picks the best ones to form the team, taking into account the budget, team limits, and position limits.
+ */
+const selectTeam = (
+  players: { element: Player; score: number; position: string }[]
+) => {
+  // Initialize data structures for team selection
+  const picked: Player[] = [] // Array to store the picked players
+  const teamCount: TeamCount = {} // Object to store the number of players from each team
+  const positionCount: PositionCount = {
+    // Object to store the number of players in each position
     GK: 0,
     DEF: 0,
     MID: 0,
     FWD: 0,
   }
 
-  let totalCost = 0
+  let totalCost = 0 // Total cost of the picked team
 
-  const remainingPositions = Object.assign({}, POSITION_LIMITS)
+  const remainingPositions = Object.assign({}, POSITION_LIMITS) // Object to store the remaining positions to be filled (used to ensure we have the correct number of players in each position)
 
+  // Iterate over the players and pick the best ones to form the team
   for (const player of players) {
     if (!player) continue // skip nulls
     const { element, position } = player
-    if (positionCount[position] >= POSITION_LIMITS[position]) continue
+    if (
+      positionCount[position as "GK" | "DEF" | "MID" | "FWD"] >=
+      POSITION_LIMITS[position as "GK" | "DEF" | "MID" | "FWD"]
+    )
+      continue // Skip if the position limit is reached
     if (
       element.element_type === positionToElementType.GK &&
       picked.find(
@@ -66,24 +141,31 @@ export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Player[] => {
       picked.length < 11
     )
       continue
-    if ((teamCount[element.team] ?? 0) >= TEAM_LIMIT) continue
-    if (totalCost + element.now_cost > BUDGET) continue
-    if (picked.length === 10 && totalCost + element.now_cost > 820) continue // make sure we don't exceed 82 mil for XI
-    if (remainingPositions[position] <= 0) continue
+    if ((teamCount[element.team] ?? 0) >= TEAM_LIMIT) continue // Skip if the team limit is reached
+    if (totalCost + element.now_cost > BUDGET) continue // Skip if the budget is exceeded
+    if (picked.length === 10 && totalCost + element.now_cost > BUDGET_FOR_XI)
+      continue // make sure we don't exceed 82 mil for XI
+    if (remainingPositions[position as "GK" | "DEF" | "MID" | "FWD"] <= 0)
+      continue
 
-    if (picked.length >= 11 && totalCost >= 820) {
-      if (position === "GK" && element.now_cost > 40) continue // Limit bench GK cost
-      if (position === "DEF" && element.now_cost > 40) continue // Limit bench defender cost
-      if (position === "MID" && element.now_cost > 45) continue // Limit bench midfielder cost
-      if (position === "FWD" && element.now_cost > 45) continue // Limit bench forward cost
+    if (picked.length >= 11 && totalCost >= BUDGET_FOR_XI) {
+      // Once we have 11 players, we start limiting the cost of bench players
+      if (position === "GK" && element.now_cost > BENCH_GK_COST_LIMIT) continue // Limit bench GK cost
+      if (position === "DEF" && element.now_cost > BENCH_DEF_COST_LIMIT)
+        continue // Limit bench defender cost
+      if (position === "MID" && element.now_cost > BENCH_MID_COST_LIMIT)
+        continue // Limit bench midfielder cost
+      if (position === "FWD" && element.now_cost > BENCH_FWD_COST_LIMIT)
+        continue // Limit bench forward cost
     }
-    picked.push(element)
-    totalCost += element.now_cost
-    positionCount[position] += 1
-    teamCount[element.team] = (teamCount[element.team] ?? 0) + 1
-    remainingPositions[position] -= 1
+    picked.push(element) // Add the player to the picked team
+    totalCost += element.now_cost // Update the total cost
+    positionCount[position as "GK" | "DEF" | "MID" | "FWD"] += 1 // Update the position count
+    teamCount[element.team] = (teamCount[element.team] ?? 0) + 1 // Update the team count
+    remainingPositions[position as "GK" | "DEF" | "MID" | "FWD"] -= 1 // Update the remaining positions
 
-    if (picked.length === 15) {
+    const MAX_TEAM_SIZE = 15
+    if (picked.length === MAX_TEAM_SIZE) {
       break
     }
   }
@@ -91,8 +173,17 @@ export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot): Player[] => {
   return picked
 }
 
+/**
+ * getAverageOpponent
+ *
+ * This function takes an array of teams and an ID of a team to exclude, and returns the team with the median strength from the remaining teams.
+ * It is used to simulate an average opponent for the given team.
+ */
 function getAverageOpponent(teams: Team[], excludeTeamId: number): Team {
   const opponents = teams.filter((t) => t.id !== excludeTeamId)
-  const idx = Math.floor(Math.random() * opponents.length)
+  // Sort opponents by their overall strength in ascending order
+  opponents.sort((a, b) => a.strength - b.strength)
+  // Select the opponent with the median strength
+  const idx = Math.floor(opponents.length / 2)
   return opponents[idx] ?? teams[0] // fallback
 }

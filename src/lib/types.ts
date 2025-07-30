@@ -1,3 +1,8 @@
+export type Position = "GK" | "DEF" | "MID" | "FWD"
+
+export type TeamCount = Record<number, number>
+
+export type PositionCount = Record<Position, number>
 import type { elementTypeToPosition } from "../app/settings"
 
 export interface ISnapshot {

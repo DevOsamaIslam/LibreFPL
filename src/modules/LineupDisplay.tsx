@@ -24,7 +24,6 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
       (player) => player.element_type === positionToElementType.FWD
     ),
   }
-  console.log(formation)
 
   return (
     <div>
@@ -38,20 +37,37 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
         {/* Formation: 4-4-2 */}
         <div style={{ display: "flex" }}>
           {formation.att.map((player) => (
-            <PlayerBox key={player.id} player={player} position="ST" />
+            <PlayerBox
+              key={player.id}
+              player={player}
+              position={elementTypeToPosition[player.element_type]}
+              team="Unknown"
+            />
           ))}
         </div>
         <div style={{ display: "flex" }}>
           {formation.mid.map((player) => (
-            <PlayerBox key={player.id} player={player} position="MID" />
+            <PlayerBox
+              key={player.id}
+              player={player}
+              position={elementTypeToPosition[player.element_type]}
+              team="Unknown"
+            />
           ))}
         </div>
         <div style={{ display: "flex" }}>
           {formation.def.map((player) => (
-            <PlayerBox key={player.id} player={player} position="DEF" />
+            <PlayerBox
+              key={player.id}
+              player={player}
+              position={elementTypeToPosition[player.element_type]}
+              team="Unknown"
+            />
           ))}
         </div>
-        {formation.gk && <PlayerBox player={formation.gk} position="GK" />}
+        {formation.gk && (
+          <PlayerBox player={formation.gk} position="GK" team="Unknown" />
+        )}
       </div>
 
       <h3>Substitutes</h3>
@@ -61,6 +77,7 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
             key={index}
             player={player}
             position={elementTypeToPosition[player.element_type]}
+            team="Unknown"
           />
         ))}
       </div>
