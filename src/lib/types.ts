@@ -10,7 +10,7 @@ export interface ISnapshot {
   total_players: number
   element_stats: ElementStat[]
   element_types: ElementType[]
-  elements: Element[]
+  elements: Player[]
 }
 
 export interface Chip {
@@ -54,7 +54,7 @@ export interface ElementType {
   element_count: number
 }
 
-export interface Element {
+export interface Player {
   can_transact: boolean
   can_select: boolean
   chance_of_playing_next_round: number | null
