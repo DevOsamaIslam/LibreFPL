@@ -1,10 +1,10 @@
-import { Box, Card, CardContent, Typography } from "@mui/material"
-import type { Player } from "../lib/types"
+import { Box, Card, CardContent, Stack, Typography } from "@mui/material"
+import type { IOptimalTeamPlayer } from "../lib/types"
 
 interface PlayerBoxProps {
-  player: Player
-  position: string
-  team: string
+  player: IOptimalTeamPlayer
+  position?: string
+  team?: string
 }
 
 function PlayerBox({ player, position }: PlayerBoxProps) {
@@ -18,15 +18,27 @@ function PlayerBox({ player, position }: PlayerBoxProps) {
         color: "white",
       }}>
       <CardContent>
-        <Typography variant="h6" component="div">
-          {player.web_name} - {position}
-        </Typography>
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography variant="body2">
-            Price: £{player.now_cost / 10}m
+        <Stack>
+          <Typography variant="h6" component="div">
+            {player.element.web_name} - {position}
           </Typography>
-          <Typography variant="body2">Score: {player.event_points}</Typography>
-        </Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography variant="body2">
+              Price: £{player.element.now_cost / 10}m
+            </Typography>
+            <Typography variant="body2">
+              Score: {player.score.toFixed(0)}
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography variant="body2">
+              Starts: {(player.element.starts / 0.38).toFixed(0)}%
+            </Typography>
+            <Typography variant="body2">
+              Minutes: {(player.element.minutes / 38).toFixed(0)}
+            </Typography>
+          </Box>
+        </Stack>
       </CardContent>
     </Card>
   )

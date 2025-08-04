@@ -21,6 +21,7 @@ import {
   W1,
   W2,
   W3,
+  NUMBER_OF_MATCHES,
 } from "./settings"
 
 /**
@@ -60,8 +61,29 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
   // Filter and map players to calculate their score
   const players = fpl.elements
     .filter((player) => player.status === Status.A && player.now_cost > 0) // Filter out players who are unavailable, have no cost, or haven't played
-    .map((player) => {
-      const position = elementTypeToPosition[player.element_type] // Get the player's position
+    .map((player: Player) => {
+      const lastSeasonScore = player.event_points // Score (last season) higher is better
+      const startsRatio = (player.starts / (player.minutes / 48)) * 100 // ratio of starts to 48 should be above 70%
+      const minutesPerMatch = player.minutes / NUMBER_OF_MATCHES // number of minutes per march should be above 60
+      const expectedGoalInvolvement = player.expected_goal_involvements // has better expected goal involvement
+      const status = player.status === Status.A // has status of 'a'
+      const cleanSheets = player.clean_sheets // For GK and Def the clean sheets should be high
+      const goalsConceded = player.goals_conceded // and the goals conceded should be low
+      let score = 0
+
+      score += lastSeasonScore
+      if (startsRatio > 0.7) {
+        score += 5
+      }
+      if (minutesPerMatch > 60) {
+        score += 5
+      }
+      score += parseFloat(expectedGoalInvolvement) * 10 || 0
+
+      if (status) {
+        score += 3
+      }
+
       const ep = parseFloat(player.ep_next) || 0 // Expected points for the next game
       const form = parseFloat(player.form) || 0 // Player's form
       const team = teamMap.get(player.team) // Get the player's team
@@ -72,7 +94,13 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
       const teamAdvantageScore = calculateTeamAdvantageScore(team, opponent)
 
-      const score = W1 * ep + W2 * form + (W3 * teamAdvantageScore) / 100
+      const position = elementTypeToPosition[player.element_type] // Get the player's position
+      if (position === "GK" || position === "DEF") {
+        score += cleanSheets * 2
+        score -= goalsConceded
+      }
+
+      score = score + W1 * ep + W2 * form + (W3 * teamAdvantageScore) / 100
 
       return { element: player, score, position }
     })

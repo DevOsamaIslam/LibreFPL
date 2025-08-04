@@ -39,7 +39,7 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
           {formation.att.map((player) => (
             <PlayerBox
               key={player.element.id}
-              player={player.element}
+              player={player}
               position={elementTypeToPosition[player.element.element_type]}
               team="Unknown"
             />
@@ -49,7 +49,7 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
           {formation.mid.map((player) => (
             <PlayerBox
               key={player.element.id}
-              player={player.element}
+              player={player}
               position={elementTypeToPosition[player.element.element_type]}
               team="Unknown"
             />
@@ -59,18 +59,14 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
           {formation.def.map((player) => (
             <PlayerBox
               key={player.element.id}
-              player={player.element}
+              player={player}
               position={elementTypeToPosition[player.element.element_type]}
               team="Unknown"
             />
           ))}
         </div>
         {formation.gk && (
-          <PlayerBox
-            player={formation.gk.element}
-            position="GK"
-            team="Unknown"
-          />
+          <PlayerBox player={formation.gk} position="GK" team="Unknown" />
         )}
       </div>
 
@@ -79,7 +75,7 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
         {bench.map((player, index: number) => (
           <PlayerBox
             key={index}
-            player={player.element}
+            player={player}
             position={elementTypeToPosition[player.element.element_type]}
             team="Unknown"
           />

@@ -3,6 +3,7 @@ import Home from "./modules/Home"
 import Players from "./modules/Players"
 import Teams from "./modules/Teams"
 import Rules from "./modules/Rules"
+import SquadRatingPage from "./modules/SquadRating/SquadRatingPage"
 import { ThemeProvider } from "@mui/material/styles"
 import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"
@@ -40,6 +41,9 @@ function App() {
               <Button color="inherit" component={Link} to="/teams">
                 Teams
               </Button>
+              <Button color="inherit" component={Link} to="/squad-rating">
+                Squad Rating
+              </Button>
               <Button color="inherit" component={Link} to="/rules">
                 Rules
               </Button>
@@ -51,6 +55,7 @@ function App() {
               <Route path="/players" element={<Players />} />
               <Route path="/teams" element={<Teams />} />
               <Route path="/rules" element={<Rules />} />
+              <Route path="/squad-rating" element={<SquadRatingPage />} />
             </Routes>
           </Container>
         </BrowserRouter>

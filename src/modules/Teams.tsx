@@ -42,6 +42,12 @@ function Teams() {
           <Typography variant="h6" component="h2" gutterBottom>
             Lineup
           </Typography>
+          <Typography variant="h6" component="h2" gutterBottom>
+            Team Cost: $
+            {optimalTeam
+              .reduce((acc, player) => acc + player.element.now_cost / 10, 0)
+              .toFixed(2)}
+          </Typography>
           {/* Placeholder for Lineup */}
           <Button
             variant="contained"

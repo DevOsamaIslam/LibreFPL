@@ -1,7 +1,6 @@
 import { create } from "zustand"
+import snapshot from "../data/snapshot.json"
 import type { IOptimalTeamPlayer, ISnapshot } from "../lib/types"
-import { pickOptimalFPLTeamAdvanced } from "./algo"
-import snapshot from "../snapshot.json"
 
 export const BUDGET = 1000
 export const TEAM_LIMIT = 3
@@ -38,6 +37,7 @@ export const BENCH_DEF_COST_LIMIT = 40
 export const BENCH_MID_COST_LIMIT = 45
 export const BENCH_FWD_COST_LIMIT = 45
 export const BUDGET_FOR_XI = 820
+export const NUMBER_OF_MATCHES = 38
 
 interface SettingsState {
   desiredFormation: string

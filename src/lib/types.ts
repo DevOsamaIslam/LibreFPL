@@ -324,3 +324,42 @@ export interface IOptimalTeamPlayer {
   score: number
   position: string
 }
+
+export interface IMyTeam {
+  picks: Pick[]
+  picks_last_updated: Date
+  chips: Chip[]
+  transfers: Transfers
+}
+
+export interface Chip {
+  id: number
+  status_for_entry: string
+  played_by_entry: any[]
+  name: string
+  number: number
+  start_event: number
+  stop_event: number
+  chip_type: string
+  is_pending: boolean
+}
+
+export interface Pick {
+  element: number
+  position: number
+  multiplier: number
+  is_captain: boolean
+  is_vice_captain: boolean
+  element_type: number
+  selling_price: number
+  purchase_price: number
+}
+
+export interface Transfers {
+  cost: number
+  status: string
+  limit: null
+  made: number
+  bank: number
+  value: number
+}
