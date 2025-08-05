@@ -1,21 +1,57 @@
-import React, { useState, useEffect } from "react"
-import type { IOptimalTeamPlayer, Player } from "../../lib/types"
-import { pickOptimalFPLTeamAdvanced } from "../../app/algo"
-import { useSettingsStore } from "../../app/settings"
+import Checkbox from "@mui/material/Checkbox"
+import Collapse from "@mui/material/Collapse"
+import Grid from "@mui/material/Grid"
 import List from "@mui/material/List"
 import ListItem from "@mui/material/ListItem"
 import ListItemButton from "@mui/material/ListItemButton"
 import ListItemIcon from "@mui/material/ListItemIcon"
 import ListItemText from "@mui/material/ListItemText"
-import Checkbox from "@mui/material/Checkbox"
-import Grid from "@mui/material/Grid"
-import Typography from "@mui/material/Typography"
-import Collapse from "@mui/material/Collapse"
-import { ExpandLess, ExpandMore } from "@mui/icons-material"
+import React, { useEffect, useMemo, useState } from "react"
+import { useSettingsStore } from "../../app/settings"
+import { checkEligibility } from "./eligibility"
+import type { IOptimalTeamPlayer, Team } from "../../lib/types"
+import { Stack } from "@mui/material"
+import { useSearchParams } from "react-router"
+import PageTitle from "../../components/PageTitle"
 
 const SquadRatingPage: React.FC = ({}) => {
+  // URL param name kept in a single constant to avoid hard-coded strings.
+  const PLAYERS_PARAM = "players"
+
+  // Access snapshot, teams and players from settings store (source of truth).
+  const teams = useSettingsStore((state) => state.snapshot?.teams)
+  const { sortedPlayers: players } = useSettingsStore()
+
+  // Build a quick lookup set of valid element ids to validate URL input.
+  const validIds = useMemo(
+    () =>
+      players.reduce(
+        (acc, curr) => ({
+          ...acc,
+          [curr.element.id]: curr,
+        }),
+        {} as Record<number, IOptimalTeamPlayer>
+      ),
+    [players]
+  )
+
+  // react-router search params
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Hydrate initial selection from URL ?players=1,2,3... using react-router search params
+  const initialSelectionFromURL = useMemo(() => {
+    const raw = searchParams.get(PLAYERS_PARAM)
+    if (!raw) return [] as number[]
+    return raw
+      .split(",")
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isFinite(n) && validIds[n])
+  }, [searchParams, validIds])
+
   // Single combined selection list (starting + bench together)
-  const [selectedSquad, setSelectedSquad] = useState<number[]>([])
+  const [selectedSquad, setSelectedSquad] = useState<number[]>(
+    initialSelectionFromURL
+  )
   const [teamScore, setTeamScore] = useState(0)
   const [openGroups, setOpenGroups] = useState<Record<number, boolean>>({
     1: true,
@@ -23,39 +59,32 @@ const SquadRatingPage: React.FC = ({}) => {
     3: true,
     4: true,
   })
-  const snapshot = useSettingsStore((state) => state.snapshot)
 
-  const { sortedPlayers: players } = useSettingsStore()
+  // Reflect URL -> state when users navigate with back/forward and the query changes
+  useEffect(() => {
+    const urlIds = initialSelectionFromURL
+    const current = selectedSquad.join(",")
+    const next = urlIds.join(",")
+    if (current !== next) {
+      setSelectedSquad(urlIds)
+      setTeamScore(urlIds.reduce((acc, id) => acc + validIds[id].score, 0))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSelectionFromURL])
 
-  const calculateScore = () => {
-    if (!snapshot) return 0
+  // Keep URL in sync whenever selection changes using react-router's setSearchParams.
+  useEffect(() => {
+    const sp = new URLSearchParams(searchParams)
+    if (selectedSquad.length > 0) {
+      sp.set(PLAYERS_PARAM, selectedSquad.join(","))
+    } else {
+      sp.delete(PLAYERS_PARAM)
+    }
+    setSearchParams(sp, { replace: true })
+  }, [selectedSquad, searchParams, setSearchParams])
 
-    // map player id to player object
-    const playerMap = new Map<number, IOptimalTeamPlayer>()
-    players.forEach((player) => playerMap.set(player.element.id, player))
-
-    // From the combined selectedSquad, derive first 11 as "starting" and rest as "bench" for scoring
-    const startingXIPlayers = selectedSquad
-      .map((playerId) => playerMap.get(playerId))
-      .filter(Boolean)
-
-    let totalScore = 0
-
-    startingXIPlayers.forEach((player) => {
-      if (player) {
-        const scoredPlayers = pickOptimalFPLTeamAdvanced(snapshot).filter(
-          (scoredPlayer) => scoredPlayer.element.id === player.element.id
-        )
-        if (scoredPlayers.length > 0) {
-          totalScore += scoredPlayers[0].score
-        }
-      }
-    })
-
-    return totalScore
-  }
-
-  const score = calculateScore()
+  const teamMap = new Map<number, Team>()
+  teams?.forEach((t) => teamMap.set(t.id, t))
 
   const positionLabel: Record<number, string> = {
     1: "Goalkeepers",
@@ -76,7 +105,8 @@ const SquadRatingPage: React.FC = ({}) => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={4}>
+      <PageTitle>Squad Rating</PageTitle>
+      <Grid size={4}>
         {Object.entries(groupedPlayers).map(([posKey, group]) => {
           const posNum = Number(posKey)
           const isOpen = openGroups[posNum] ?? true
@@ -87,53 +117,70 @@ const SquadRatingPage: React.FC = ({}) => {
                   setOpenGroups((prev) => ({ ...prev, [posNum]: !isOpen }))
                 }>
                 <ListItemText primary={positionLabel[posNum] ?? posKey} />
-                {isOpen ? <ExpandLess /> : <ExpandMore />}
               </ListItemButton>
               <Collapse in={isOpen} timeout="auto" unmountOnExit>
                 <List dense>
-                  {(group as Array<(typeof players)[number]>).map((p) => (
-                    <ListItem key={p.element.id} disablePadding>
-                      <label htmlFor={p.element.id.toString()}>
-                        <ListItemButton>
-                          <ListItemIcon>
-                            <Checkbox
-                              edge="start"
-                              id={p.element.id.toString()}
-                              checked={selectedSquad.includes(p.element.id)}
-                              tabIndex={-1}
-                              disabled={
-                                selectedSquad.length >= 15 &&
-                                !selectedSquad.includes(p.element.id)
-                              }
-                              onChange={(e) => {
-                                const playerId = p.element.id
-                                if (e.target.checked) {
-                                  setSelectedSquad((prev) => [
-                                    ...prev,
-                                    playerId,
-                                  ])
-                                  setTeamScore(teamScore + p.score)
-                                } else {
-                                  setSelectedSquad((prev) =>
-                                    prev.filter((id) => id !== playerId)
-                                  )
-                                  setTeamScore(teamScore - p.score)
-                                }
-                              }}
-                            />
-                          </ListItemIcon>
-                          <ListItemText primary={p.element.web_name} />
-                        </ListItemButton>
-                      </label>
-                    </ListItem>
-                  ))}
+                  {group.map((p) => {
+                    const { eligible } = checkEligibility({
+                      selected: selectedSquad,
+                      candidate: p,
+                      allPlayers: players,
+                      budgetUsed: selectedSquad
+                        .map((id) => players.find((pp) => pp.element.id === id))
+                        .filter(Boolean)
+                        .reduce(
+                          (sum, pp) => sum + (pp as typeof p).element.now_cost,
+                          0
+                        ),
+                    })
+
+                    return (
+                      <ListItem key={p.element.id} disablePadding>
+                        <label htmlFor={p.element.id.toString()}>
+                          <span>
+                            <ListItemButton disabled={!eligible}>
+                              <ListItemIcon>
+                                <Checkbox
+                                  edge="start"
+                                  id={p.element.id.toString()}
+                                  checked={selectedSquad.includes(p.element.id)}
+                                  tabIndex={-1}
+                                  disabled={!eligible}
+                                  onChange={(e) => {
+                                    const playerId = p.element.id
+                                    if (e.target.checked) {
+                                      setSelectedSquad((prev) => [
+                                        ...prev,
+                                        playerId,
+                                      ])
+                                      setTeamScore(teamScore + p.score)
+                                    } else {
+                                      setSelectedSquad((prev) =>
+                                        prev.filter((id) => id !== playerId)
+                                      )
+                                      setTeamScore(teamScore - p.score)
+                                    }
+                                  }}
+                                />
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={`${
+                                  p.element.web_name
+                                } (${p.score.toFixed(0)})`}
+                              />
+                            </ListItemButton>
+                          </span>
+                        </label>
+                      </ListItem>
+                    )
+                  })}
                 </List>
               </Collapse>
             </div>
           )
         })}
       </Grid>
-      <Grid item xs={8}>
+      <Grid item xs={8} component={"div" as any}>
         <h2>Squad Rating</h2>
         <h3>Score: {teamScore}</h3>
         <h3>Selected Squad ({selectedSquad.length})</h3>
@@ -144,7 +191,15 @@ const SquadRatingPage: React.FC = ({}) => {
               const p = players.find((pp) => pp.element.id === playerId)
               return p ? (
                 <ListItem key={p.element.id}>
-                  <ListItemText primary={p.element.web_name} />
+                  <ListItemText
+                    primary={
+                      <Stack direction={"row"}>
+                        {p.element.web_name} [
+                        {teamMap.get(p.element.team)?.name}] (
+                        {p.score.toFixed(0)})
+                      </Stack>
+                    }
+                  />
                 </ListItem>
               ) : null
             })}

@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import type { IOptimalTeamPlayer, Player, Team } from "../lib/types"
 
 export const FilterOp = {
   eq: "eq",
@@ -63,8 +64,8 @@ export interface PlayerFilterStore extends PlayerFilterState {
   removeFilter: (index: number) => void
   setFilters: (next: FilterTuple[]) => void
   getFilteredRows: (args: {
-    players: { element: import("../lib/types").Player }[]
-    teams: import("../lib/types").Team[] | undefined
+    players: IOptimalTeamPlayer[]
+    teams: Team[] | undefined
   }) => Array<{
     id: number
     name: string
@@ -145,6 +146,7 @@ export const usePlayerFilterStore = create<PlayerFilterStore>()((set, get) => ({
           "Unknown",
         chance_of_playing_next_round: p.element.chance_of_playing_next_round,
         total_points: p.element.total_points,
+        score: p.score.toFixed(1),
         now_cost: p.element.now_cost,
         form: p.element.form,
         points_per_game: p.element.points_per_game,
@@ -158,6 +160,7 @@ export const usePlayerFilterStore = create<PlayerFilterStore>()((set, get) => ({
         assists: p.element.assists,
         clean_sheets: p.element.clean_sheets,
         goals_conceded: p.element.goals_conceded,
+        ep_next: p.element.ep_next,
       })) ?? []
 
     const filters = s.filters || []

@@ -1,7 +1,7 @@
 import Typography from "@mui/material/Typography"
 import { selectTeam } from "../app/algo"
 import type { IOptimalTeamPlayer } from "../lib/types"
-import LineupDisplay from "./LineupDisplay"
+import LineupDisplay from "../components/LineupDisplay"
 
 import { useState } from "react"
 
@@ -16,6 +16,7 @@ import {
   TextField,
 } from "@mui/material"
 import { useSettingsStore } from "../app/settings"
+import PageTitle from "../components/PageTitle"
 
 function Teams() {
   const [optimalTeam, setOptimalTeam] = useState<IOptimalTeamPlayer[]>([])
@@ -33,6 +34,7 @@ function Teams() {
 
   return (
     <>
+      <PageTitle>Lineup Builder</PageTitle>
       <Typography variant="h4" component="h1" gutterBottom>
         Teams
       </Typography>
@@ -46,6 +48,12 @@ function Teams() {
             Team Cost: $
             {optimalTeam
               .reduce((acc, player) => acc + player.element.now_cost / 10, 0)
+              .toFixed(2)}
+          </Typography>
+          <Typography variant="h6" component="h2" gutterBottom>
+            Team score:{" "}
+            {optimalTeam
+              .reduce((acc, player) => acc + player.score, 0)
               .toFixed(2)}
           </Typography>
           {/* Placeholder for Lineup */}

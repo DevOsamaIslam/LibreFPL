@@ -1,45 +1,60 @@
-import { DataGrid, type GridColDef } from "@mui/x-data-grid"
-import Container from "@mui/material/Container"
-import { Box } from "@mui/material"
-import PlayerFilterPanel from "../components/PlayerFilterPanel"
+import { Box, Grid } from "@mui/material"
 import Typography from "@mui/material/Typography"
-import { useSettingsStore } from "../app/settings"
-import type { Player } from "../lib/types"
+import { DataGrid, type GridColDef } from "@mui/x-data-grid"
+import { NUMBER_OF_MATCHES, useSettingsStore } from "../app/settings"
+import PlayerFilterPanel from "../components/PlayerFilterPanel"
 import { usePlayerFilterStore } from "../store/playerFilter.store"
+import { useEffect, useMemo, useRef, useState } from "react"
+import type { Player } from "../lib/types"
+import PageTitle from "../components/PageTitle"
 
-interface PlayerData {
-  id: number
-  name: string
-  team: string
-  position: string
-  chance_of_playing_next_round: number | null
-  total_points: number
-  now_cost: number
-  form: string
-  points_per_game: string
-  selected_by_percent: string
-  transfers_in_event: number
-  transfers_out_event: number
-  value_form: string
-  value_season: string
-  minutes: number
-  goals_scored: number
-  assists: number
-  clean_sheets: number
-  goals_conceded: number
+const DEBOUNCE_MS = 250
+
+function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  const timerRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current)
+    }
+    timerRef.current = window.setTimeout(() => {
+      setDebounced(value)
+    }, delay)
+
+    return () => {
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current)
+      }
+    }
+  }, [value, delay])
+
+  return debounced
 }
 
 function Players() {
   const players = useSettingsStore((s) => s.sortedPlayers)
   const teams = useSettingsStore((s) => s.snapshot?.teams)
 
+  // Subscribe to filters so we can debounce their effect without recomputing rows immediately.
+  const filters = usePlayerFilterStore((s) => s.filters)
+
   // Select only the pure function reference (stable), do NOT subscribe to changing state here
   const getFilteredRows = usePlayerFilterStore((s) => s.getFilteredRows)
 
-  // Compute rows purely from external inputs (players, teams) to avoid subscription-driven render loops
-  const rows: PlayerData[] = getFilteredRows({ players: players || [], teams })
+  // Debounce the filters to avoid recomputation on every keystroke
+  const debouncedFilters = useDebounced(filters, DEBOUNCE_MS)
 
-  const columns: GridColDef[] = [
+  // Compute rows using memoization keyed by debounced filters and static inputs
+  const rows = useMemo(() => {
+    // getFilteredRows internally reads from the store's filters.
+    // We ensure it re-runs only when debouncedFilters changes by referencing it here.
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    debouncedFilters
+    return getFilteredRows({ players: players || [], teams })
+  }, [debouncedFilters, getFilteredRows, players, teams])
+
+  const columns: GridColDef<(typeof rows)[0]>[] = [
     { field: "name", headerName: "Name", width: 150 },
     { field: "team", headerName: "Team", width: 150 },
     { field: "position", headerName: "Position", width: 100 },
@@ -49,13 +64,19 @@ function Players() {
       width: 200,
     },
     { field: "total_points", headerName: "Total Points", width: 150 },
+    { field: "score", headerName: "Score", width: 150 },
     { field: "now_cost", headerName: "Cost", width: 100 },
-    { field: "form", headerName: "Form", width: 100 },
+    {
+      field: "",
+      headerName: "Minutes per 90",
+      width: 100,
+      renderCell: ({ row }) => (row.minutes / NUMBER_OF_MATCHES).toFixed(0),
+    },
     { field: "points_per_game", headerName: "Points per Game", width: 150 },
     { field: "selected_by_percent", headerName: "Selected By (%)", width: 150 },
     {
-      field: "transfers_in_event",
-      headerName: "Transfers In (Event)",
+      field: "ep_next",
+      headerName: "Expected points - Next",
       width: 200,
     },
     {
@@ -74,28 +95,15 @@ function Players() {
 
   return (
     <Box sx={{ overflow: "hidden" }}>
+      <PageTitle>Players</PageTitle>
       <Typography variant="h4" component="h1" gutterBottom>
         Players
       </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", lg: "340px 1fr" },
-          alignItems: "stretch",
-          gap: 8,
-          minWidth: 0,
-        }}>
-        <PlayerFilterPanel teams={teams || []} />
-        <Box
-          sx={{
-            height: 800,
-            width: "100%",
-            minWidth: 0,
-            overflow: "hidden",
-            "& .MuiDataGrid-root": {
-              minWidth: 0,
-            },
-          }}>
+      <Grid container>
+        <Grid size={4}>
+          <PlayerFilterPanel teams={teams || []} />
+        </Grid>
+        <Grid size={8}>
           <DataGrid
             rows={rows}
             columns={columns}
@@ -115,8 +123,8 @@ function Players() {
             }}
             pageSizeOptions={[5, 10, 25, 50, 100, 1000]}
           />
-        </Box>
-      </Box>
+        </Grid>
+      </Grid>
     </Box>
   )
 }

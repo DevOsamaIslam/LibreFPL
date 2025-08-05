@@ -2,6 +2,7 @@ import { create } from "zustand"
 import snapshot from "../data/snapshot.json"
 import type { IOptimalTeamPlayer, ISnapshot } from "../lib/types"
 
+export const APP_NAME = "LibreFPL"
 export const BUDGET = 1000
 export const TEAM_LIMIT = 3
 export const POSITION_LIMITS = { GK: 2, DEF: 5, MID: 5, FWD: 3 }

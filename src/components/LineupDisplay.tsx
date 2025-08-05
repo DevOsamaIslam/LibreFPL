@@ -1,5 +1,5 @@
 import { elementTypeToPosition, positionToElementType } from "../app/settings"
-import PlayerBox from "../components/PlayerBox"
+import PlayerBox from "./PlayerBox"
 import type { IOptimalTeamPlayer } from "../lib/types"
 
 interface LineupDisplayProps {

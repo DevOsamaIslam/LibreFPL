@@ -66,10 +66,6 @@ const operatorOptionsByField: Record<
   goals_conceded: [FilterOp.eq, FilterOp.gt, FilterOp.lt],
 }
 
-function isTextField(field: (typeof textFields)[number]) {
-  return (textFields as readonly string[]).includes(field)
-}
-
 const PlayerFilterPanel: React.FC<PlayerFilterPanelProps> = ({ teams }) => {
   const { filters, setFilters, addFilter, updateFilter, removeFilter } =
     usePlayerFilterStore(
@@ -129,11 +125,9 @@ const PlayerFilterPanel: React.FC<PlayerFilterPanelProps> = ({ teams }) => {
         position: "sticky",
         top: 0,
         alignSelf: "flex-start",
-        width: 360,
         maxHeight: "calc(100vh - 88px)",
         overflowY: "auto",
         p: 2,
-        mr: 2,
         borderRadius: 2,
         border: (theme) => `1px solid ${theme.palette.divider}`,
         backgroundColor: (theme) => theme.palette.background.paper,
