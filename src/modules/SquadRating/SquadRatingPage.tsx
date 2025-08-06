@@ -22,12 +22,10 @@ import {
   PLAYER_SELECTOR_CONST,
   useSearchBase,
 } from "../../hooks/usePlayerSelector"
+import { ARMBAND } from "../../lib/types"
 
 const SquadRatingPage: React.FC = ({}) => {
   const { sortedPlayers: players } = useSettingsStore()
-  const controller = useSquadRating({
-    players,
-  })
   const {
     teamMap,
     startersIds,
@@ -42,7 +40,9 @@ const SquadRatingPage: React.FC = ({}) => {
     xiScore,
     benchScore,
     captaincy,
-  } = controller
+  } = useSquadRating({
+    players,
+  })
 
   // Reusable selection and search, like PlayersCompare
   const { selectedIds, setSelectedIds, togglePlayer, max } = usePlayerSelector({
@@ -184,9 +184,7 @@ const SquadRatingPage: React.FC = ({}) => {
                         }
                       />
                     </ListItemButton>
-                    {idx !== result.length - 1 ? (
-                      <Divider component="li" />
-                    ) : null}
+                    {idx !== result.length - 1 && <Divider component="li" />}
                   </Box>
                 )
               })}
@@ -253,27 +251,6 @@ const SquadRatingPage: React.FC = ({}) => {
                   fontWeight: (theme) => theme.typography.fontWeightBold ?? 700,
                 }}
               />
-              {(() => {
-                const cap = players.find(
-                  (pp) => pp.element.id === captaincy?.captainId
-                )
-                const vice = players.find(
-                  (pp) => pp.element.id === captaincy?.viceCaptainId
-                )
-                const capName = cap?.element.web_name ?? "-"
-                const viceName = vice?.element.web_name ?? "-"
-                return (
-                  <Chip
-                    color="warning"
-                    variant="outlined"
-                    label={`C: ${capName} • VC: ${viceName}`}
-                    sx={{
-                      fontWeight: (theme) =>
-                        theme.typography.fontWeightBold ?? 700,
-                    }}
-                  />
-                )
-              })()}
               <Chip
                 color={selectedSquad.length <= max ? "info" : "default"}
                 variant="outlined"
@@ -299,7 +276,6 @@ const SquadRatingPage: React.FC = ({}) => {
           {startersIds.map((playerId, idx) => {
             const p = players.find((pp) => pp.element.id === playerId)
             if (!p) return null
-            const team = teamMap.get(p.element.team)
             const combinedIndex = idx
             const isSelected = selectedIndex === combinedIndex
             const isCaptain = captaincy?.captainId === playerId
@@ -311,49 +287,16 @@ const SquadRatingPage: React.FC = ({}) => {
                 size={{ xs: 12, sm: 6, md: 4 }}
                 sx={tileStyle(isSelected)}
                 onClick={() => onTileClick(combinedIndex)}>
-                <Box sx={{ position: "relative" }}>
-                  {isCaptain ? (
-                    <Box
-                      sx={(theme) => ({
-                        position: "absolute",
-                        top: theme.spacing(1),
-                        right: theme.spacing(1),
-                        bgcolor: "warning.main",
-                        color: "warning.contrastText",
-                        px: 0.75,
-                        py: 0.25,
-                        borderRadius: theme.shape.borderRadius,
-                        fontSize: theme.typography.pxToRem
-                          ? theme.typography.pxToRem(12)
-                          : 12,
-                        fontWeight: theme.typography.fontWeightBold ?? 700,
-                        zIndex: theme.zIndex.appBar - 1,
-                      })}>
-                      C
-                    </Box>
-                  ) : null}
-                  {!isCaptain && isVice && (
-                    <Box
-                      sx={(theme) => ({
-                        position: "absolute",
-                        top: theme.spacing(1),
-                        right: theme.spacing(1),
-                        bgcolor: "info.main",
-                        color: "info.contrastText",
-                        px: 0.75,
-                        py: 0.25,
-                        borderRadius: theme.shape.borderRadius,
-                        fontSize: theme.typography.pxToRem
-                          ? theme.typography.pxToRem(12)
-                          : 12,
-                        fontWeight: theme.typography.fontWeightBold ?? 700,
-                        zIndex: theme.zIndex.appBar - 1,
-                      })}>
-                      VC
-                    </Box>
-                  )}
-                  <PlayerBox player={p} team={team?.name} />
-                </Box>
+                <PlayerBox
+                  player={p}
+                  armband={
+                    isCaptain
+                      ? ARMBAND.CAPTAIN
+                      : isVice
+                      ? ARMBAND.VICE
+                      : undefined
+                  }
+                />
               </Grid>
             )
           })}
@@ -366,9 +309,10 @@ const SquadRatingPage: React.FC = ({}) => {
           {benchIds.map((playerId, bIdx) => {
             const p = players.find((pp) => pp.element.id === playerId)
             if (!p) return null
-            const team = teamMap.get(p.element.team)
             const combinedIndex = 11 + bIdx
             const isSelected = selectedIndex === combinedIndex
+            const isCaptain = captaincy?.captainId === playerId
+            const isVice = captaincy?.viceCaptainId === playerId
             return (
               <Grid
                 key={p.element.id}
@@ -376,7 +320,16 @@ const SquadRatingPage: React.FC = ({}) => {
                 size={{ xs: 12, sm: 6, md: 4 }}
                 sx={tileStyle(isSelected)}
                 onClick={() => onTileClick(combinedIndex)}>
-                <PlayerBox player={p} team={team?.name} />
+                <PlayerBox
+                  player={p}
+                  armband={
+                    isCaptain
+                      ? ARMBAND.CAPTAIN
+                      : isVice
+                      ? ARMBAND.VICE
+                      : undefined
+                  }
+                />
               </Grid>
             )
           })}

@@ -15,7 +15,7 @@ import Home from "./modules/Home"
 import Players from "./modules/Players"
 import PlayersCompare from "./modules/PlayersCompare/PlayersCompare"
 import SquadRatingPage from "./modules/SquadRating/SquadRatingPage"
-import Teams from "./modules/Teams"
+import GenerateLineup from "./modules/GenerateLineup"
 import Support from "./modules/Support"
 import Charts from "./modules/Charts"
 
@@ -46,8 +46,11 @@ function App() {
                   <Button color="inherit" component={Link} to="/players">
                     Players
                   </Button>
-                  <Button color="inherit" component={Link} to="/teams">
-                    Teams
+                  <Button
+                    color="inherit"
+                    component={Link}
+                    to="/generate-lineup">
+                    Generate Lineup
                   </Button>
                   <Button color="inherit" component={Link} to="/compare">
                     Compare
@@ -73,7 +76,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/players" element={<Players />} />
-              <Route path="/teams" element={<Teams />} />
+              <Route path="/generate-lineup" element={<GenerateLineup />} />
               <Route path="/compare" element={<PlayersCompare />} />
               <Route path="/squad-rating" element={<SquadRatingPage />} />
               <Route path="/charts" element={<Charts />} />

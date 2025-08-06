@@ -1,6 +1,7 @@
-import { elementTypeToPosition, positionToElementType } from "../app/settings"
+import { useMemo } from "react"
+import { positionToElementType } from "../app/settings"
+import { ARMBAND, type IOptimalTeamPlayer } from "../lib/types"
 import PlayerBox from "./PlayerBox"
-import type { IOptimalTeamPlayer } from "../lib/types"
 
 interface LineupDisplayProps {
   lineup: IOptimalTeamPlayer[]
@@ -25,6 +26,8 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
     ),
   }
 
+  const [captain, viseCaptain] = [starters[0], starters[1]]
+
   return (
     <div>
       <h3>Starting XI</h3>
@@ -33,51 +36,70 @@ function LineupDisplay({ lineup }: LineupDisplayProps) {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          gap: 16,
         }}>
         {/* Formation: 4-4-2 */}
-        <div style={{ display: "flex" }}>
+        <div style={{ display: "flex", gap: "16px" }}>
           {formation.att.map((player) => (
             <PlayerBox
               key={player.element.id}
               player={player}
-              position={elementTypeToPosition[player.element.element_type]}
-              team="Unknown"
+              armband={
+                captain.element.id === player.element.id
+                  ? ARMBAND.CAPTAIN
+                  : viseCaptain.element.id === player.element.id
+                  ? ARMBAND.VICE
+                  : undefined
+              }
             />
           ))}
         </div>
-        <div style={{ display: "flex" }}>
+        <div style={{ display: "flex", gap: "16px" }}>
           {formation.mid.map((player) => (
             <PlayerBox
               key={player.element.id}
               player={player}
-              position={elementTypeToPosition[player.element.element_type]}
-              team="Unknown"
+              armband={
+                captain.element.id === player.element.id
+                  ? ARMBAND.CAPTAIN
+                  : viseCaptain.element.id === player.element.id
+                  ? ARMBAND.VICE
+                  : undefined
+              }
             />
           ))}
         </div>
-        <div style={{ display: "flex" }}>
+        <div style={{ display: "flex", gap: "16px" }}>
           {formation.def.map((player) => (
             <PlayerBox
               key={player.element.id}
               player={player}
-              position={elementTypeToPosition[player.element.element_type]}
-              team="Unknown"
+              armband={
+                captain.element.id === player.element.id
+                  ? ARMBAND.CAPTAIN
+                  : viseCaptain.element.id === player.element.id
+                  ? ARMBAND.VICE
+                  : undefined
+              }
             />
           ))}
         </div>
-        {formation.gk && (
-          <PlayerBox player={formation.gk} position="GK" team="Unknown" />
-        )}
+        {formation.gk && <PlayerBox player={formation.gk} />}
       </div>
 
       <h3>Substitutes</h3>
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex", gap: "16px" }}>
         {bench.map((player, index: number) => (
           <PlayerBox
             key={index}
             player={player}
-            position={elementTypeToPosition[player.element.element_type]}
-            team="Unknown"
+            armband={
+              captain.element.id === player.element.id
+                ? ARMBAND.CAPTAIN
+                : viseCaptain.element.id === player.element.id
+                ? ARMBAND.VICE
+                : undefined
+            }
           />
         ))}
       </div>

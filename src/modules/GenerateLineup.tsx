@@ -12,13 +12,14 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Stack,
   Switch,
   TextField,
 } from "@mui/material"
 import { useSettingsStore } from "../app/settings"
 import PageTitle from "../components/PageTitle"
 
-function Teams() {
+function GenerateLineup() {
   const [optimalTeam, setOptimalTeam] = useState<IOptimalTeamPlayer[]>([])
   const {
     desiredFormation,
@@ -66,10 +67,12 @@ function Teams() {
             }}>
             Generate Lineup
           </Button>
-          {!!optimalTeam.length && <LineupDisplay lineup={optimalTeam} />}
         </Grid>
 
-        <Grid size={2} style={{ flex: 1, marginRight: "20px" }}>
+        <Stack
+          direction="row"
+          spacing={2}
+          style={{ flex: 1, marginRight: "20px" }}>
           <FormControl fullWidth margin="normal">
             <InputLabel id="desired-formation-label">
               Desired Formation
@@ -95,8 +98,12 @@ function Teams() {
               label="Number of Enablers"
               type="number"
               value={numberEnablers}
-              onChange={(e) => setNumberEnablers(Number(e.target.value))}
-              slotProps={{ input: { min: 0, max: 4 } }}
+              onChange={(e) => {
+                const num = Number(e.target.value)
+                if (num >= 0 && num <= 4) {
+                  setNumberEnablers(num)
+                }
+              }}
             />
           </FormControl>
 
@@ -107,10 +114,11 @@ function Teams() {
               onChange={(e) => setBenchBoostEnabled(e.target.checked)}
             />
           </FormControl>
-        </Grid>
+        </Stack>
+        {!!optimalTeam.length && <LineupDisplay lineup={optimalTeam} />}
       </Grid>
     </>
   )
 }
 
-export default Teams
+export default GenerateLineup

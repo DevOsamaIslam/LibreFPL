@@ -71,11 +71,11 @@ export default function PlayersCompare() {
             md: 5,
           }}>
           <Stack spacing={1.5}>
-            {!canAddMore ? (
+            {!canAddMore && (
               <Typography variant="caption" color="text.secondary">
                 {label.addHint}
               </Typography>
-            ) : null}
+            )}
 
             <Paper
               variant="outlined"
@@ -116,9 +116,7 @@ export default function PlayersCompare() {
                           }
                         />
                       </ListItemButton>
-                      {idx !== result.length - 1 ? (
-                        <Divider component="li" />
-                      ) : null}
+                      {idx !== result.length - 1 && <Divider component="li" />}
                     </Box>
                   )
                 })}

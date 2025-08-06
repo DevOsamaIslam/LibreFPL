@@ -365,3 +365,9 @@ export interface Transfers {
   bank: number
   value: number
 }
+export const ARMBAND = {
+  CAPTAIN: "C",
+  VICE: "VC",
+} as const
+
+export type Armband = (typeof ARMBAND)[keyof typeof ARMBAND]

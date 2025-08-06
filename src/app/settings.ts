@@ -44,6 +44,17 @@ export const BENCH_FWD_COST_LIMIT = 45
 export const BUDGET_FOR_XI = 820
 export const NUMBER_OF_MATCHES = 38
 
+export const colorByPos = {
+  GK: "#8B4513", // brown
+  DEF: "#F59E0B", // yellow
+  MID: "#10B981", // green
+  FWD: "#EF4444", // red
+  "1": "#8B4513",
+  "2": "#F59E0B",
+  "3": "#10B981",
+  "4": "#EF4444",
+} as Record<string, string>
+
 interface SettingsState {
   desiredFormation: string
   benchBoostEnabled: boolean

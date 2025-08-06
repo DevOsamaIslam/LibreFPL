@@ -9,7 +9,7 @@ import {
 import { useMemo } from "react"
 import { Scatter } from "react-chartjs-2"
 import { useSearchParams } from "react-router"
-import { useSettingsStore } from "../../app/settings"
+import { colorByPos, useSettingsStore } from "../../app/settings"
 
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend, Title)
 
@@ -66,20 +66,6 @@ export default function ScoreVsCost() {
     return dataPoints
   }, [players])
 
-  // Central color map derived from position; shared across chart and legend
-  const colorByPos = useMemo(() => {
-    return {
-      GK: "#8B4513", // brown
-      DEF: "#F59E0B", // yellow
-      MID: "#10B981", // green
-      FWD: "#EF4444", // red
-      "1": "#8B4513",
-      "2": "#F59E0B",
-      "3": "#10B981",
-      "4": "#EF4444",
-    }
-  }, [])
-
   const chartData = useMemo(() => {
     const groupedByPosition = Object.groupBy(pointsVsPrice, (p) => p.position)
     return {
@@ -95,7 +81,7 @@ export default function ScoreVsCost() {
               position: d.position,
             },
           })) ?? [],
-        backgroundColor: (colorByPos as Record<string, string>)[pos],
+        backgroundColor: colorByPos[pos],
         pointRadius: 4,
         pointHoverRadius: 6,
       })),

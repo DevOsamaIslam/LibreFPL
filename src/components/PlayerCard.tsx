@@ -79,11 +79,11 @@ export default function PlayerCard({
           </Stack>
         }
         action={
-          onRemove ? (
+          onRemove && (
             <IconButton aria-label="remove" color="error" onClick={onRemove}>
               <CloseIcon />
             </IconButton>
-          ) : null
+          )
         }
         sx={{ pb: 0.5 }}
       />
