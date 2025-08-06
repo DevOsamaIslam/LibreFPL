@@ -39,6 +39,9 @@ const SquadRatingPage: React.FC = ({}) => {
     teamScore,
     setSelectedSquad,
     setTeamScore,
+    xiScore,
+    benchScore,
+    captaincy,
   } = controller
 
   // Reusable selection and search, like PlayersCompare
@@ -218,13 +221,43 @@ const SquadRatingPage: React.FC = ({}) => {
               flexWrap="wrap"
               useFlexGap>
               <Chip
-                color="primary"
+                color="info"
                 variant="filled"
-                label={`Score: ${teamScore.toFixed(0)}`}
+                label={`Team Score: ${teamScore.toFixed(0)}`}
                 sx={{ fontWeight: 700 }}
               />
               <Chip
-                color={selectedSquad.length <= max ? "success" : "default"}
+                color="primary"
+                variant="filled"
+                label={`XI Score: ${xiScore.toFixed(0)}`}
+                sx={{ fontWeight: 700, color: "white" }}
+              />
+              <Chip
+                color="secondary"
+                variant="filled"
+                label={`Bench Score: ${benchScore.toFixed(0)}`}
+                sx={{ fontWeight: 700 }}
+              />
+              {(() => {
+                const cap = players.find(
+                  (pp) => pp.element.id === captaincy?.captainId
+                )
+                const vice = players.find(
+                  (pp) => pp.element.id === captaincy?.viceCaptainId
+                )
+                const capName = cap?.element.web_name ?? "-"
+                const viceName = vice?.element.web_name ?? "-"
+                return (
+                  <Chip
+                    color="warning"
+                    variant="outlined"
+                    label={`C: ${capName} • VC: ${viceName}`}
+                    sx={{ fontWeight: 700 }}
+                  />
+                )
+              })()}
+              <Chip
+                color={selectedSquad.length <= max ? "info" : "default"}
                 variant="outlined"
                 label={`Players: ${selectedSquad.length}/${max}`}
               />
@@ -251,6 +284,8 @@ const SquadRatingPage: React.FC = ({}) => {
             const team = teamMap.get(p.element.team)
             const combinedIndex = idx
             const isSelected = selectedIndex === combinedIndex
+            const isCaptain = captaincy?.captainId === playerId
+            const isVice = captaincy?.viceCaptainId === playerId
             return (
               <Grid
                 key={p.element.id}
@@ -258,7 +293,45 @@ const SquadRatingPage: React.FC = ({}) => {
                 size={{ xs: 12, sm: 6, md: 4 }}
                 sx={tileStyle(isSelected)}
                 onClick={() => onTileClick(combinedIndex)}>
-                <PlayerBox player={p} team={team?.name} />
+                <Box sx={{ position: "relative" }}>
+                  {isCaptain ? (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                        bgcolor: "warning.main",
+                        color: "warning.contrastText",
+                        px: 0.75,
+                        py: 0.25,
+                        borderRadius: 1,
+                        fontSize: 12,
+                        fontWeight: 800,
+                        zIndex: 1,
+                      }}>
+                      C
+                    </Box>
+                  ) : null}
+                  {!isCaptain && isVice ? (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                        bgcolor: "info.main",
+                        color: "info.contrastText",
+                        px: 0.75,
+                        py: 0.25,
+                        borderRadius: 1,
+                        fontSize: 12,
+                        fontWeight: 800,
+                        zIndex: 1,
+                      }}>
+                      VC
+                    </Box>
+                  ) : null}
+                  <PlayerBox player={p} team={team?.name} />
+                </Box>
               </Grid>
             )
           })}
@@ -266,6 +339,13 @@ const SquadRatingPage: React.FC = ({}) => {
 
         <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
           Bench
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ mb: 1, display: "block" }}>
+          Bench score is shown separately and contributes at reduced weight to
+          the team score.
         </Typography>
         <Grid container spacing={2}>
           {benchIds.map((playerId, bIdx) => {

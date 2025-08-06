@@ -14,6 +14,11 @@ interface ControllerArgs {
   teams?: Team[]
 }
 
+type Captaincy = {
+  captainId: number | null
+  viceCaptainId: number | null
+}
+
 function useSquadRating({ players, teams }: ControllerArgs) {
   // Build a quick lookup set of valid element ids to validate URL input.
   const validIds = useMemo(
@@ -45,7 +50,12 @@ function useSquadRating({ players, teams }: ControllerArgs) {
   const [selectedSquad, setSelectedSquad] = useState<number[]>(
     initialSelectionFromURL
   )
+
+  // Scores
   const [teamScore, setTeamScore] = useState(0)
+  const [xiScore, setXiScore] = useState(0)
+  const [benchScore, setBenchScore] = useState(0)
+
   const [openGroups, setOpenGroups] = useState<Record<number, boolean>>({
     1: true,
     2: true,
@@ -60,7 +70,12 @@ function useSquadRating({ players, teams }: ControllerArgs) {
     const next = urlIds.join(",")
     if (current !== next) {
       setSelectedSquad(urlIds)
-      setTeamScore(urlIds.reduce((acc, id) => acc + validIds[id].score, 0))
+      // set raw team score as simple sum (without bench weighting)
+      const raw = urlIds.reduce(
+        (acc, id) => acc + (validIds[id]?.score ?? 0),
+        0
+      )
+      setTeamScore(raw)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialSelectionFromURL])
@@ -105,8 +120,19 @@ function useSquadRating({ players, teams }: ControllerArgs) {
     )
   }, [players])
 
-  // Helper: weighted score (bench 10%)
-  const recalcScore = useCallback(
+  // Helper: total of ids (no weighting)
+  const sumScore = useCallback(
+    (ids: number[]) =>
+      ids.reduce((acc, id) => {
+        const p = validIds[id]
+        if (!p) return acc
+        return acc + p.score
+      }, 0),
+    [validIds]
+  )
+
+  // Helper: weighted total for whole team (bench 10%)
+  const recalcWeightedTeamScore = useCallback(
     (ids: number[]) =>
       ids.reduce((acc, id, idx) => {
         const p = validIds[id]
@@ -119,6 +145,35 @@ function useSquadRating({ players, teams }: ControllerArgs) {
   // Derived ids for sections
   const startersIds = useMemo(() => selectedSquad.slice(0, 11), [selectedSquad])
   const benchIds = useMemo(() => selectedSquad.slice(11, 15), [selectedSquad])
+
+  // Captaincy state derived from XI
+  const [captaincy, setCaptaincy] = useState<Captaincy>({
+    captainId: null,
+    viceCaptainId: null,
+  })
+
+  // Recalculate section scores and captaincy when selection changes
+  useEffect(() => {
+    const xi = sumScore(startersIds)
+    const bench = sumScore(benchIds)
+    setXiScore(xi)
+    setBenchScore(bench)
+    // Keep teamScore representing the weighted whole team display by default
+    setTeamScore(recalcWeightedTeamScore([...startersIds, ...benchIds]))
+
+    // Determine captain and vice from XI by highest scores
+    if (startersIds.length > 0) {
+      const withScores = startersIds
+        .map((id) => ({ id, score: validIds[id]?.score ?? -Infinity }))
+        .sort((a, b) => b.score - a.score)
+
+      const captainId = withScores[0]?.id ?? null
+      const viceCaptainId = withScores[1]?.id ?? null
+      setCaptaincy({ captainId, viceCaptainId })
+    } else {
+      setCaptaincy({ captainId: null, viceCaptainId: null })
+    }
+  }, [startersIds, benchIds, sumScore, recalcWeightedTeamScore, validIds])
 
   // Click-to-swap selection state
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
@@ -136,9 +191,9 @@ function useSquadRating({ players, teams }: ControllerArgs) {
       ;[nextCombined[i], nextCombined[j]] = [nextCombined[j], nextCombined[i]]
       const next = [...nextCombined.slice(0, 11), ...nextCombined.slice(11, 15)]
       setSelectedSquad(next)
-      setTeamScore(recalcScore(next))
+      // scores are recalculated by the selection-change effect
     },
-    [combinedIds, recalcScore]
+    [combinedIds]
   )
 
   // Click handler for a tile; index is 0..(combinedIds.length-1)
@@ -186,9 +241,12 @@ function useSquadRating({ players, teams }: ControllerArgs) {
     onTileClick,
     teamScore,
     setTeamScore,
+    xiScore,
+    benchScore,
     openGroups,
     setOpenGroups,
     players,
+    captaincy,
   }
 }
 
