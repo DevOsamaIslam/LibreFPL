@@ -100,19 +100,21 @@ function Players() {
         Players
       </Typography>
       <Grid container>
-        <Grid size={4}>
+        <Grid size={4} paddingRight={2}>
           <PlayerFilterPanel teams={teams || []} />
         </Grid>
-        <Grid size={8}>
+        <Grid size={8} paddingLeft={2}>
           <DataGrid
             rows={rows}
             columns={columns}
+            disableColumnFilter
             getRowId={(row) => row.id}
             sx={{
               minWidth: 0,
               "& .MuiDataGrid-virtualScroller": {
                 overflowX: "auto",
               },
+              maxHeight: "75vh",
             }}
             initialState={{
               pagination: {
@@ -121,7 +123,7 @@ function Players() {
                 },
               },
             }}
-            pageSizeOptions={[5, 10, 25, 50, 100, 1000]}
+            pageSizeOptions={[5, 10, 25, 50, 100]}
           />
         </Grid>
       </Grid>

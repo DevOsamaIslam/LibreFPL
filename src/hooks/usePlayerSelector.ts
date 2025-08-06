@@ -3,7 +3,7 @@ import type { IOptimalTeamPlayer, ISnapshot } from "../lib/types"
 import snapshot from "../data/snapshot.json"
 
 export const PLAYER_SELECTOR_CONST = {
-  maxSelected: 4,
+  maxSelected: 15,
   searchPlaceholder: "Search player or team...",
   selectedLabel: "Selected",
   addHintPrefix: "Select up to",

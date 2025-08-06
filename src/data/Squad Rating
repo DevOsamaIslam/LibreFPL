@@ -1,37 +1,6 @@
-http://localhost:5174/squad-rating?players=366%2C105%2C568%2C370%2C256%2C5%2C224%2C47%2C235%2C266%2C491%2C613%2C430%2C311%2C313
-Score: 188.176904260548
-Selected Squad (15)
-A.Becker [Liverpool] (18)
-Valdimarsson [Brentford] (3)
-Pedro Porro [Spurs] (11)
-Frimpong [Liverpool] (6)
-Muñoz [Crystal Palace] (14)
-Gabriel [Arsenal] (19)
-Cucurella [Chelsea] (14)
-Rogers [Aston Villa] (16)
-Palmer [Chelsea] (18)
-Eze [Crystal Palace] (14)
-Tonali [Newcastle] (14)
-Souček [West Ham] (13)
-Haaland [Man City] (18)
-Beto [Everton] (10)
-Sherif [Everton] (1)
+http://localhost:5174/squad-rating?players=366%2C105%2C568%2C370%2C256%2C5%2C224%2C47%2C235%2C266%2C491%2C613%2C430%2C311%2C467
+Score: 191
+
 
 http://localhost:5174/squad-rating?players=105%2C47%2C502%2C569%2C603%2C373%2C381%2C235%2C382%2C53%2C64%2C249%2C252%2C441%2C191
-Score: 150.34206496396507
-Selected Squad (15)
-Valdimarsson [Brentford] (3)
-Rogers [Aston Villa] (16)
-Sels [Nott'm Forest] (16)
-Romero [Spurs] (9)
-Diouf [West Ham] (-0)
-Virgil [Liverpool] (19)
-M.Salah [Liverpool] (23)
-Palmer [Chelsea] (18)
-Wirtz [Liverpool] (6)
-Malen [Aston Villa] (5)
-Watkins [Aston Villa] (15)
-João Pedro [Chelsea] (13)
-Marc Guiu [Chelsea] (2)
-Dorgu [Man Utd] (8)
-Estève [Burnley] (-2)
+Score: 150

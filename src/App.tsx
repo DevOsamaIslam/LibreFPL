@@ -31,7 +31,7 @@ function App() {
       <CssBaseline />
       <ThemeProvider theme={theme}>
         <BrowserRouter>
-          <AppBar position="static">
+          <AppBar position="static" sx={{ mb: 2 }}>
             <Toolbar sx={{ color: "white" }}>
               <SpaceBetween>
                 <Link to={"/"}>

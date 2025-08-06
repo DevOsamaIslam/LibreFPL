@@ -10,6 +10,7 @@ import {
   Typography,
   Stack,
   IconButton,
+  Button,
 } from "@mui/material"
 import {
   usePlayerFilterStore,
@@ -139,18 +140,16 @@ const PlayerFilterPanel: React.FC<PlayerFilterPanelProps> = ({ teams }) => {
 
       <Stack sx={{ gap }}>
         <Typography variant="subtitle2">Quick add</Typography>
-        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+        <Stack direction={"row"} spacing={1}>
           {quickAdds.map((qa) => (
-            <TextField
+            <Button
+              variant="outlined"
               key={qa.label}
-              value={qa.label}
+              children={qa.label}
               size="small"
-              onFocus={(e) => {
-                e.target.blur()
+              onClick={(e) => {
                 qa.onClick()
               }}
-              sx={{ width: "auto" }}
-              inputProps={{ style: { cursor: "pointer" } }}
             />
           ))}
         </Stack>
