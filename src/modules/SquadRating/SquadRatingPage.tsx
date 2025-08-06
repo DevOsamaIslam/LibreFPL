@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useMemo, useCallback } from "react"
 import Checkbox from "@mui/material/Checkbox"
 import Collapse from "@mui/material/Collapse"
 import Grid from "@mui/material/Grid"
@@ -9,10 +9,10 @@ import ListItemIcon from "@mui/material/ListItemIcon"
 import ListItemText from "@mui/material/ListItemText"
 import { useSettingsStore } from "../../app/settings"
 import { checkEligibility } from "../../app/eligibility"
-import { useSearchParams } from "react-router"
 import PageTitle from "../../components/PageTitle"
 import PlayerBox from "../../components/PlayerBox"
 import useSquadRating from "./useSquadRating"
+import { usePlayerSelector } from "../../hooks/usePlayerSelector"
 
 const SquadRatingPage: React.FC = ({}) => {
   const { sortedPlayers: players, snapshot } = useSettingsStore()
@@ -20,7 +20,6 @@ const SquadRatingPage: React.FC = ({}) => {
   const controller = useSquadRating({
     players,
     teams,
-    useSearchParams,
   })
   const {
     positionLabel,
@@ -38,6 +37,55 @@ const SquadRatingPage: React.FC = ({}) => {
     openGroups,
     setOpenGroups,
   } = controller
+
+  // Reusable selection logic (headless) for add/remove and max cap like PlayersCompare
+  const { selectedIds, setSelectedIds, togglePlayer } = usePlayerSelector({
+    players,
+  })
+
+  // Keep reusable selection in sync with page state (URL-driven) for consistent behavior
+  useMemo(() => {
+    if (selectedIds.join(",") !== selectedSquad.join(",")) {
+      setSelectedIds(selectedSquad)
+    }
+  }, [selectedIds, selectedSquad, setSelectedIds])
+
+  // Wrap toggle with eligibility and score updates, then sync back to page state
+  const onToggleCandidate = useCallback(
+    (p: (typeof players)[number]) => {
+      const { eligible } = checkEligibility({
+        selected: selectedSquad,
+        candidate: p,
+        allPlayers: players,
+        budgetUsed: selectedSquad
+          .map((id) => players.find((pp) => pp.element.id === id))
+          .filter(Boolean)
+          .reduce((sum, pp) => sum + (pp as typeof p).element.now_cost, 0),
+      })
+      if (!eligible) return
+
+      const already = selectedSquad.includes(p.element.id)
+      if (already) {
+        const next = selectedSquad.filter((id) => id !== p.element.id)
+        setSelectedSquad(next)
+        setTeamScore(teamScore - p.score)
+        togglePlayer(p.element.id) // keep hook state in parity
+      } else {
+        const next = [...selectedSquad, p.element.id]
+        setSelectedSquad(next)
+        setTeamScore(teamScore + p.score)
+        togglePlayer(p.element.id) // keep hook state in parity
+      }
+    },
+    [
+      players,
+      selectedSquad,
+      teamScore,
+      setSelectedSquad,
+      setTeamScore,
+      togglePlayer,
+    ]
+  )
 
   return (
     <Grid container spacing={2}>
@@ -82,21 +130,7 @@ const SquadRatingPage: React.FC = ({}) => {
                                   checked={selectedSquad.includes(p.element.id)}
                                   tabIndex={-1}
                                   disabled={!eligible}
-                                  onChange={(e) => {
-                                    const playerId = p.element.id
-                                    if (e.target.checked) {
-                                      setSelectedSquad((prev) => [
-                                        ...prev,
-                                        playerId,
-                                      ])
-                                      setTeamScore(teamScore + p.score)
-                                    } else {
-                                      setSelectedSquad((prev) =>
-                                        prev.filter((id) => id !== playerId)
-                                      )
-                                      setTeamScore(teamScore - p.score)
-                                    }
-                                  }}
+                                  onChange={() => onToggleCandidate(p)}
                                 />
                               </ListItemIcon>
                               <ListItemText

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import type { IOptimalTeamPlayer, Team } from "../../lib/types"
+import { useSearchParams } from "react-router"
 
 // Centralized constants to avoid hard-coded strings
 const QUERY_KEYS = {
@@ -11,12 +12,9 @@ type QueryKey = typeof QUERY_KEYS.players
 interface ControllerArgs {
   players: IOptimalTeamPlayer[]
   teams?: Team[]
-  useSearchParams: () => ReturnType<
-    typeof import("react-router").useSearchParams
-  >
 }
 
-function useSquadRating({ players, teams, useSearchParams }: ControllerArgs) {
+function useSquadRating({ players, teams }: ControllerArgs) {
   // Build a quick lookup set of valid element ids to validate URL input.
   const validIds = useMemo(
     () =>

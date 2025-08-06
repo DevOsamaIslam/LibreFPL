@@ -97,10 +97,16 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
       score = score / 100
 
-      return { element: player, score, position }
+      return {
+        element: player,
+        score,
+        position,
+        teamId: team.id,
+        teamName: team.name,
+      } as IOptimalTeamPlayer
     })
     .filter(Boolean) // Filter out players that returned null in the previous step
-    .sort((a, b) => b!.score - a!.score) // Sort players by score in descending order (highest score first)
+    .sort((a, b) => b!.score - a!.score) as IOptimalTeamPlayer[] // Sort players by score in descending order (highest score first)
 
   return { players, teamMap }
 }

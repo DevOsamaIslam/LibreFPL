@@ -17,6 +17,7 @@ import PlayersCompare from "./modules/PlayersCompare/PlayersCompare"
 import SquadRatingPage from "./modules/SquadRating/SquadRatingPage"
 import Teams from "./modules/Teams"
 import Support from "./modules/Support"
+import Charts from "./modules/Charts"
 
 function App() {
   const { setSortedPlayers, snapshot } = useSettingsStore()
@@ -54,6 +55,9 @@ function App() {
                   <Button color="inherit" component={Link} to="/squad-rating">
                     Squad Rating
                   </Button>
+                  <Button color="inherit" component={Link} to="/charts">
+                    Charts
+                  </Button>
                   <Button
                     color="secondary"
                     component={Link}
@@ -72,6 +76,7 @@ function App() {
               <Route path="/teams" element={<Teams />} />
               <Route path="/compare" element={<PlayersCompare />} />
               <Route path="/squad-rating" element={<SquadRatingPage />} />
+              <Route path="/charts" element={<Charts />} />
               <Route path="/support" element={<Support />} />
             </Routes>
           </Box>

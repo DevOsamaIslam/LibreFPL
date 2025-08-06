@@ -323,6 +323,8 @@ export interface IOptimalTeamPlayer {
   element: Player
   score: number
   position: string
+  teamId: number
+  teamName: string
 }
 
 export interface IMyTeam {
