@@ -4,8 +4,8 @@ import type { IOptimalTeamPlayer, ISnapshot } from "../lib/types"
 
 export const APP_NAME = "LibreFPL"
 export const SUPPORT_ADDRESSES = {
-  BTC: "btc-address-from-settings",
-  XMR: "xmr-address-from-settings",
+  BTC: "bc1p5n9ya2k63trk6k7xrh2jp0lzgyhn0xadj4utgqcpu855q9my9rtq0q5n8e",
+  XMR: "45nCrEa8LpJd9DFmh9nmfL3hpUhAdDyik3emMyNhNozk9VSDK9WEwNLZPAHL3MCFW2L84tXRKCbaQ3GkjaPuj51wAGs36Ai",
 } as const
 export const BUDGET = 1000
 export const TEAM_LIMIT = 3
