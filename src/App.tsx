@@ -14,9 +14,9 @@ import SpaceBetween from "./components/SpaceBetween"
 import Home from "./modules/Home"
 import Players from "./modules/Players"
 import PlayersCompare from "./modules/PlayersCompare/PlayersCompare"
-import Rules from "./modules/Rules"
 import SquadRatingPage from "./modules/SquadRating/SquadRatingPage"
 import Teams from "./modules/Teams"
+import Support from "./modules/Support"
 
 function App() {
   const { setSortedPlayers, snapshot } = useSettingsStore()
@@ -33,11 +33,15 @@ function App() {
           <AppBar position="static">
             <Toolbar sx={{ color: "white" }}>
               <SpaceBetween>
-                <img src="/logo.png" alt="logo" width={80} />
+                <Link to={"/"}>
+                  <img
+                    src="/logo.png"
+                    alt="logo"
+                    width={100}
+                    style={{ padding: 8 }}
+                  />
+                </Link>
                 <Stack direction="row" spacing={2}>
-                  <Button color="inherit" component={Link} to="/">
-                    Home
-                  </Button>
                   <Button color="inherit" component={Link} to="/players">
                     Players
                   </Button>
@@ -50,8 +54,12 @@ function App() {
                   <Button color="inherit" component={Link} to="/squad-rating">
                     Squad Rating
                   </Button>
-                  <Button color="inherit" component={Link} to="/rules">
-                    Rules
+                  <Button
+                    color="secondary"
+                    component={Link}
+                    to="/support"
+                    variant="contained">
+                    Support
                   </Button>
                 </Stack>
               </SpaceBetween>
@@ -63,8 +71,8 @@ function App() {
               <Route path="/players" element={<Players />} />
               <Route path="/teams" element={<Teams />} />
               <Route path="/compare" element={<PlayersCompare />} />
-              <Route path="/rules" element={<Rules />} />
               <Route path="/squad-rating" element={<SquadRatingPage />} />
+              <Route path="/support" element={<Support />} />
             </Routes>
           </Box>
         </BrowserRouter>

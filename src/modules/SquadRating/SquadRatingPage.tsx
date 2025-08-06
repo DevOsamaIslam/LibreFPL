@@ -1,3 +1,4 @@
+import React from "react"
 import Checkbox from "@mui/material/Checkbox"
 import Collapse from "@mui/material/Collapse"
 import Grid from "@mui/material/Grid"
@@ -6,102 +7,37 @@ import ListItem from "@mui/material/ListItem"
 import ListItemButton from "@mui/material/ListItemButton"
 import ListItemIcon from "@mui/material/ListItemIcon"
 import ListItemText from "@mui/material/ListItemText"
-import React, { useEffect, useMemo, useState } from "react"
 import { useSettingsStore } from "../../app/settings"
-import { checkEligibility } from "./eligibility"
-import type { IOptimalTeamPlayer, Team } from "../../lib/types"
-import { Stack } from "@mui/material"
+import { checkEligibility } from "../../app/eligibility"
 import { useSearchParams } from "react-router"
 import PageTitle from "../../components/PageTitle"
+import PlayerBox from "../../components/PlayerBox"
+import useSquadRating from "./useSquadRating"
 
 const SquadRatingPage: React.FC = ({}) => {
-  // URL param name kept in a single constant to avoid hard-coded strings.
-  const PLAYERS_PARAM = "players"
-
-  // Access snapshot, teams and players from settings store (source of truth).
-  const teams = useSettingsStore((state) => state.snapshot?.teams)
-  const { sortedPlayers: players } = useSettingsStore()
-
-  // Build a quick lookup set of valid element ids to validate URL input.
-  const validIds = useMemo(
-    () =>
-      players.reduce(
-        (acc, curr) => ({
-          ...acc,
-          [curr.element.id]: curr,
-        }),
-        {} as Record<number, IOptimalTeamPlayer>
-      ),
-    [players]
-  )
-
-  // react-router search params
-  const [searchParams, setSearchParams] = useSearchParams()
-
-  // Hydrate initial selection from URL ?players=1,2,3... using react-router search params
-  const initialSelectionFromURL = useMemo(() => {
-    const raw = searchParams.get(PLAYERS_PARAM)
-    if (!raw) return [] as number[]
-    return raw
-      .split(",")
-      .map((s) => Number(s.trim()))
-      .filter((n) => Number.isFinite(n) && validIds[n])
-  }, [searchParams, validIds])
-
-  // Single combined selection list (starting + bench together)
-  const [selectedSquad, setSelectedSquad] = useState<number[]>(
-    initialSelectionFromURL
-  )
-  const [teamScore, setTeamScore] = useState(0)
-  const [openGroups, setOpenGroups] = useState<Record<number, boolean>>({
-    1: true,
-    2: true,
-    3: true,
-    4: true,
+  const { sortedPlayers: players, snapshot } = useSettingsStore()
+  const teams = snapshot?.teams
+  const controller = useSquadRating({
+    players,
+    teams,
+    useSearchParams,
   })
-
-  // Reflect URL -> state when users navigate with back/forward and the query changes
-  useEffect(() => {
-    const urlIds = initialSelectionFromURL
-    const current = selectedSquad.join(",")
-    const next = urlIds.join(",")
-    if (current !== next) {
-      setSelectedSquad(urlIds)
-      setTeamScore(urlIds.reduce((acc, id) => acc + validIds[id].score, 0))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialSelectionFromURL])
-
-  // Keep URL in sync whenever selection changes using react-router's setSearchParams.
-  useEffect(() => {
-    const sp = new URLSearchParams(searchParams)
-    if (selectedSquad.length > 0) {
-      sp.set(PLAYERS_PARAM, selectedSquad.join(","))
-    } else {
-      sp.delete(PLAYERS_PARAM)
-    }
-    setSearchParams(sp, { replace: true })
-  }, [selectedSquad, searchParams, setSearchParams])
-
-  const teamMap = new Map<number, Team>()
-  teams?.forEach((t) => teamMap.set(t.id, t))
-
-  const positionLabel: Record<number, string> = {
-    1: "Goalkeepers",
-    2: "Defenders",
-    3: "Midfielders",
-    4: "Forwards",
-  }
-
-  const groupedPlayers = (players as Array<(typeof players)[number]>).reduce(
-    (acc: Record<number, Array<(typeof players)[number]>>, p) => {
-      const pos = p.element.element_type as number
-      if (!acc[pos]) acc[pos] = []
-      acc[pos].push(p)
-      return acc
-    },
-    {}
-  )
+  const {
+    positionLabel,
+    groupedPlayers,
+    teamMap,
+    startersIds,
+    benchIds,
+    selectedSquad,
+    selectedIndex,
+    tileStyle,
+    onTileClick,
+    teamScore,
+    setSelectedSquad,
+    setTeamScore,
+    openGroups,
+    setOpenGroups,
+  } = controller
 
   return (
     <Grid container spacing={2}>
@@ -180,30 +116,62 @@ const SquadRatingPage: React.FC = ({}) => {
           )
         })}
       </Grid>
-      <Grid item xs={8} component={"div" as any}>
+      <Grid
+        size={{
+          xs: 8,
+        }}>
         <h2>Squad Rating</h2>
-        <h3>Score: {teamScore}</h3>
+        <h3>Score: {teamScore.toFixed(0)}</h3>
+        <p style={{ marginTop: 8, marginBottom: 16, color: "#555" }}>
+          Tip: Click a player, then click another to swap their positions (works
+          across Starting XI and Bench). Click the same player again to cancel
+          selection.
+        </p>
         <h3>Selected Squad ({selectedSquad.length})</h3>
-        <List>
-          {selectedSquad
-            .filter((playerId) => playerId !== 0)
-            .map((playerId) => {
-              const p = players.find((pp) => pp.element.id === playerId)
-              return p ? (
-                <ListItem key={p.element.id}>
-                  <ListItemText
-                    primary={
-                      <Stack direction={"row"}>
-                        {p.element.web_name} [
-                        {teamMap.get(p.element.team)?.name}] (
-                        {p.score.toFixed(0)})
-                      </Stack>
-                    }
-                  />
-                </ListItem>
-              ) : null
-            })}
-        </List>
+
+        {/* Starting XI */}
+        <h3>Starting XI</h3>
+        <Grid container spacing={2}>
+          {startersIds.map((playerId, idx) => {
+            const p = players.find((pp) => pp.element.id === playerId)
+            if (!p) return null
+            const team = teamMap.get(p.element.team)
+            const combinedIndex = idx // 0..10
+            const isSelected = selectedIndex === combinedIndex
+            return (
+              <Grid
+                key={p.element.id}
+                data-id={p.element.id}
+                size={{ xs: 12, sm: 6, md: 4 }}
+                sx={tileStyle(isSelected)}
+                onClick={() => onTileClick(combinedIndex)}>
+                <PlayerBox player={p} team={team?.name} />
+              </Grid>
+            )
+          })}
+        </Grid>
+
+        {/* Bench */}
+        <h3>Bench</h3>
+        <Grid container spacing={2}>
+          {benchIds.map((playerId, bIdx) => {
+            const p = players.find((pp) => pp.element.id === playerId)
+            if (!p) return null
+            const team = teamMap.get(p.element.team)
+            const combinedIndex = 11 + bIdx // 11..14
+            const isSelected = selectedIndex === combinedIndex
+            return (
+              <Grid
+                key={p.element.id}
+                data-id={p.element.id}
+                size={{ xs: 12, sm: 6, md: 4 }}
+                sx={tileStyle(isSelected)}
+                onClick={() => onTileClick(combinedIndex)}>
+                <PlayerBox player={p} team={team?.name} />
+              </Grid>
+            )
+          })}
+        </Grid>
       </Grid>
     </Grid>
   )

@@ -3,6 +3,10 @@ import snapshot from "../data/snapshot.json"
 import type { IOptimalTeamPlayer, ISnapshot } from "../lib/types"
 
 export const APP_NAME = "LibreFPL"
+export const SUPPORT_ADDRESSES = {
+  BTC: "btc-address-from-settings",
+  XMR: "xmr-address-from-settings",
+} as const
 export const BUDGET = 1000
 export const TEAM_LIMIT = 3
 export const POSITION_LIMITS = { GK: 2, DEF: 5, MID: 5, FWD: 3 }

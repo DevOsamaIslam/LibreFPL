@@ -3,13 +3,13 @@ import {
   POSITION_LIMITS,
   elementTypeToPosition,
   BUDGET,
-} from "../../app/settings"
+} from "../app/settings"
 import type {
   IOptimalTeamPlayer,
   Position,
   TeamCount,
   PositionCount,
-} from "../../lib/types"
+} from "../lib/types"
 
 export const RULE_KEYS = {
   maxPerTeam: "maxPerTeam",
