@@ -27,7 +27,6 @@ function Teams() {
     sortedPlayers,
     setDesiredFormation,
     setBenchBoostEnabled,
-    setTripleCaptainEnabled,
     setNumberEnablers,
   } = useSettingsStore()
 
@@ -40,9 +39,6 @@ function Teams() {
 
       <Grid container>
         <Grid size={8} style={{ marginBottom: "20px" }}>
-          <Typography variant="h6" component="h2" gutterBottom>
-            Lineup
-          </Typography>
           <Typography variant="h6" component="h2" gutterBottom>
             Team Cost: $
             {optimalTeam
@@ -70,7 +66,7 @@ function Teams() {
             }}>
             Generate Lineup
           </Button>
-          <LineupDisplay lineup={optimalTeam} />
+          {!!optimalTeam.length && <LineupDisplay lineup={optimalTeam} />}
         </Grid>
 
         <Grid size={2} style={{ flex: 1, marginRight: "20px" }}>
@@ -93,34 +89,24 @@ function Teams() {
             </Select>
           </FormControl>
 
-          <div
-            style={{
-              width: "1px",
-              backgroundColor: "gray",
-              height: "100px",
-              marginRight: "20px",
-            }}></div>
+          <FormControl fullWidth margin="normal">
+            <TextField
+              id="number-enablers"
+              label="Number of Enablers"
+              type="number"
+              value={numberEnablers}
+              onChange={(e) => setNumberEnablers(Number(e.target.value))}
+              slotProps={{ input: { min: 0, max: 4 } }}
+            />
+          </FormControl>
 
-          <div style={{ flex: 1 }}>
-            <div>
-              <label>Bench Boost Enabled:</label>
-              <Switch
-                checked={benchBoostEnabled}
-                onChange={(e) => setBenchBoostEnabled(e.target.checked)}
-              />
-            </div>
-
-            <FormControl fullWidth margin="normal">
-              <TextField
-                id="number-enablers"
-                label="Number of Enablers"
-                type="number"
-                value={numberEnablers}
-                onChange={(e) => setNumberEnablers(Number(e.target.value))}
-                inputProps={{ min: 0, max: 4 }}
-              />
-            </FormControl>
-          </div>
+          <FormControl fullWidth margin="normal">
+            <label>Bench Boost Enabled:</label>
+            <Switch
+              checked={benchBoostEnabled}
+              onChange={(e) => setBenchBoostEnabled(e.target.checked)}
+            />
+          </FormControl>
         </Grid>
       </Grid>
     </>

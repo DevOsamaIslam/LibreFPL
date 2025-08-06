@@ -96,26 +96,33 @@ function Players() {
   return (
     <Box sx={{ overflow: "hidden" }}>
       <PageTitle>Players</PageTitle>
-      <Typography variant="h4" component="h1" gutterBottom>
+      <Typography
+        variant="h4"
+        component="h1"
+        gutterBottom
+        fontWeight={(theme) => theme.typography.fontWeightBold ?? 700}>
         Players
       </Typography>
       <Grid container>
-        <Grid size={4} paddingRight={2}>
+        <Grid size={4} sx={{ pr: 2 }}>
           <PlayerFilterPanel teams={teams || []} />
         </Grid>
-        <Grid size={8} paddingLeft={2}>
+        <Grid size={8} sx={{ pl: 2 }}>
           <DataGrid
             rows={rows}
             columns={columns}
             disableColumnFilter
             getRowId={(row) => row.id}
-            sx={{
+            sx={(theme) => ({
               minWidth: 0,
               "& .MuiDataGrid-virtualScroller": {
                 overflowX: "auto",
               },
               maxHeight: "75vh",
-            }}
+              "& .MuiDataGrid-columnHeaders": {
+                fontWeight: theme.typography.fontWeightBold ?? 600,
+              },
+            })}
             initialState={{
               pagination: {
                 paginationModel: {

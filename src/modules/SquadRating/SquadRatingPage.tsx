@@ -118,15 +118,17 @@ const SquadRatingPage: React.FC = ({}) => {
             <Chip
               color={selectedSquad.length <= max ? "primary" : "default"}
               label={`${PLAYER_SELECTOR_CONST.selectedLabel} (${selectedSquad.length}/${max})`}
-              sx={{ fontWeight: 600 }}
+              sx={{
+                fontWeight: (theme) => theme.typography.fontWeightBold ?? 600,
+              }}
             />
           </Stack>
 
-          {selectedSquad.length >= max ? (
+          {selectedSquad.length >= max && (
             <Typography variant="caption" color="text.secondary">
               {`${PLAYER_SELECTOR_CONST.addHintPrefix} ${max} players`}
             </Typography>
-          ) : null}
+          )}
 
           <Paper
             variant="outlined"
@@ -162,7 +164,10 @@ const SquadRatingPage: React.FC = ({}) => {
                       }}>
                       <ListItemText
                         primary={
-                          <Typography fontWeight={600}>
+                          <Typography
+                            fontWeight={(theme) =>
+                              theme.typography.fontWeightBold ?? 600
+                            }>
                             {p.element.web_name}
                           </Typography>
                         }
@@ -208,7 +213,10 @@ const SquadRatingPage: React.FC = ({}) => {
             spacing={1.5}>
             {/* Title + Subtitle */}
             <Stack minWidth={200}>
-              <Typography variant="h5" fontWeight={700} lineHeight={1.2}>
+              <Typography
+                variant="h5"
+                fontWeight={(theme) => theme.typography.fontWeightBold ?? 700}
+                lineHeight={1.2}>
                 Squad Rating
               </Typography>
             </Stack>
@@ -224,19 +232,26 @@ const SquadRatingPage: React.FC = ({}) => {
                 color="info"
                 variant="filled"
                 label={`Team Score: ${teamScore.toFixed(0)}`}
-                sx={{ fontWeight: 700 }}
+                sx={{
+                  fontWeight: (theme) => theme.typography.fontWeightBold ?? 700,
+                }}
               />
               <Chip
                 color="primary"
                 variant="filled"
                 label={`XI Score: ${xiScore.toFixed(0)}`}
-                sx={{ fontWeight: 700, color: "white" }}
+                sx={(theme) => ({
+                  fontWeight: theme.typography.fontWeightBold ?? 700,
+                  color: theme.palette.primary.contrastText,
+                })}
               />
               <Chip
                 color="secondary"
                 variant="filled"
                 label={`Bench Score: ${benchScore.toFixed(0)}`}
-                sx={{ fontWeight: 700 }}
+                sx={{
+                  fontWeight: (theme) => theme.typography.fontWeightBold ?? 700,
+                }}
               />
               {(() => {
                 const cap = players.find(
@@ -252,7 +267,10 @@ const SquadRatingPage: React.FC = ({}) => {
                     color="warning"
                     variant="outlined"
                     label={`C: ${capName} • VC: ${viceName}`}
-                    sx={{ fontWeight: 700 }}
+                    sx={{
+                      fontWeight: (theme) =>
+                        theme.typography.fontWeightBold ?? 700,
+                    }}
                   />
                 )
               })()}
@@ -296,40 +314,44 @@ const SquadRatingPage: React.FC = ({}) => {
                 <Box sx={{ position: "relative" }}>
                   {isCaptain ? (
                     <Box
-                      sx={{
+                      sx={(theme) => ({
                         position: "absolute",
-                        top: 8,
-                        right: 8,
+                        top: theme.spacing(1),
+                        right: theme.spacing(1),
                         bgcolor: "warning.main",
                         color: "warning.contrastText",
                         px: 0.75,
                         py: 0.25,
-                        borderRadius: 1,
-                        fontSize: 12,
-                        fontWeight: 800,
-                        zIndex: 1,
-                      }}>
+                        borderRadius: theme.shape.borderRadius,
+                        fontSize: theme.typography.pxToRem
+                          ? theme.typography.pxToRem(12)
+                          : 12,
+                        fontWeight: theme.typography.fontWeightBold ?? 700,
+                        zIndex: theme.zIndex.appBar - 1,
+                      })}>
                       C
                     </Box>
                   ) : null}
-                  {!isCaptain && isVice ? (
+                  {!isCaptain && isVice && (
                     <Box
-                      sx={{
+                      sx={(theme) => ({
                         position: "absolute",
-                        top: 8,
-                        right: 8,
+                        top: theme.spacing(1),
+                        right: theme.spacing(1),
                         bgcolor: "info.main",
                         color: "info.contrastText",
                         px: 0.75,
                         py: 0.25,
-                        borderRadius: 1,
-                        fontSize: 12,
-                        fontWeight: 800,
-                        zIndex: 1,
-                      }}>
+                        borderRadius: theme.shape.borderRadius,
+                        fontSize: theme.typography.pxToRem
+                          ? theme.typography.pxToRem(12)
+                          : 12,
+                        fontWeight: theme.typography.fontWeightBold ?? 700,
+                        zIndex: theme.zIndex.appBar - 1,
+                      })}>
                       VC
                     </Box>
-                  ) : null}
+                  )}
                   <PlayerBox player={p} team={team?.name} />
                 </Box>
               </Grid>
@@ -339,13 +361,6 @@ const SquadRatingPage: React.FC = ({}) => {
 
         <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
           Bench
-        </Typography>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ mb: 1, display: "block" }}>
-          Bench score is shown separately and contributes at reduced weight to
-          the team score.
         </Typography>
         <Grid container spacing={2}>
           {benchIds.map((playerId, bIdx) => {
