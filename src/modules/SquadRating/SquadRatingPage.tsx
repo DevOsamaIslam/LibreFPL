@@ -235,12 +235,11 @@ const SquadRatingPage: React.FC = ({}) => {
                 }}
               />
               <Chip
-                color="primary"
+                color="success"
                 variant="filled"
                 label={`XI Score: ${xiScore.toFixed(0)}`}
                 sx={(theme) => ({
                   fontWeight: theme.typography.fontWeightBold ?? 700,
-                  color: theme.palette.primary.contrastText,
                 })}
               />
               <Chip
@@ -250,11 +249,6 @@ const SquadRatingPage: React.FC = ({}) => {
                 sx={{
                   fontWeight: (theme) => theme.typography.fontWeightBold ?? 700,
                 }}
-              />
-              <Chip
-                color={selectedSquad.length <= max ? "info" : "default"}
-                variant="outlined"
-                label={`Players: ${selectedSquad.length}/${max}`}
               />
             </Stack>
           </Stack>

@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material"
 import { ARMBAND, type Armband, type IOptimalTeamPlayer } from "../lib/types"
-import { colorByPos } from "../app/settings"
+import { colorByPos, TEAM_COLOR, type TeamName } from "../app/settings"
 
 interface PlayerBoxProps {
   player: IOptimalTeamPlayer
@@ -85,7 +85,7 @@ function PlayerBox({ player, armband }: PlayerBoxProps) {
                 sx={(_theme) => ({
                   width: 36,
                   height: 36,
-                  bgcolor: colorByPos[pos],
+                  bgcolor: TEAM_COLOR[player.teamName as TeamName],
                   color: "white",
                   fontSize: 14,
                   fontWeight: 700,
@@ -104,8 +104,12 @@ function PlayerBox({ player, armband }: PlayerBoxProps) {
                   <Chip
                     size="small"
                     label={pos}
-                    color="primary"
-                    sx={{ height: 22, fontWeight: 600 }}
+                    sx={{
+                      height: 22,
+                      fontWeight: 600,
+                      background: colorByPos[pos],
+                      color: "white",
+                    }}
                   />
                   <Typography variant="caption" color="text.secondary">
                     {formatMillion(price)}

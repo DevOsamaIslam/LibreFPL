@@ -54,6 +54,35 @@ export const colorByPos = {
   "3": "#10B981",
   "4": "#EF4444",
 } as Record<string, string>
+// Map of team short code to primary color
+export const TEAM_COLOR = {
+  Arsenal: "#EF0107", // Arsenal
+  "Aston Villa": "#670E36", // Aston Villa
+  Bournemouth: "#D00027", // Bournemouth
+  Brentford: "#E30613", // Brentford
+  Brighton: "#0057B8", // Brighton
+  Burnley: "#410202ff", // Burnley
+  Chelsea: "#034694", // Chelsea
+  "Crystal Palace": "#1B458F", // Crystal Palace
+  Everton: "#003399", // Everton
+  Fulham: "#000000", // Fulham
+  Leeds: "#cdc8bdff", // Leeds
+  Liverpool: "#C8102E", // Liverpool
+  "Man City": "#6CABDD", // Man City
+  "Man Utd": "#DA291C", // Man United
+  Newcastle: "#241F20", // Newcastle
+  "Nottingham Forest": "#DD0000", // Nottingham Forest
+  Southampton: "#D71920", // Southampton
+  Spurs: "#132257", // Tottenham
+  "West Ham": "#7A263A", // West Ham
+  Wolves: "#FDB913", // Wolves
+} as const
+
+export type TeamName = keyof typeof TEAM_COLOR
+
+export const DEFAULT_TEAM_COLOR = "#888888"
+export const getTeamColor = (team: string | TeamName): string =>
+  (TEAM_COLOR as Record<string, string>)[team] ?? DEFAULT_TEAM_COLOR
 
 interface SettingsState {
   desiredFormation: string

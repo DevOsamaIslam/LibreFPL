@@ -90,12 +90,11 @@ export function checkEligibility(input: EligibilityInput): EligibilityResult {
   }
 
   // Budget constraint (now_cost is in tenths of a million)
-  const futureCost = totalCost + candidate.element.now_cost
   const used = budgetUsed || totalCost
   const effectiveFuture = used + candidate.element.now_cost
   if (
     !selected.includes(candidate.element.id) &&
-    effectiveFuture > SQUAD_CONSTRAINTS.BUDGET * 10
+    effectiveFuture > SQUAD_CONSTRAINTS.BUDGET
   ) {
     reasons.push(RULE_KEYS.budget)
   }
