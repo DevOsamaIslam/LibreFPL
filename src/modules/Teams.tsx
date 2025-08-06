@@ -23,7 +23,6 @@ function Teams() {
   const {
     desiredFormation,
     benchBoostEnabled,
-    tripleCaptainEnabled,
     numberEnablers,
     sortedPlayers,
     setDesiredFormation,
@@ -65,7 +64,6 @@ function Teams() {
                   players: sortedPlayers,
                   desiredFormation,
                   benchBoostEnabled,
-                  tripleCaptainEnabled,
                   numberEnablers,
                 })
               )
@@ -109,14 +107,6 @@ function Teams() {
               <Switch
                 checked={benchBoostEnabled}
                 onChange={(e) => setBenchBoostEnabled(e.target.checked)}
-              />
-            </div>
-
-            <div>
-              <label>Triple Captain Enabled:</label>
-              <Switch
-                checked={tripleCaptainEnabled}
-                onChange={(e) => setTripleCaptainEnabled(e.target.checked)}
               />
             </div>
 

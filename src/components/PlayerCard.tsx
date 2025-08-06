@@ -7,8 +7,21 @@ import {
   priceFmt,
   teamAttackStrength,
   teamDefenseStrength,
-} from "../modules/PlayersCompare/PlayersCompare.logic"
-import type { Team } from "../modules/PlayersCompare/PlayersCompare.logic"
+} from "../modules/PlayersCompare/control"
+import type { Team } from "../modules/PlayersCompare/control"
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  IconButton,
+  Typography,
+  Divider,
+  Stack,
+  Box,
+  Chip,
+} from "@mui/material"
+import CloseIcon from "@mui/icons-material/Close"
+import { NUMBER_OF_MATCHES } from "../app/settings"
 
 export default function PlayerCard({
   element,
@@ -25,133 +38,150 @@ export default function PlayerCard({
   const xg = (player as any).expected_goals as number | undefined
   const xa = (player as any).expected_assists as number | undefined
 
-  const pos = ELEMENT_TYPE[player.element_type]
+  const position = ELEMENT_TYPE[player.element_type]
 
   const att = teamAttackStrength(team)
   const def = teamDefenseStrength(team)
 
+  const Row = ({ left, right }: { left: string; right: string }) => (
+    <Stack
+      direction="row"
+      justifyContent="space-between"
+      gap={2}
+      sx={{ py: 0.25 }}>
+      <Typography variant="body2" color="text.secondary">
+        {left}
+      </Typography>
+      <Typography variant="body2">{right}</Typography>
+    </Stack>
+  )
+
   return (
-    <div className="pc-card">
-      <div className="pc-card-header">
-        <div className="pc-player-name">{player.web_name}</div>
-        {onRemove ? (
-          <button className="pc-remove" onClick={onRemove} title="Remove">
-            ×
-          </button>
-        ) : null}
-      </div>
+    <Card variant="outlined" sx={{ borderRadius: 2 }}>
+      <CardHeader
+        title={
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Typography variant="h6" fontWeight={700}>
+              {player.web_name}
+            </Typography>
+            <Chip
+              size="small"
+              color="primary"
+              label={`Score: ${element.score.toFixed(0)}`}
+              sx={{ height: 20, "& .MuiChip-label": { px: 0.75 } }}
+            />
+            <Chip
+              size="small"
+              color="secondary"
+              label={position}
+              sx={{ height: 20, "& .MuiChip-label": { px: 0.75 } }}
+            />
+          </Stack>
+        }
+        action={
+          onRemove ? (
+            <IconButton aria-label="remove" color="error" onClick={onRemove}>
+              <CloseIcon />
+            </IconButton>
+          ) : null
+        }
+        sx={{ pb: 0.5 }}
+      />
+      <CardContent sx={{ pt: 1.5 }}>
+        <Section title={label.basic}>
+          <Row
+            left={label.teamLabel}
+            right={String(team?.short_name ?? team?.name ?? "-")}
+          />
+          <Row left={label.position} right={position} />
+          <Row left={label.price} right={String(priceFmt(player.now_cost))} />
+          <Row
+            left={label.selection}
+            right={
+              typeof ownership === "number"
+                ? String(pctFmt(ownership))
+                : String(player.selected_by_percent ?? "-")
+            }
+          />
+        </Section>
 
-      <div className="pc-section">
-        <div className="pc-section-title">{label.basic}</div>
-        <div className="pc-row">
-          <span>{label.teamLbl}</span>
-          <span>{team?.short_name ?? team?.name ?? "-"}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.pos}</span>
-          <span>{pos}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.price}</span>
-          <span>{priceFmt(player.now_cost)}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.sel}</span>
-          <span>
-            {typeof ownership === "number"
-              ? pctFmt(ownership)
-              : player.selected_by_percent ?? "-"}
-          </span>
-        </div>
-      </div>
+        <Section title={label.performance}>
+          <Row left={"Score"} right={String(numberFmt(score, 0))} />
+          <Row
+            left={label.points}
+            right={String(numberFmt(player.total_points, 0))}
+          />
+          <Row left={label.mins} right={String(numberFmt(player.minutes, 0))} />
+          <Row
+            left={"Minutes per 90"}
+            right={String(numberFmt(player.minutes / NUMBER_OF_MATCHES, 0))}
+          />
+          <Row
+            left={label.goals}
+            right={String(numberFmt(player.goals_scored, 0))}
+          />
+          <Row
+            left={label.assists}
+            right={String(numberFmt(player.assists, 0))}
+          />
+          <Row
+            left={label.cleanSheet}
+            right={String(numberFmt(player.clean_sheets, 0))}
+          />
+          <Row
+            left={label.xG}
+            right={xg !== undefined ? String(numberFmt(xg, 2)) : "-"}
+          />
+          <Row
+            left={label.xA}
+            right={xa !== undefined ? String(numberFmt(xa, 2)) : "-"}
+          />
+        </Section>
 
-      <div className="pc-section">
-        <div className="pc-section-title">{label.perf}</div>
-        <div className="pc-row">
-          <span>{"Score"}</span>
-          <span>{numberFmt(score, 0)}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.pts}</span>
-          <span>{numberFmt(player.total_points, 0)}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.mins}</span>
-          <span>{numberFmt(player.minutes, 0)}</span>
-        </div>
-        <div className="pc-row">
-          <span>{"Minutes per 90"}</span>
-          <span>{numberFmt(player.minutes, 0)}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.g}</span>
-          <span>{numberFmt(player.goals_scored, 0)}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.a}</span>
-          <span>{numberFmt(player.assists, 0)}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.cs}</span>
-          <span>{numberFmt(player.clean_sheets, 0)}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.xg}</span>
-          <span>{xg !== undefined ? numberFmt(xg, 2) : "-"}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.xa}</span>
-          <span>{xa !== undefined ? numberFmt(xa, 2) : "-"}</span>
-        </div>
-      </div>
+        <Section title={label.discipline}>
+          <Row
+            left={label.yellowCards}
+            right={String(numberFmt(player.yellow_cards, 0))}
+          />
+          <Row
+            left={label.redCards}
+            right={String(numberFmt(player.red_cards, 0))}
+          />
+        </Section>
 
-      <div className="pc-section">
-        <div className="pc-section-title">{label.discipline}</div>
-        <div className="pc-row">
-          <span>{label.yc}</span>
-          <span>{numberFmt(player.yellow_cards, 0)}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.rc}</span>
-          <span>{numberFmt(player.red_cards, 0)}</span>
-        </div>
-      </div>
+        <Section title={label.team}>
+          <Row
+            left={label.attack}
+            right={att !== undefined ? String(numberFmt(att, 0)) : "-"}
+          />
+          <Row
+            left={label.defense}
+            right={def !== undefined ? String(numberFmt(def, 0)) : "-"}
+          />
+        </Section>
+      </CardContent>
+    </Card>
+  )
+}
 
-      <div className="pc-section">
-        <div className="pc-section-title">{label.ict}</div>
-        <div className="pc-row">
-          <span>{label.form}</span>
-          <span>{player.form ?? "-"}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.inf}</span>
-          <span>{player.influence ?? "-"}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.cre}</span>
-          <span>{player.creativity ?? "-"}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.thr}</span>
-          <span>{player.threat ?? "-"}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.ictIdx}</span>
-          <span>{player.ict_index ?? "-"}</span>
-        </div>
-      </div>
-
-      <div className="pc-section">
-        <div className="pc-section-title">{label.team}</div>
-        <div className="pc-row">
-          <span>{label.att}</span>
-          <span>{att !== undefined ? numberFmt(att, 0) : "-"}</span>
-        </div>
-        <div className="pc-row">
-          <span>{label.def}</span>
-          <span>{def !== undefined ? numberFmt(def, 0) : "-"}</span>
-        </div>
-      </div>
-    </div>
+function Section({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <Box sx={{ pt: 1.5 }}>
+      <Divider textAlign="left" sx={{ mb: 1.25 }}>
+        <Typography
+          variant="overline"
+          color="text.secondary"
+          sx={{ letterSpacing: "0.06em" }}>
+          {title}
+        </Typography>
+      </Divider>
+      {children}
+    </Box>
   )
 }

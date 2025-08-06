@@ -1,5 +1,5 @@
 import React from "react"
-import { Box } from "@mui/material"
+import { Box, type SxProps, type Theme } from "@mui/material"
 
 interface SpaceBetweenProps {
   children: React.ReactNode
@@ -12,6 +12,7 @@ interface SpaceBetweenProps {
     | "space-evenly"
   align?: "flex-start" | "center" | "flex-end" | "stretch" | "baseline"
   spacing?: number
+  sx?: SxProps<Theme>
 }
 
 const SpaceBetween: React.FC<SpaceBetweenProps> = ({
@@ -19,10 +20,13 @@ const SpaceBetween: React.FC<SpaceBetweenProps> = ({
   justify = "space-between",
   align = "center",
   spacing = 0,
+  sx,
 }) => {
   return (
     <Box
       sx={{
+        ...sx,
+        width: "100%",
         display: "flex",
         justifyContent: justify,
         alignItems: align,

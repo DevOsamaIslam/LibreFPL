@@ -1,6 +1,18 @@
 import PageTitle from "../../components/PageTitle"
 import PlayerCard from "../../components/PlayerCard"
-import SpaceBetween from "../../components/SpaceBetween"
+import {
+  Box,
+  Stack,
+  Typography,
+  TextField,
+  Chip,
+  Paper,
+  List,
+  ListItemButton,
+  ListItemText,
+  Divider,
+  Grid,
+} from "@mui/material"
 import {
   ELEMENT_TYPE,
   MAX_SELECTED,
@@ -9,8 +21,7 @@ import {
   useCompareData,
   usePlayersCompareState,
   useSearch,
-} from "./PlayersCompare.logic"
-import "./players-compare.css"
+} from "./control"
 
 export default function PlayersCompare() {
   const { players, teamsById } = useCompareData()
@@ -24,53 +35,122 @@ export default function PlayersCompare() {
   } = usePlayersCompareState(players)
 
   return (
-    <div className="pc-root">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}>
       <PageTitle>Player Comparison</PageTitle>
-      <h1>{label.title}</h1>
+      <Typography variant="h4" fontWeight={700}>
+        {label.title}
+      </Typography>
 
-      <div className="pc-controls">
-        <input
+      <Stack
+        direction="row"
+        spacing={2}
+        alignItems="center"
+        useFlexGap
+        flexWrap="wrap">
+        <TextField
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={label.searchPlaceholder}
-          className="pc-search"
+          variant="outlined"
+          size="small"
+          fullWidth
+          sx={{ minWidth: 260, flex: 1 }}
         />
-        <div className="pc-selected-title">
-          {label.selectedTitle} ({selectedIds.length}/{MAX_SELECTED})
-        </div>
-      </div>
+        <Chip
+          color={canAddMore ? "primary" : "default"}
+          label={`${label.selectedTitle} (${selectedIds.length}/${MAX_SELECTED})`}
+          sx={{ fontWeight: 600 }}
+        />
+      </Stack>
 
-      <SpaceBetween spacing={2}>
-        <div className="pc-list">
-          {!canAddMore ? <div className="pc-hint">{label.addHint}</div> : null}
-          <div className="pc-list-scroll">
-            {result.map((p) => {
-              const t = teamsById.get(p.element.team)
-              const chosen = selectedIds.includes(p.element.id)
-              return (
-                <button
-                  key={p.element.id}
-                  className={`pc-item ${chosen ? "pc-item--active" : ""}`}
-                  onClick={() => togglePlayer(p.element.id)}
-                  disabled={!chosen && !canAddMore}
-                  title={chosen ? "Remove" : "Add"}>
-                  <span className="pc-item-name">{p.element.web_name}</span>
-                  <span className="pc-item-meta">
-                    {t?.short_name ?? t?.name ?? "-"} •{" "}
-                    {ELEMENT_TYPE[p.element.element_type]} • £
-                    {priceFmt(p.element.now_cost)}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
+      <Grid container spacing={2}>
+        <Grid
+          size={{
+            xs: 12,
+            lg: 4,
+            md: 5,
+          }}>
+          <Stack spacing={1.5}>
+            {!canAddMore ? (
+              <Typography variant="caption" color="text.secondary">
+                {label.addHint}
+              </Typography>
+            ) : null}
 
-        <div className="pc-compare-grid">
+            <Paper
+              variant="outlined"
+              sx={{ maxHeight: "60vh", overflow: "auto" }}>
+              <List disablePadding>
+                {result.map((p, idx) => {
+                  const t = teamsById.get(p.element.team)
+                  const chosen = selectedIds.includes(p.element.id)
+                  return (
+                    <Box key={p.element.id}>
+                      <ListItemButton
+                        onClick={() => togglePlayer(p.element.id)}
+                        disabled={!chosen && !canAddMore}
+                        selected={chosen}
+                        sx={{
+                          "&.Mui-selected": (theme) => ({
+                            borderLeft: `3px solid ${theme.palette.primary.main}`,
+                            backgroundColor: theme.palette.action
+                              .selected as any,
+                          }),
+                        }}>
+                        <ListItemText
+                          primary={
+                            <Typography fontWeight={600}>
+                              {p.element.web_name}
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography
+                              variant="caption"
+                              color="text.secondary">
+                              {(t?.short_name ?? t?.name ?? "-") +
+                                " • " +
+                                ELEMENT_TYPE[p.element.element_type] +
+                                " • £" +
+                                priceFmt(p.element.now_cost)}
+                            </Typography>
+                          }
+                        />
+                      </ListItemButton>
+                      {idx !== result.length - 1 ? (
+                        <Divider component="li" />
+                      ) : null}
+                    </Box>
+                  )
+                })}
+              </List>
+            </Paper>
+          </Stack>
+        </Grid>
+
+        <Grid
+          size={{
+            xs: 12,
+            md: 7,
+            lg: 8,
+          }}>
           {selectedPlayers.length === 0 ? (
-            <div className="pc-empty">{label.addHint}</div>
+            <Paper
+              variant="outlined"
+              sx={{
+                color: "text.secondary",
+                borderStyle: "dashed",
+                p: 2,
+                borderRadius: 2,
+              }}>
+              {label.addHint}
+            </Paper>
           ) : (
-            <div className="pc-grid">
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                gap: 2,
+              }}>
               {selectedPlayers.map((p) => (
                 <PlayerCard
                   key={p.element.id}
@@ -79,10 +159,10 @@ export default function PlayersCompare() {
                   onRemove={() => removePlayer(p.element.id)}
                 />
               ))}
-            </div>
+            </Box>
           )}
-        </div>
-      </SpaceBetween>
-    </div>
+        </Grid>
+      </Grid>
+    </Box>
   )
 }
