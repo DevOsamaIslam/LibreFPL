@@ -18,6 +18,7 @@ const ROUTES = {
   teams: "/teams",
   compare: "/players-compare",
   rating: "/squad-rating",
+  fdr: "/fdr",
   rules: "/rules",
   support: "/support",
 } as const
@@ -50,6 +51,14 @@ const FEATURES = [
     description: "Evaluate your squad with eligibility and rating.",
     route: ROUTES.rating,
     badge: "Insights",
+  },
+  {
+    key: "fdr",
+    title: "Fixture Difficulty (FDR)",
+    description:
+      "Heatmap of upcoming fixtures, scoring difficulty 1–5 from maroon to bright green.",
+    route: ROUTES.fdr,
+    badge: "New",
   },
 ] as const
 

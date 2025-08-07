@@ -11,13 +11,14 @@ import { useSettingsStore } from "./app/settings"
 import theme from "./app/theme"
 import PageTitle from "./components/PageTitle"
 import SpaceBetween from "./components/SpaceBetween"
+import Charts from "./modules/Charts"
+import FDRPage from "./modules/FDR"
+import GenerateLineup from "./modules/GenerateLineup"
 import Home from "./modules/Home"
 import Players from "./modules/Players"
 import PlayersCompare from "./modules/PlayersCompare/PlayersCompare"
 import SquadRatingPage from "./modules/SquadRating/SquadRatingPage"
-import GenerateLineup from "./modules/GenerateLineup"
 import Support from "./modules/Support"
-import Charts from "./modules/Charts"
 
 function App() {
   const { setSortedPlayers, snapshot } = useSettingsStore()
@@ -61,6 +62,9 @@ function App() {
                   <Button color="inherit" component={Link} to="/charts">
                     Charts
                   </Button>
+                  <Button color="inherit" component={Link} to="/fdr">
+                    FDR
+                  </Button>
                   <Button
                     color="secondary"
                     component={Link}
@@ -80,6 +84,7 @@ function App() {
               <Route path="/compare" element={<PlayersCompare />} />
               <Route path="/squad-rating" element={<SquadRatingPage />} />
               <Route path="/charts" element={<Charts />} />
+              <Route path="/fdr" element={<FDRPage />} />
               <Route path="/support" element={<Support />} />
             </Routes>
           </Box>

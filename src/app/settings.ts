@@ -71,9 +71,10 @@ export const TEAM_COLOR = {
   "Man City": "#6CABDD", // Man City
   "Man Utd": "#DA291C", // Man United
   Newcastle: "#241F20", // Newcastle
-  "Nottingham Forest": "#DD0000", // Nottingham Forest
+  "Nott'm Forest": "#DD0000", // Nottingham Forest
   Southampton: "#D71920", // Southampton
   Spurs: "#132257", // Tottenham
+  Sunderland: "#E50914", // Sunderland
   "West Ham": "#7A263A", // West Ham
   Wolves: "#FDB913", // Wolves
 } as const
