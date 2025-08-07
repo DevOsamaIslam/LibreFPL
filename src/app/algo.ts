@@ -90,6 +90,7 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
       if (position === "GK" || position === "DEF") {
         score += cleanSheets * 2
         score += player.saves_per_90 * 2
+        score += player.defensive_contribution * 2
         score -= goalsConceded * 3
       }
 

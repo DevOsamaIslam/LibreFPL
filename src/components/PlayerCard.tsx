@@ -1,4 +1,19 @@
+import CloseIcon from "@mui/icons-material/Close"
+import {
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  Chip,
+  Divider,
+  IconButton,
+  Stack,
+  Typography,
+} from "@mui/material"
+import type { ReactNode } from "react"
+import { NUMBER_OF_MATCHES } from "../app/settings"
 import type { IOptimalTeamPlayer } from "../lib/types"
+import type { Team } from "../modules/PlayersCompare/control"
 import {
   ELEMENT_TYPE,
   label,
@@ -8,20 +23,6 @@ import {
   teamAttackStrength,
   teamDefenseStrength,
 } from "../modules/PlayersCompare/control"
-import type { Team } from "../modules/PlayersCompare/control"
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  IconButton,
-  Typography,
-  Divider,
-  Stack,
-  Box,
-  Chip,
-} from "@mui/material"
-import CloseIcon from "@mui/icons-material/Close"
-import { NUMBER_OF_MATCHES } from "../app/settings"
 
 export default function PlayerCard({
   element,
@@ -43,7 +44,7 @@ export default function PlayerCard({
   const att = teamAttackStrength(team)
   const def = teamDefenseStrength(team)
 
-  const Row = ({ left, right }: { left: string; right: string }) => (
+  const Row = ({ left, right }: { left: ReactNode; right: ReactNode }) => (
     <Stack
       direction="row"
       justifyContent="space-between"
@@ -127,6 +128,23 @@ export default function PlayerCard({
           <Row
             left={label.cleanSheet}
             right={String(numberFmt(player.clean_sheets, 0))}
+          />
+          <Row
+            left={label.conceded}
+            right={String(numberFmt(player.goals_conceded, 0))}
+          />
+          <Row
+            left={label.saves}
+            right={
+              <Stack direction={"row"} spacing={1}>
+                {String(numberFmt(player.saves, 0))} (
+                {numberFmt(player.saves_per_90, 0)} per match)
+              </Stack>
+            }
+          />
+          <Row
+            left={label.defCon}
+            right={numberFmt(player.defensive_contribution, 0) || "-"}
           />
           <Row
             left={label.xG}
