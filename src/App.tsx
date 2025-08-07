@@ -5,7 +5,7 @@ import CssBaseline from "@mui/material/CssBaseline"
 import { ThemeProvider } from "@mui/material/styles"
 import Toolbar from "@mui/material/Toolbar"
 import { useEffect } from "react"
-import { BrowserRouter, Link, Route, Routes } from "react-router"
+import { HashRouter, Link, Route, Routes } from "react-router"
 import { pickOptimalFPLTeamAdvanced } from "./app/algo"
 import { useSettingsStore } from "./app/settings"
 import theme from "./app/theme"
@@ -31,7 +31,7 @@ function App() {
       <PageTitle></PageTitle>
       <CssBaseline />
       <ThemeProvider theme={theme}>
-        <BrowserRouter>
+        <HashRouter>
           <AppBar position="static" sx={{ mb: 2 }}>
             <Toolbar sx={{ color: "white" }}>
               <SpaceBetween>
@@ -88,7 +88,7 @@ function App() {
               <Route path="/support" element={<Support />} />
             </Routes>
           </Box>
-        </BrowserRouter>
+        </HashRouter>
       </ThemeProvider>
     </>
   )

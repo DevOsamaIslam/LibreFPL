@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { IOptimalTeamPlayer, Player, Team } from "../lib/types"
+import type { IOptimalTeamPlayer, Team } from "../lib/types"
 
 export const FilterOp = {
   eq: "eq",

@@ -144,13 +144,7 @@ export const selectTeam = (params: {
   benchBoostEnabled?: boolean
   numberEnablers?: number
 }) => {
-  const {
-    players,
-    benchBoostEnabled,
-    budget,
-    desiredFormation,
-    numberEnablers,
-  } = params
+  const { players, budget, desiredFormation } = params
 
   // Parse desired formation to required XI counts. Default to 3-4-3 if not provided.
   const formationString = desiredFormation?.trim() || "3-4-3"

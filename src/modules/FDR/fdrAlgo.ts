@@ -173,8 +173,6 @@ function ratioToScore(ratio: number, cuts: number[]): FDRScore {
 
   if (ratio <= q1) {
     // Map (-inf, q1] -> [1, 2]
-    const t =
-      (ratio - Number.NEGATIVE_INFINITY) / (q1 - Number.NEGATIVE_INFINITY)
     // t is NaN for -inf; for practical finite values below q1, approximate linear to 1..2
     return 1 + Math.max(0, Math.min(1, (ratio - q1) / Math.max(1e-9, q1))) // fallback gentle slope
   }

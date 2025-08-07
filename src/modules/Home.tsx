@@ -1,14 +1,12 @@
-import React from "react"
-import Container from "@mui/material/Container"
-import Typography from "@mui/material/Typography"
-import Grid from "@mui/material/Grid"
-import Stack from "@mui/material/Stack"
-import type { GridProps } from "@mui/material/Grid"
+import Box from "@mui/material/Box"
 import Card from "@mui/material/Card"
 import CardActionArea from "@mui/material/CardActionArea"
 import CardContent from "@mui/material/CardContent"
-import Box from "@mui/material/Box"
 import Chip from "@mui/material/Chip"
+import Container from "@mui/material/Container"
+import type { GridProps } from "@mui/material/Grid"
+import Grid from "@mui/material/Grid"
+import Typography from "@mui/material/Typography"
 import { Link as RouterLink } from "react-router-dom"
 
 type Feature = (typeof FEATURES)[number]
@@ -89,10 +87,6 @@ function Home() {
     gap: 1,
     height: "100%",
     p: 3,
-  } as const
-
-  const gridItemSx = {
-    display: "flex",
   } as const
 
   const headerRowSx = {

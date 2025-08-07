@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { positionToElementType } from "../app/settings"
 import { ARMBAND, type IOptimalTeamPlayer } from "../lib/types"
 import PlayerBox from "./PlayerBox"

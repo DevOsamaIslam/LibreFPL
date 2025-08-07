@@ -1,12 +1,11 @@
 import { Box, Grid } from "@mui/material"
 import Typography from "@mui/material/Typography"
 import { DataGrid, type GridColDef } from "@mui/x-data-grid"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { NUMBER_OF_MATCHES, useSettingsStore } from "../app/settings"
+import PageTitle from "../components/PageTitle"
 import PlayerFilterPanel from "../components/PlayerFilterPanel"
 import { usePlayerFilterStore } from "../store/playerFilter.store"
-import { useEffect, useMemo, useRef, useState } from "react"
-import type { Player } from "../lib/types"
-import PageTitle from "../components/PageTitle"
 
 const DEBOUNCE_MS = 250
 

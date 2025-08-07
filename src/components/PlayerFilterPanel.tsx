@@ -1,27 +1,27 @@
-import React, { memo, useMemo } from "react"
+import DeleteIcon from "@mui/icons-material/Delete"
 import {
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
-  TextField,
   Box,
-  Divider,
-  Typography,
-  Stack,
-  IconButton,
   Button,
+  Divider,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material"
+import React, { memo, useMemo } from "react"
+import { useShallow } from "zustand/shallow"
 import {
-  usePlayerFilterStore,
-  Position,
-  FilterOp,
   FilterField,
+  FilterOp,
+  Position,
+  usePlayerFilterStore,
   type FilterTuple,
 } from "../store/playerFilter.store"
-import { useShallow } from "zustand/shallow"
 import SpaceBetween from "./SpaceBetween"
-import DeleteIcon from "@mui/icons-material/Delete"
 
 type TeamOption = { id: number; name: string }
 
@@ -30,7 +30,6 @@ interface PlayerFilterPanelProps {
 }
 
 const gap = 1
-const colTemplate = "repeat(2, minmax(140px, 1fr))"
 
 const textFields = [
   FilterField.name,
@@ -68,7 +67,7 @@ const operatorOptionsByField: Record<
 }
 
 const PlayerFilterPanel: React.FC<PlayerFilterPanelProps> = ({ teams }) => {
-  const { filters, setFilters, addFilter, updateFilter, removeFilter } =
+  const { filters, addFilter, updateFilter, removeFilter } =
     usePlayerFilterStore(
       useShallow((s) => ({
         filters: s.filters,
@@ -147,7 +146,7 @@ const PlayerFilterPanel: React.FC<PlayerFilterPanelProps> = ({ teams }) => {
               key={qa.label}
               children={qa.label}
               size="small"
-              onClick={(e) => {
+              onClick={() => {
                 qa.onClick()
               }}
             />
