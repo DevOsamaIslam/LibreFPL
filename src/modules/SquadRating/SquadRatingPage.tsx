@@ -22,7 +22,12 @@ import {
   PLAYER_SELECTOR_CONST,
   useSearchBase,
 } from "../../hooks/usePlayerSelector"
-import { ARMBAND } from "../../lib/types"
+import {
+  ARMBAND,
+  type IOptimalTeamPlayer,
+  type PositionCount,
+  type TeamCount,
+} from "../../lib/types"
 
 const SquadRatingPage: React.FC = ({}) => {
   const { sortedPlayers: players } = useSettingsStore()
@@ -48,7 +53,31 @@ const SquadRatingPage: React.FC = ({}) => {
   const { selectedIds, setSelectedIds, togglePlayer, max } = usePlayerSelector({
     players,
   })
+
   const { q, setQ, result } = useSearchBase(players)
+
+  const positionCount = React.useMemo(() => {
+    const counts: PositionCount = { GK: 0, DEF: 0, MID: 0, FWD: 0 }
+    // get players from selectedIds
+    const selectedPlayers = selectedIds
+      .map((id) => players.find((p) => p.element.id === id))
+      .filter(Boolean) as IOptimalTeamPlayer[]
+
+    selectedPlayers.forEach((p) => {
+      counts[p.position] += 1
+    })
+    return counts
+  }, [selectedIds])
+
+  const teamCount = React.useMemo(() => {
+    const counts: TeamCount = {}
+    selectedIds.forEach((id) => {
+      const player = players.find((p) => p.element.id === id)
+      if (!player) return
+      counts[player.teamId] = (counts[player.teamId] ?? 0) + 1
+    })
+    return counts
+  }, [selectedIds])
 
   // Sync hook with URL-driven state
   useMemo(() => {
@@ -60,16 +89,16 @@ const SquadRatingPage: React.FC = ({}) => {
   const onToggleCandidate = useCallback(
     (p: (typeof players)[number]) => {
       // preserve eligibility-based disabling
-      const { eligible } = checkEligibility({
-        selected: selectedSquad,
-        candidate: p,
-        allPlayers: players,
-        budgetUsed: selectedSquad
-          .map((id) => players.find((pp) => pp.element.id === id))
-          .filter(Boolean)
-          .reduce((sum, pp) => sum + (pp as typeof p).element.now_cost, 0),
-      })
-      if (!eligible) return
+      // const { eligible } = checkEligibility({
+      //   selected: selectedSquad,
+      //   candidate: p,
+      //   positionCount,
+      //   teamCount,
+      //   budgetUsed: selectedSquad
+      //     .map((id) => players.find((pp) => pp.element.id === id))
+      //     .filter(Boolean)
+      //     .reduce((sum, pp) => sum + (pp as typeof p).element.now_cost, 0),
+      // })
 
       const already = selectedSquad.includes(p.element.id)
       if (already) {
@@ -134,27 +163,30 @@ const SquadRatingPage: React.FC = ({}) => {
             variant="outlined"
             sx={{ maxHeight: "60vh", overflow: "auto" }}>
             <List disablePadding>
-              {result.map((p, idx) => {
-                const chosen = selectedSquad.includes(p.element.id)
-                const { eligible } = checkEligibility({
+              {result.map((player, idx) => {
+                const chosen = selectedSquad.includes(player.element.id)
+                const { eligible, reasons } = checkEligibility({
                   selected: selectedSquad,
-                  candidate: p,
-                  allPlayers: players,
+                  candidate: player,
+                  positionCount,
+                  teamCount,
                   budgetUsed: selectedSquad
                     .map((id) => players.find((pp) => pp.element.id === id))
                     .filter(Boolean)
                     .reduce(
-                      (sum, pp) => sum + (pp as typeof p).element.now_cost,
+                      (sum, pp) => sum + (pp as typeof player).element.now_cost,
                       0
                     ),
                 })
                 const canAddMore = !chosen && selectedSquad.length >= max
 
                 return (
-                  <Box key={p.element.id}>
+                  <Box key={player.element.id}>
                     <ListItemButton
-                      onClick={() => onToggleCandidate(p)}
-                      disabled={(!chosen && canAddMore) || !eligible}
+                      onClick={() => onToggleCandidate(player)}
+                      disabled={
+                        (!chosen && canAddMore) || (!chosen && !eligible)
+                      }
                       selected={chosen}
                       sx={{
                         "&.Mui-selected": (theme) => ({
@@ -168,18 +200,18 @@ const SquadRatingPage: React.FC = ({}) => {
                             fontWeight={(theme) =>
                               theme.typography.fontWeightBold ?? 600
                             }>
-                            {p.element.web_name}
+                            {player.element.web_name}
                           </Typography>
                         }
                         secondary={
                           <Typography variant="caption" color="text.secondary">
-                            {teamMap.get(p.element.team)?.name ?? "-"} •{" "}
+                            {teamMap.get(player.element.team)?.name ?? "-"} •{" "}
                             {
                               ["", "GK", "DEF", "MID", "FWD"][
-                                p.element.element_type
+                                player.element.element_type
                               ]
                             }{" "}
-                            • {p.score.toFixed(0)}
+                            • {player.score.toFixed(0)}
                           </Typography>
                         }
                       />

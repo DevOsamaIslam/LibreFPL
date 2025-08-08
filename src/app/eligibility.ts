@@ -83,7 +83,7 @@ export function checkEligibility(input: EligibilityInput): EligibilityResult {
   const pos = elementTypeToPosition[candidate.element.element_type]
   const posLimit = SQUAD_CONSTRAINTS.POSITION_LIMITS[pos as Position]
   const posAlready = positionCount[pos as Position]
-  if (!selected.includes(candidate.element.id) && posAlready >= posLimit) {
+  if (posAlready === posLimit) {
     reasons.push(RULE_KEYS.positionLimit)
   }
 
