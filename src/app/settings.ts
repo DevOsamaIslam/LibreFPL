@@ -44,6 +44,13 @@ export const BENCH_FWD_COST_LIMIT = 45
 export const BUDGET_FOR_XI = 820
 export const NUMBER_OF_MATCHES = 38
 
+export const CHEAPEST = {
+  GK: 40,
+  DEF: 40,
+  MID: 45,
+  FWD: 45,
+}
+
 export const colorByPos = {
   GK: "#8B4513", // brown
   DEF: "#F59E0B", // yellow

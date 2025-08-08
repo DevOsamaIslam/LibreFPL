@@ -30,8 +30,9 @@ export const SQUAD_CONSTRAINTS = {
 export interface EligibilityInput {
   selected: number[]
   candidate: IOptimalTeamPlayer
-  allPlayers: IOptimalTeamPlayer[]
   budgetUsed: number
+  teamCount: TeamCount
+  positionCount: PositionCount
 }
 
 export interface EligibilityResult {
@@ -39,34 +40,31 @@ export interface EligibilityResult {
   reasons: RuleKey[]
 }
 
-const toCounts = (selected: number[], allPlayers: IOptimalTeamPlayer[]) => {
-  const teamCount: TeamCount = {}
-  const positionCount: PositionCount = { GK: 0, DEF: 0, MID: 0, FWD: 0 }
-  let totalCost = 0
+// const toCounts = (selected: number[], allPlayers: IOptimalTeamPlayer[]) => {
+//   const teamCount: TeamCount = {}
+//   const positionCount: PositionCount = { GK: 0, DEF: 0, MID: 0, FWD: 0 }
+//   let totalCost = 0
 
-  for (const id of selected) {
-    const p = allPlayers.find((pp) => pp.element.id === id)
-    if (!p) continue
-    const t = p.element.team
-    teamCount[t] = (teamCount[t] ?? 0) + 1
-    const pos = elementTypeToPosition[p.element.element_type]
-    positionCount[pos as Position] += 1
-    totalCost += p.element.now_cost
-  }
+//   for (const id of selected) {
+//     const player = allPlayers.find((pp) => pp.element.id === id)
+//     if (!player) continue
+//     const team = player.teamId
+//     teamCount[team] = (teamCount[team] ?? 0) + 1
+//     const pos = elementTypeToPosition[player.element.element_type]
+//     positionCount[pos as Position] += 1
+//     totalCost += player.element.now_cost
+//   }
 
-  return { teamCount, positionCount, totalCost }
-}
+//   return { teamCount, positionCount, totalCost }
+// }
 
 export function checkEligibility(input: EligibilityInput): EligibilityResult {
-  const { selected, candidate, allPlayers, budgetUsed } = input
+  const { selected, candidate, budgetUsed, teamCount, positionCount } = input
   const reasons: RuleKey[] = []
-
-  const { teamCount, positionCount, totalCost } = toCounts(selected, allPlayers)
 
   // Max players overall
   if (
-    !selected.includes(candidate.element.id) &&
-    selected.length >= SQUAD_CONSTRAINTS.MAX_PLAYERS
+    selected.length === 15
   ) {
     reasons.push(RULE_KEYS.maxPlayers)
   }
@@ -90,7 +88,7 @@ export function checkEligibility(input: EligibilityInput): EligibilityResult {
   }
 
   // Budget constraint (now_cost is in tenths of a million)
-  const used = budgetUsed || totalCost
+  const used = budgetUsed
   const effectiveFuture = used + candidate.element.now_cost
   if (
     !selected.includes(candidate.element.id) &&

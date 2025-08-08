@@ -3,25 +3,21 @@ import {
   type IOptimalTeamPlayer,
   type ISnapshot,
   type Player,
+  type Position,
   type PositionCount,
   type Team,
   type TeamCount,
 } from "../lib/types"
+import { checkEligibility, RULE_KEYS } from "./eligibility"
 import {
-  BENCH_DEF_COST_LIMIT,
-  BENCH_FWD_COST_LIMIT,
-  BENCH_GK_COST_LIMIT,
-  BENCH_MID_COST_LIMIT,
-  BUDGET,
-  BUDGET_FOR_XI,
+  CHEAPEST,
   elementTypeToPosition,
+  NUMBER_OF_MATCHES,
   POSITION_LIMITS,
   positionToElementType,
-  TEAM_LIMIT,
   W1,
   W2,
-  W3,
-  NUMBER_OF_MATCHES,
+  W3
 } from "./settings"
 
 /**
@@ -132,171 +128,175 @@ const calculateTeamAdvantageScore = (team: Team, opponent: Team) => {
   return teamAdvantageScore
 }
 
-/**
- * selectTeam
- *
- * This function iterates over the players and picks the best ones to form the team, taking into account the budget, team limits, and position limits.
- */
-export const selectTeam = (params: {
-  players: IOptimalTeamPlayer[]
-  desiredFormation?: string
-  budget?: number
-  benchBoostEnabled?: boolean
-  numberEnablers?: number
+
+
+export const selectTeam = async (params: {
+  players: IOptimalTeamPlayer[];
+  desiredFormation?: string; // "3-4-3" etc.
+  budget?: number;           // default to BUDGET
+  benchBoostEnabled?: boolean;
+  numberEnablers?: number;   // ≥ 0 – minimal number of high‑price players to keep squad “priced”
 }) => {
-  const { players, budget, desiredFormation } = params
 
-  // Parse desired formation to required XI counts. Default to 3-4-3 if not provided.
-  const formationString = desiredFormation?.trim() || "3-4-3"
-  const [reqDEF, reqMID, reqFWD] = formationString
-    .split("-")
-    .map((n) => Math.max(0, Math.min(5, Number(n) || 0)))
-  // Always exactly 1 GK in XI
-  const reqXI: PositionCount = {
-    GK: 1,
-    DEF: reqDEF || 3,
-    MID: reqMID || 4,
-    FWD: reqFWD || 3,
+  const {
+    players: PLAYERS,
+    desiredFormation = "3-4-3",
+    benchBoostEnabled = false,
+    numberEnablers = 0,
+  } = params
+
+  let { players } = params
+
+  const [defenseXICount, midfieldXICount, forwardXICount] = desiredFormation.split('-').map(Number)
+
+  let groupedByPosition = Object.groupBy(players, (p) => p.position)
+
+  const starting: IOptimalTeamPlayer[] = [groupedByPosition.GK![0]]
+  const bench: IOptimalTeamPlayer[] = []
+  let totalCost = groupedByPosition.GK![0].element.now_cost
+  const teamCount: TeamCount = {
+    [groupedByPosition.GK![0].teamId]: 1,
   }
+  const positionCount: PositionCount = { GK: 1, DEF: 0, MID: 0, FWD: 0 }
 
-  // Sanity: enforce XI size of 11
-  const totalXI = reqXI.GK + reqXI.DEF + reqXI.MID + reqXI.FWD
-  if (totalXI !== 11) {
-    // Normalize to 3-4-3 if malformed
-    reqXI.GK = 1
-    reqXI.DEF = 3
-    reqXI.MID = 4
-    reqXI.FWD = 3
-  }
+  players = players.filter(p => p.element.id !== groupedByPosition.GK![0].element.id)
+  groupedByPosition.GK = groupedByPosition.GK?.filter(p => p.element.id !== groupedByPosition.GK![0].element.id)
 
-  // Buckets by position, already globally sorted by score upstream
-  const byPos = {
-    GK: players.filter((p) => p.position === "GK"),
-    DEF: players.filter((p) => p.position === "DEF"),
-    MID: players.filter((p) => p.position === "MID"),
-    FWD: players.filter((p) => p.position === "FWD"),
-  }
+  // bench positions
+  let defenseBenchCount = POSITION_LIMITS.DEF - defenseXICount
+  let midfieldBenchCount = POSITION_LIMITS.MID - midfieldXICount
+  let forwardBenchCount = POSITION_LIMITS.FWD - forwardXICount
 
-  // Helper: try add a player if it respects team limit and budget constraints
-  const teamCount: TeamCount = {}
-  const positionCount: PositionCount = { GK: 0, DEF: 0, MID: 0, FWD: 0 }
-  const picked: IOptimalTeamPlayer[] = []
-  let totalCost = 0
+  if (!benchBoostEnabled)
+    for (let i = 0; i < numberEnablers; i++) {
+      if (i === 0) {
+        const cheapestGK = groupedByPosition.GK?.find(player => player.element.now_cost === CHEAPEST.GK)
+        bench.push(cheapestGK!)
+        players = players.filter(p => p.element.id !== cheapestGK!.element.id)
+        groupedByPosition.GK = groupedByPosition.GK?.filter(p => p.element.id !== cheapestGK!.element.id)
+        totalCost += cheapestGK!.element.now_cost!
+        teamCount[cheapestGK!.teamId] = (teamCount[cheapestGK!.teamId] ?? 0) + 1
+        positionCount.GK += 1
+        continue
+      }
 
-  const canPick = (p: IOptimalTeamPlayer, forBench = false) => {
-    const tCount = teamCount[p.element.team] ?? 0
-    if (tCount >= TEAM_LIMIT) return false
-    const nextCost = totalCost + p.element.now_cost
-    if (nextCost > (budget ?? BUDGET)) return false
-    // For starting XI, also respect BUDGET_FOR_XI threshold when reaching 11
-    if (!forBench) {
-      // If this pick would complete XI, ensure total <= BUDGET_FOR_XI
-      const willXI = picked.length + 1 === 11
-      if (willXI && nextCost > BUDGET_FOR_XI) return false
-    } else {
-      // For bench, apply per-position cost caps if we've already spent XI budget
-      if (totalCost >= BUDGET_FOR_XI) {
-        const pos = p.position
-        if (pos === "GK" && p.element.now_cost > BENCH_GK_COST_LIMIT)
-          return false
-        if (pos === "DEF" && p.element.now_cost > BENCH_DEF_COST_LIMIT)
-          return false
-        if (pos === "MID" && p.element.now_cost > BENCH_MID_COST_LIMIT)
-          return false
-        if (pos === "FWD" && p.element.now_cost > BENCH_FWD_COST_LIMIT)
-          return false
+      if (defenseBenchCount) {
+        const cheapestDef = groupedByPosition.DEF?.find(player => player.element.now_cost === CHEAPEST.DEF)
+        bench.push(cheapestDef!)
+        players = players.filter(p => p.element.id !== cheapestDef!.element.id)
+        groupedByPosition.DEF = groupedByPosition.DEF?.filter(p => p.element.id !== cheapestDef!.element.id)
+        defenseBenchCount--
+        totalCost += cheapestDef!.element.now_cost!
+        teamCount[cheapestDef!.teamId] = (teamCount[cheapestDef!.teamId] ?? 0) + 1
+        positionCount.DEF += 1
+        continue
+      }
+
+      if (midfieldBenchCount) {
+        const cheapestMid = groupedByPosition.MID?.find(player => player.element.now_cost === CHEAPEST.MID)
+        bench.push(cheapestMid!)
+        players = players.filter(p => p.element.id !== cheapestMid!.element.id)
+        groupedByPosition.MID = groupedByPosition.MID?.filter(p => p.element.id !== cheapestMid!.element.id)
+        midfieldBenchCount--
+        totalCost += cheapestMid!.element.now_cost!
+        teamCount[cheapestMid!.teamId] = (teamCount[cheapestMid!.teamId] ?? 0) + 1
+        positionCount.MID += 1
+        continue
+      }
+
+      if (forwardBenchCount) {
+        const cheapestFwd = groupedByPosition.FWD?.find(player => player.element.now_cost === CHEAPEST.FWD)
+        bench.push(cheapestFwd!)
+        players = players.filter(p => p.element.id !== cheapestFwd!.element.id)
+        groupedByPosition.FWD = groupedByPosition.FWD?.filter(p => p.element.id !== cheapestFwd!.element.id)
+        forwardBenchCount--
+        totalCost += cheapestFwd!.element.now_cost!
+        teamCount[cheapestFwd!.teamId] = (teamCount[cheapestFwd!.teamId] ?? 0) + 1
+        positionCount.FWD += 1
+        continue
       }
     }
-    // Respect absolute POSITION_LIMITS
-    const pos = p.position as "GK" | "DEF" | "MID" | "FWD"
-    if (positionCount[pos] >= POSITION_LIMITS[pos]) return false
-    return true
-  }
 
-  const addPick = (p: IOptimalTeamPlayer) => {
-    picked.push(p)
-    totalCost += p.element.now_cost
-    positionCount[p.position as "GK" | "DEF" | "MID" | "FWD"] += 1
-    teamCount[p.element.team] = (teamCount[p.element.team] ?? 0) + 1
-  }
+  for (let i = 0; i < players.length; i++) {
+    const player = players[i]
+    if ([...starting, ...bench].some(p => p.element.id === player.element.id)) {
+      players.splice(i, 1)
+      i--
+      continue
+    }
 
-  // 1) Force-pick exactly 1 starting GK as best affordable respecting team and XI budget
-  for (const p of byPos.GK) {
-    if (canPick(p, false)) {
-      addPick(p)
+    const { eligible, reasons } = checkEligibility({
+      budgetUsed: totalCost,
+      candidate: player,
+      selected: [...starting.map((p) => p.element.id), ...bench.map((p) => p.element.id)],
+      teamCount,
+      positionCount
+    })
+
+    if (eligible) {
+      players.splice(i, 1)
+      if (starting.length < 11) starting.push(player)
+      else bench.push(player)
+      totalCost += player.element.now_cost!
+      teamCount[player.teamId] = (teamCount[player.teamId] ?? 0) + 1
+      positionCount[player.position as Position] += 1
+      i--
+      if (!players.length) players = [...PLAYERS]
+      continue
+    }
+
+    if (reasons.includes(RULE_KEYS.maxPerTeam)) {
+      players = players.filter((p) => p.teamId !== player.teamId)
+      i--
+      continue
+    }
+
+    if (reasons.includes(RULE_KEYS.positionLimit)) {
+      players = players.filter((p) => p.position !== player.position)
+      i--
+      continue
+    }
+
+    if (reasons.includes(RULE_KEYS.budget)) {
+      let removed: IOptimalTeamPlayer | undefined
+      if (benchBoostEnabled && bench.length) {
+        removed = bench.pop()
+      } else {
+        removed = starting.splice(Math.floor(Math.random()) * starting.length - 1, 1)[0]
+      }
+      totalCost -= removed!.element.now_cost!
+      positionCount[removed!.position as Position] -= 1
+      players = players.filter((p) => p.element.now_cost >= player.element.now_cost && p.element.id !== removed!.element.id)
+      i--
+      continue
+    }
+
+    if (reasons.includes(RULE_KEYS.maxPlayers)) {
+      break
+    }
+
+    if (players.length === 0) {
+      i--
+      players = [...PLAYERS]
+      continue
+    }
+
+    if (i === players.length - 1) {
+      i--
+      continue
+    }
+
+    if (starting.length === 11 && bench.length === 4) {
       break
     }
   }
-  // If still no GK (unlikely), abort early with empty or best-effort later
-  if (positionCount.GK === 0 && byPos.GK.length > 0) {
-    // Pick the cheapest GK to proceed
-    const cheapestGK = [...byPos.GK].sort(
-      (a, b) => a.element.now_cost - b.element.now_cost
-    )[0]
-    if (canPick(cheapestGK, false)) addPick(cheapestGK)
-  }
 
-  // 2) Fill DEF, MID, FWD to meet desired formation for XI strictly
-  const fillForXI = (pos: "DEF" | "MID" | "FWD", needed: number) => {
-    if (needed <= 0) return
-    const pool = byPos[pos]
-    for (const p of pool) {
-      if (positionCount[pos] >= needed) break
-      // Only allow XI phase picks for these positions
-      if (picked.length >= 11) break
-      if (canPick(p, false)) {
-        addPick(p)
-      }
-    }
-  }
-  fillForXI("DEF", reqXI.DEF)
-  fillForXI("MID", reqXI.MID)
-  fillForXI("FWD", reqXI.FWD)
 
-  // Ensure XI is exactly 11. If we are short (budget/team constraints), try to fill best available any outfield pos
-  const outfieldOrder: Array<"DEF" | "MID" | "FWD"> = ["MID", "DEF", "FWD"]
-  while (picked.length < 11) {
-    let added = false
-    for (const pos of outfieldOrder) {
-      // Do not exceed the required XI counts; keep respecting formation
-      if (positionCount[pos] >= (reqXI as any)[pos]) continue
-      const pool = byPos[pos]
-      for (const p of pool) {
-        // skip ones already picked
-        if (picked.includes(p)) continue
-        if (canPick(p, false)) {
-          addPick(p)
-          added = true
-          break
-        }
-      }
-      if (added) break
-    }
-    if (!added) break // Cannot complete exact XI due to constraints
+  return {
+    starting,
+    bench
   }
-
-  // 3) After XI is met (or best-effort), add bench to reach 15 respecting bench cost caps and global limits
-  const MAX_TEAM_SIZE = 15
-  const benchOrder: Array<"MID" | "DEF" | "FWD" | "GK"> = [
-    "MID",
-    "DEF",
-    "FWD",
-    "GK",
-  ]
-  for (const pos of benchOrder) {
-    if (picked.length >= MAX_TEAM_SIZE) break
-    const pool = byPos[pos]
-    for (const p of pool) {
-      if (picked.length >= MAX_TEAM_SIZE) break
-      if (picked.includes(p)) continue
-      if (canPick(p, true)) {
-        addPick(p)
-      }
-    }
-  }
-
-  return picked
-}
+};
 
 /**
  * getAverageOpponent
