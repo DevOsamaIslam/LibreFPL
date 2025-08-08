@@ -30,6 +30,8 @@ function HeatmapTable({
     return Math.min(5, Math.max(1, avg))
   }
 
+  console.log({ data })
+
   return (
     <Paper variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
       <Box sx={{ display: "flex" }}>
@@ -65,64 +67,70 @@ function HeatmapTable({
             ))}
 
             {/* Rows */}
-            {data.map((row) => {
-              const checked = selected?.has(row.team.id) ?? false
-              const avg = avgToBucket(averageForRow(row)) as FDRScore
-              return (
-                <React.Fragment key={row.team.id}>
-                  {withCheckbox ? (
+            {data
+              .sort((a, b) => {
+                const avgA = avgToBucket(averageForRow(a)) as FDRScore
+                const avgB = avgToBucket(averageForRow(b)) as FDRScore
+                return avgB - avgA
+              })
+              .map((row) => {
+                const checked = selected?.has(row.team.id) ?? false
+                const avg = avgToBucket(averageForRow(row)) as FDRScore
+                return (
+                  <React.Fragment key={row.team.id}>
+                    {withCheckbox && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}>
+                        <Checkbox
+                          size="small"
+                          checked={checked}
+                          onChange={() => onToggle && onToggle(row.team.id)}
+                        />
+                      </Box>
+                    )}
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        position: "sticky",
+                        left: 0,
+                        bgcolor: "background.paper",
+                        pr: 1,
+                        zIndex: 1,
                       }}>
-                      <Checkbox
-                        size="small"
-                        checked={checked}
-                        onChange={() => onToggle && onToggle(row.team.id)}
-                      />
+                      <Typography variant="body2" fontWeight={600}>
+                        <SpaceBetween>
+                          <span>
+                            {row.team.name} ({row.team.short_name})
+                          </span>
+                          <Cell
+                            label={avg.toFixed(2)}
+                            score={avg}
+                            key={row.team.id}
+                            showLabel
+                          />
+                        </SpaceBetween>
+                      </Typography>
                     </Box>
-                  ) : null}
-                  <Box
-                    sx={{
-                      position: "sticky",
-                      left: 0,
-                      bgcolor: "background.paper",
-                      pr: 1,
-                      zIndex: 1,
-                    }}>
-                    <Typography variant="body2" fontWeight={600}>
-                      <SpaceBetween>
-                        <span>
-                          {row.team.name} ({row.team.short_name})
-                        </span>
+                    {row.byEvent.map((cell) => {
+                      const label = `${cell.isHome ? "(H)" : "(A)"} ${
+                        row.team.short_name
+                      } vs ${cell.opponent.short_name} => ${cell.score.toFixed(
+                        2
+                      )}`
+                      return (
                         <Cell
-                          label={avg.toFixed(2)}
-                          score={avg}
-                          key={row.team.id}
-                          showLabel
+                          key={`${row.team.id}-${cell.event}`}
+                          score={cell.score}
+                          label={label}
                         />
-                      </SpaceBetween>
-                    </Typography>
-                  </Box>
-                  {row.byEvent.map((cell) => {
-                    const label = `${cell.isHome ? "(H)" : "(A)"} ${
-                      row.team.short_name
-                    } vs ${cell.opponent.short_name} => ${cell.score.toFixed(
-                      2
-                    )}`
-                    return (
-                      <Cell
-                        key={`${row.team.id}-${cell.event}`}
-                        score={cell.score}
-                        label={label}
-                      />
-                    )
-                  })}
-                </React.Fragment>
-              )
-            })}
+                      )
+                    })}
+                  </React.Fragment>
+                )
+              })}
           </Box>
         </Box>
       </Box>

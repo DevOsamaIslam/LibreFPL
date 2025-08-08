@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react"
 import { type TeamFDRByGw, computeFDR } from "./fdrAlgo"
 
-export function useFDRData(span: number) {
+export function useFDRData({
+  spanGWs,
+  startingFrom,
+}: {
+  spanGWs: number
+  startingFrom: number
+}) {
   const [data, setData] = useState<TeamFDRByGw[]>([])
   useEffect(() => {
-    const res = computeFDR(span)
+    const res = computeFDR({ spanGWs, startingFrom })
     setData(res)
-  }, [span])
+  }, [spanGWs])
   return data
 }

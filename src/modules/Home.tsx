@@ -54,7 +54,7 @@ const FEATURES = [
     key: "fdr",
     title: "Fixture Difficulty (FDR)",
     description:
-      "Heatmap of upcoming fixtures, scoring difficulty 1–5 from maroon to bright green.",
+      "Extended heatmap of upcoming fixtures, with difficulty ratings, and averages for each team.",
     route: ROUTES.fdr,
     badge: "New",
   },

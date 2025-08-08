@@ -371,3 +371,23 @@ export const ARMBAND = {
 } as const
 
 export type Armband = (typeof ARMBAND)[keyof typeof ARMBAND]
+
+export interface IFixture {
+  code: number
+  event: number
+  finished: boolean
+  finished_provisional: boolean
+  id: number
+  kickoff_time: Date
+  minutes: number
+  provisional_start_time: boolean
+  started: boolean
+  team_a: number
+  team_a_score: null
+  team_h: number
+  team_h_score: null
+  stats: any[]
+  team_h_difficulty: number
+  team_a_difficulty: number
+  pulse_id: number
+}

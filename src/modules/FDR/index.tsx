@@ -14,13 +14,17 @@ import React from "react"
 import HeatmapTable from "./HeatmapTable"
 import { useFDRData } from "./useFDRData"
 import Legend from "./Legend"
+import PageTitle from "../../components/PageTitle"
+import { useSettingsStore } from "../../app/settings"
 
 export const FDRPage: React.FC = () => {
   const [span, setSpan] = React.useState(6)
-  const data = useFDRData(span)
+  const { snapshot } = useSettingsStore()
+  const nextGW = snapshot?.events.find((e) => !e.finished)
+  const data = useFDRData({ spanGWs: span, startingFrom: nextGW?.id ?? 0 })
+
   const events = React.useMemo(() => {
-    const first = data[0]?.byEvent ?? []
-    return first.map((c) => c.event)
+    return new Array(span).fill(1).map((_, i) => (nextGW?.id ?? 0) + i)
   }, [data])
 
   const [selected, setSelected] = React.useState<Set<number>>(new Set())
@@ -40,6 +44,7 @@ export const FDRPage: React.FC = () => {
 
   return (
     <>
+      <PageTitle>FDR</PageTitle>
       <Stack
         direction="row"
         alignItems="center"
