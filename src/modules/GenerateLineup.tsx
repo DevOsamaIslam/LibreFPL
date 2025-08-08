@@ -15,12 +15,20 @@ import {
   Stack,
   Switch,
   TextField,
+  CircularProgress,
 } from "@mui/material"
 import { useSettingsStore } from "../app/settings"
 import PageTitle from "../components/PageTitle"
+import { useMutation } from "@tanstack/react-query"
 
 function GenerateLineup() {
-  const [optimalTeam, setOptimalTeam] = useState<IOptimalTeamPlayer[]>([])
+  const [optimalTeam, setOptimalTeam] = useState<{
+    starting: IOptimalTeamPlayer[]
+    bench: IOptimalTeamPlayer[]
+  }>({
+    starting: [],
+    bench: [],
+  })
   const {
     desiredFormation,
     benchBoostEnabled,
@@ -30,6 +38,23 @@ function GenerateLineup() {
     setBenchBoostEnabled,
     setNumberEnablers,
   } = useSettingsStore()
+
+  const { mutate: generateLineupMutation, isPending } = useMutation({
+    mutationFn: selectTeam,
+    onSuccess: (data) => {
+      setOptimalTeam(data)
+    },
+  })
+
+  const teamCost =
+    [optimalTeam.starting, optimalTeam.bench]
+      .flat()
+      .reduce((acc, player) => acc + player.element.now_cost / 10, 0) || 0
+
+  const teamScore =
+    [optimalTeam.starting, optimalTeam.bench]
+      .flat()
+      .reduce((acc, player) => acc + player.score, 0) || 0
 
   return (
     <>
@@ -41,31 +66,31 @@ function GenerateLineup() {
       <Grid container>
         <Grid size={8} style={{ marginBottom: "20px" }}>
           <Typography variant="h6" component="h2" gutterBottom>
-            Team Cost: $
-            {optimalTeam
-              .reduce((acc, player) => acc + player.element.now_cost / 10, 0)
-              .toFixed(2)}
+            Team Cost: ${teamCost.toFixed(2)}
           </Typography>
           <Typography variant="h6" component="h2" gutterBottom>
-            Team score:{" "}
-            {optimalTeam
-              .reduce((acc, player) => acc + player.score, 0)
-              .toFixed(2)}
+            Team score: {teamScore.toFixed(2)}
           </Typography>
           {/* Placeholder for Lineup */}
           <Button
             variant="contained"
             onClick={() => {
-              setOptimalTeam(
-                selectTeam({
-                  players: sortedPlayers,
-                  desiredFormation,
-                  benchBoostEnabled,
-                  numberEnablers,
-                })
-              )
-            }}>
-            Generate Lineup
+              generateLineupMutation({
+                players: sortedPlayers,
+                desiredFormation,
+                benchBoostEnabled,
+                numberEnablers,
+              })
+            }}
+            disabled={isPending}>
+            {isPending ? (
+              <>
+                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                Generating...
+              </>
+            ) : (
+              "Generate Lineup"
+            )}
           </Button>
         </Grid>
 
@@ -115,7 +140,11 @@ function GenerateLineup() {
             />
           </FormControl>
         </Stack>
-        {!!optimalTeam.length && <LineupDisplay lineup={optimalTeam} />}
+        {!!optimalTeam.starting.length && (
+          <LineupDisplay
+            lineup={[...optimalTeam.starting, ...optimalTeam.bench]}
+          />
+        )}
       </Grid>
     </>
   )

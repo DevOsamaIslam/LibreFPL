@@ -37,7 +37,9 @@ function App() {
               <SpaceBetween>
                 <Link to={"/"}>
                   <img
-                    src="/logo.png"
+                    src={`${
+                      import.meta.env.MODE === "production" ? "/LibreFPL" : ""
+                    }/logo.png`}
                     alt="logo"
                     width={100}
                     style={{ padding: 8 }}
