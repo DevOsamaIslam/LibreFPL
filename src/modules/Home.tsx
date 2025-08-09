@@ -1,3 +1,4 @@
+import type { SxProps } from "@mui/material"
 import Box from "@mui/material/Box"
 import Card from "@mui/material/Card"
 import CardActionArea from "@mui/material/CardActionArea"
@@ -30,13 +31,6 @@ const FEATURES = [
     badge: "Core",
   },
   {
-    key: "teams",
-    title: "Teams",
-    description: "Explore team fixtures, form, and defensive/attack trends.",
-    route: ROUTES.teams,
-    badge: "Beta",
-  },
-  {
     key: "compare",
     title: "Players Compare",
     description: "Head-to-head comparison across stats and projections.",
@@ -58,12 +52,20 @@ const FEATURES = [
     route: ROUTES.fdr,
     badge: "New",
   },
+  {
+    key: "generate-lineup",
+    title: "Generate Lineup",
+    description: "Generate the optimal lineup based on our inhouse algorithm.",
+    route: ROUTES.teams,
+    badge: "Beta",
+  },
 ] as const
 
 function Home() {
-  const cardSx = {
+  const cardSx: SxProps = {
     display: "flex",
     height: "100%",
+    width: 400,
     borderRadius: 2,
     transition:
       "transform 150ms ease, box-shadow 200ms ease, border-color 200ms ease",

@@ -165,7 +165,7 @@ const SquadRatingPage: React.FC = ({}) => {
             <List disablePadding>
               {result.map((player, idx) => {
                 const chosen = selectedSquad.includes(player.element.id)
-                const { eligible, reasons } = checkEligibility({
+                const { eligible } = checkEligibility({
                   selected: selectedSquad,
                   candidate: player,
                   positionCount,
