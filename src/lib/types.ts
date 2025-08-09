@@ -171,7 +171,7 @@ export const Status = {
 export interface Event {
   id: number
   name: string
-  deadline_time: Date
+  deadline_time: string
   release_time: null
   average_entry_score: number
   finished: boolean

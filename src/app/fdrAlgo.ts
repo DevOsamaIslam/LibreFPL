@@ -1,6 +1,7 @@
-import type { IFixture, ISnapshot, Team } from "../../lib/types"
-import _fixtures from "../../data/fixtures.json"
-import _snapshot from "../../data/snapshot.json"
+import type { IFixture, ISnapshot, Team } from "../lib/types"
+import _fixtures from "../data/fixtures.json"
+import _snapshot from "../data/snapshot.json"
+import { CURRENT_GW } from "./settings"
 
 const fixtures = _fixtures as unknown as IFixture[]
 const snapshot = _snapshot as unknown as ISnapshot
@@ -148,4 +149,25 @@ function getTeamScore({
   const normalizedScore = ((rawScore - minScore) / (maxScore - minScore)) * 5.0
 
   return Math.max(0.0, Math.min(normalizedScore, 5.0))
+}
+
+export const ALL_FDR = computeFDR({ spanGWs: 38, startingFrom: 1 })
+
+export const FDR_PER_TEAM = ALL_FDR.reduce((acc, curr) => {
+
+  return {
+    ...acc,
+    [curr.team.id]: curr.byEvent
+  }
+}, {} as Record<number, TeamFDRByGw['byEvent']>)
+
+export const getTeamFDR = (teamId: number, options?: { span?: number, startingGW?: number }) => {
+  const startingFrom = options?.startingGW || CURRENT_GW.id
+  const teamFDR = FDR_PER_TEAM[teamId]?.slice(startingFrom - 1, options?.span)!
+  const average = teamFDR.reduce((acc, curr) => acc + curr.score, 0) / teamFDR.length
+
+  return {
+    teamFDR,
+    average
+  }
 }

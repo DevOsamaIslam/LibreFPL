@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import snapshot from "../data/snapshot.json"
-import type { IOptimalTeamPlayer, ISnapshot } from "../lib/types"
+import type { Event, IOptimalTeamPlayer, ISnapshot } from "../lib/types"
+import type { Team } from "../modules/PlayersCompare/control"
 
 export const APP_NAME = "LibreFPL"
 export const SUPPORT_ADDRESSES = {
@@ -29,13 +30,25 @@ export const MIN_POSITIONS_XI = {
   MID: 3,
   FWD: 1,
 }
+export const WEIGHTS = {
+  expectedPoints: 4,
+  form: 2,
+  teamAdvantage: 2,
+  xGI: 3,
+  xGC: -0.5,
+  BPS: 0.5,
+  lastSeasonPoints: 1,
+  startRatio: 5,
+  minutesPerMatch: 5,
+  available: 5,
+  notAvailable: -5,
+  cleanSheets: 2,
+  savesPerMatch: 2,
+  conceded: -2,
+  defcon: 2,
+  cost: -2
+}
 
-export const W1 = 4.0 // ep_next
-export const W2 = 2.0 // form
-export const W3 = 3.0 // team advantage
-export const W4 = 1.5 // xGI
-export const W5 = -0.5 // xGC
-export const W6 = 0.5 // BPS
 
 export const BENCH_GK_COST_LIMIT = 40
 export const BENCH_DEF_COST_LIMIT = 40
@@ -43,6 +56,26 @@ export const BENCH_MID_COST_LIMIT = 45
 export const BENCH_FWD_COST_LIMIT = 45
 export const BUDGET_FOR_XI = 820
 export const NUMBER_OF_MATCHES = 38
+
+export const teamMap = new Map<number, Team>()
+
+
+export const CURRENT_GW = snapshot.events.find((e) => !e.finished) as Event
+
+// export const teamMap = snapshot.teams.reduce(
+//   (m, t) => m.set(t.id, t),
+//   new Map<number, Team>()
+// )
+
+// export const FDR_BEGINNING = computeFDR({
+//   spanGWs: NUMBER_OF_MATCHES,
+//   startingFrom: CURRENT_GW.id,
+// })
+
+// export const FDR = FDR_BEGINNING.slice(CURRENT_GW.id - 1)
+
+// export const FDR_PER_TEAM = Object.groupBy(FDR, (f) => f.team.id)
+
 
 export const CHEAPEST = {
   GK: 40,

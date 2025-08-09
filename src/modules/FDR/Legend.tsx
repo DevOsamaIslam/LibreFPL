@@ -1,5 +1,5 @@
 import { Stack, Box, Typography } from "@mui/material"
-import { interpolateColor } from "./fdrAlgo"
+import { interpolateColor } from "../../app/fdrAlgo"
 
 const Legend: React.FC = () => {
   // Create gradient stops for continuous gradient

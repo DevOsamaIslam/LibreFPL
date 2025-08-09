@@ -1,7 +1,7 @@
 import { Box } from "@mui/material"
 import { Tooltip } from "@mui/material"
 import type { ReactNode } from "react"
-import { type FDRScore, interpolateColor } from "../modules/FDR/fdrAlgo"
+import { type FDRScore, interpolateColor } from "../app/fdrAlgo"
 
 type CellProps = {
   score: FDRScore

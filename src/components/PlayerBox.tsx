@@ -13,6 +13,10 @@ import {
 } from "@mui/material"
 import { ARMBAND, type Armband, type IOptimalTeamPlayer } from "../lib/types"
 import { colorByPos, TEAM_COLOR, type TeamName } from "../app/settings"
+import { useMemo } from "react"
+import { getTeamFDR } from "../app/fdrAlgo"
+import SpaceBetween from "./SpaceBetween"
+import Cell from "./Cell"
 
 interface PlayerBoxProps {
   player: IOptimalTeamPlayer
@@ -39,6 +43,10 @@ function PlayerBox({ player, armband }: PlayerBoxProps) {
     0,
     Math.min(90, Number(minutesAvg.toFixed(0)))
   )
+
+  const FDR = useMemo(() => {
+    return getTeamFDR(player.teamId, { span: 6 })
+  }, [])
 
   return (
     <Card
@@ -215,6 +223,16 @@ function PlayerBox({ player, armband }: PlayerBoxProps) {
                   </Box>
                 </Tooltip>
               </Stack>
+              <SpaceBetween>
+                {FDR.teamFDR.map((score, gw) => (
+                  <Cell key={gw} score={score.score} label={score.score} />
+                ))}
+                <Cell
+                  score={FDR.average}
+                  label={FDR.average.toFixed(2)}
+                  showLabel
+                />
+              </SpaceBetween>
             </Stack>
           </Stack>
         </CardContent>

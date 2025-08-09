@@ -5,19 +5,18 @@ import {
   type Player,
   type Position,
   type PositionCount,
-  type Team,
-  type TeamCount,
+  type TeamCount
 } from "../lib/types"
 import { checkEligibility, RULE_KEYS } from "./eligibility"
+import { getTeamFDR } from "./fdrAlgo"
 import {
   CHEAPEST,
   elementTypeToPosition,
   NUMBER_OF_MATCHES,
   POSITION_LIMITS,
   positionToElementType,
-  W1,
-  W2,
-  W3
+  teamMap,
+  WEIGHTS
 } from "./settings"
 
 /**
@@ -41,7 +40,6 @@ export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot) => {
  */
 const filterAndScorePlayers = (fpl: ISnapshot) => {
   // Create a map of team IDs to Team objects for easy lookup
-  const teamMap = new Map<number, Team>()
   fpl.teams.forEach((t) => teamMap.set(t.id, t))
 
   // Filter and map players to calculate their score
@@ -61,38 +59,39 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
       const goalsConceded = player.goals_conceded // and the goals conceded should be low
       let score = 0
 
-      score += lastSeasonPPG
+      score += lastSeasonPPG * WEIGHTS.lastSeasonPoints
 
       if (player.element_type !== positionToElementType.GK)
-        score -= player.now_cost
+        score -= player.now_cost * WEIGHTS.cost
 
-      score += startsRatio * 10
-      score += minutesPerMatch * 10
-      score += parseFloat(expectedGoalInvolvement) * 10 || 0
+      score += startsRatio * WEIGHTS.startRatio
+      score += minutesPerMatch * WEIGHTS.minutesPerMatch
+      score += parseFloat(expectedGoalInvolvement ?? 0) * WEIGHTS.xGI
 
-      score += 50 * (isAvailable ? 1 : -1)
+      score += isAvailable ? WEIGHTS.available : WEIGHTS.notAvailable
 
-      const ep = parseFloat(player.ep_next) || 0 // Expected points for the next game
-      const form = parseFloat(player.form) || 0 // Player's form
-      const team = teamMap.get(player.team) // Get the player's team
+      score += parseFloat(player.ep_next) * WEIGHTS.expectedPoints
+      score += parseFloat(player.form) * WEIGHTS.form
+
+      const team = teamMap.get(player.team)
 
       if (!team) return null
 
-      const opponent = getAverageOpponent(fpl.teams, team.id) // Get the average opponent
 
-      const teamAdvantageScore = calculateTeamAdvantageScore(team, opponent)
+      const teamAdvantageScore = getTeamFDR(team.id, { span: 6 }).average - 2.5
+
+      score += teamAdvantageScore
 
       const position = elementTypeToPosition[player.element_type] // Get the player's position
       if (position === "GK" || position === "DEF") {
-        score += cleanSheets * 2
-        score += player.saves_per_90 * 2
-        score += player.defensive_contribution * 2
-        score -= goalsConceded * 3
+        score += cleanSheets * WEIGHTS.cleanSheets
+        score += player.saves_per_90 * WEIGHTS.savesPerMatch
+        score += player.defensive_contribution * WEIGHTS.defcon
+        score -= goalsConceded * WEIGHTS.conceded
       }
 
-      score = score + W1 * ep + W2 * form + W3 * teamAdvantageScore
 
-      score = score / 100
+      score = score / Object.keys(WEIGHTS).length
 
       return {
         element: player,
@@ -106,26 +105,6 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
     .sort((a, b) => b!.score - a!.score) as IOptimalTeamPlayer[] // Sort players by score in descending order (highest score first)
 
   return { players, teamMap }
-}
-
-/**
- * calculateTeamAdvantageScore
- *
- * This function calculates a score representing the team's advantage based on its attack and midfield strengths compared to the opponent's defence and midfield strengths.
- */
-const calculateTeamAdvantageScore = (team: Team, opponent: Team) => {
-  const teamAttackStrength =
-    (team.strength_attack_home + team.strength_attack_away) / 2
-  const teamMidfieldStrength = team.strength
-  const opponentDefenceStrength =
-    (opponent.strength_defence_home + opponent.strength_defence_away) / 2
-  const opponentMidfieldStrength = opponent.strength
-
-  const teamAdvantageScore =
-    teamAttackStrength +
-    teamMidfieldStrength -
-    (opponentDefenceStrength + opponentMidfieldStrength)
-  return teamAdvantageScore
 }
 
 
@@ -296,19 +275,4 @@ export const selectTeam = async (params: {
     starting,
     bench
   }
-};
-
-/**
- * getAverageOpponent
- *
- * This function takes an array of teams and an ID of a team to exclude, and returns the team with the median strength from the remaining teams.
- * It is used to simulate an average opponent for the given team.
- */
-function getAverageOpponent(teams: Team[], excludeTeamId: number): Team {
-  const opponents = teams.filter((t) => t.id !== excludeTeamId)
-  // Sort opponents by their overall strength in ascending order
-  opponents.sort((a, b) => a.strength - b.strength)
-  // Select the opponent with the median strength
-  const idx = Math.floor(opponents.length / 2)
-  return opponents[idx] ?? teams[0] // fallback
 }

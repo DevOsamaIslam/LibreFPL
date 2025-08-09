@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography"
 import React from "react"
 import Cell from "../../components/Cell"
 import SpaceBetween from "../../components/SpaceBetween"
-import type { FDRScore, TeamFDRByGw } from "./fdrAlgo"
+import type { FDRScore, TeamFDRByGw } from "../../app/fdrAlgo"
 
 function HeatmapTable({
   data,

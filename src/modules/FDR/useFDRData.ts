@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { type TeamFDRByGw, computeFDR } from "./fdrAlgo"
+import { type TeamFDRByGw, computeFDR } from "../../app/fdrAlgo"
 
 export function useFDRData({
   spanGWs,
