@@ -5,7 +5,7 @@ import {
   type Player,
   type Position,
   type PositionCount,
-  type TeamCount
+  type TeamCount,
 } from "../lib/types"
 import { checkEligibility, RULE_KEYS } from "./eligibility"
 import { getTeamFDR } from "./fdrAlgo"
@@ -16,7 +16,7 @@ import {
   POSITION_LIMITS,
   positionToElementType,
   teamMap,
-  WEIGHTS
+  WEIGHTS,
 } from "./settings"
 
 /**
@@ -39,44 +39,70 @@ export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot) => {
  * This function filters players based on their status, cost, and minutes played, and calculates a score for each player based on their expected points (EP), form, and team advantage.
  */
 const filterAndScorePlayers = (fpl: ISnapshot) => {
+  // Get weights from localStorage with fallback to defaults
+  const getStoredWeights = (): typeof WEIGHTS => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = window.localStorage.getItem("algorithm-weights")
+        const storedWeights = Object.keys(
+          JSON.parse(stored || "") as typeof WEIGHTS
+        ).reduce((acc, key) => {
+          if (stored && !stored?.[key]) stored[key] = WEIGHTS[key]
+          return acc
+        }, {} as typeof WEIGHTS)
+        return storedWeights
+      } catch (error) {
+        console.error("Error reading stored weights:", error)
+        return WEIGHTS
+      }
+    }
+    return WEIGHTS
+  }
+
+  const weights = getStoredWeights()
+
   // Create a map of team IDs to Team objects for easy lookup
   fpl.teams.forEach((t) => teamMap.set(t.id, t))
 
   // Filter and map players to calculate their score
   const players = fpl.elements
-    .filter((player) => player.status === Status.A && player.now_cost > 0) // Filter out players who are unavailable, have no cost, or haven't played
     .map((player: Player) => {
-      const lastSeasonPPG = +player.total_points / 34 // Score (last season) higher is better
+      const lastSeasonPPG = +player.total_points / NUMBER_OF_MATCHES
       const startsRatio = !player.starts
         ? 0
-        : (player.starts / (player.minutes / 48)) * 100 // ratio of starts to 48 should be above 70%
+        : (player.starts / (player.minutes / NUMBER_OF_MATCHES)) * 100
+
       const minutesPerMatch = !player.minutes
         ? 0
-        : player.minutes / NUMBER_OF_MATCHES // number of minutes per march should be above 60
+        : player.minutes / NUMBER_OF_MATCHES
+
       const expectedGoalInvolvement = player.expected_goal_involvements // has better expected goal involvement
       const isAvailable = player.status === Status.A // has status of 'a'
       const cleanSheets = player.clean_sheets // For GK and Def the clean sheets should be high
       const goalsConceded = player.goals_conceded // and the goals conceded should be low
       let score = 0
 
-      score += lastSeasonPPG * WEIGHTS.lastSeasonPoints
+      score += lastSeasonPPG * weights.lastSeasonPoints
 
       if (player.element_type !== positionToElementType.GK)
-        score -= player.now_cost * WEIGHTS.cost
+        score -= player.now_cost * weights.cost
 
-      score += startsRatio * WEIGHTS.startRatio
-      score += minutesPerMatch * WEIGHTS.minutesPerMatch
-      score += parseFloat(expectedGoalInvolvement ?? 0) * WEIGHTS.xGI
+      score += startsRatio * weights.startRatio
+      score += minutesPerMatch * weights.minutesPerMatch
+      score += parseFloat(expectedGoalInvolvement ?? 0) * weights.xGI
 
-      score += isAvailable ? WEIGHTS.available : WEIGHTS.notAvailable
+      score += isAvailable ? weights.available : weights.notAvailable
 
-      score += parseFloat(player.ep_next) * WEIGHTS.expectedPoints
-      score += parseFloat(player.form) * WEIGHTS.form
+      score += parseFloat(player.ep_this ?? "0") * weights.expectedPoints
+      score += parseFloat(player.form) * weights.form
+      score -=
+        ((+(player.red_cards ?? 0) + +(player.yellow_cards ?? 0)) /
+          NUMBER_OF_MATCHES) *
+        weights.discipline
 
       const team = teamMap.get(player.team)
 
       if (!team) return null
-
 
       const teamAdvantageScore = getTeamFDR(team.id, { span: 6 }).average - 2.5
 
@@ -84,14 +110,13 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
       const position = elementTypeToPosition[player.element_type] // Get the player's position
       if (position === "GK" || position === "DEF") {
-        score += cleanSheets * WEIGHTS.cleanSheets
-        score += player.saves_per_90 * WEIGHTS.savesPerMatch
-        score += player.defensive_contribution * WEIGHTS.defcon
-        score -= goalsConceded * WEIGHTS.conceded
+        score += cleanSheets * weights.cleanSheets
+        score += player.saves_per_90 * weights.savesPerMatch
+        score += player.defensive_contribution * weights.defcon
+        score -= goalsConceded * weights.conceded
       }
 
-
-      score = score / Object.keys(WEIGHTS).length
+      score = score / Object.keys(weights).length
 
       return {
         element: player,
@@ -107,16 +132,13 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
   return { players, teamMap }
 }
 
-
-
 export const selectTeam = async (params: {
-  players: IOptimalTeamPlayer[];
-  desiredFormation?: string; // "3-4-3" etc.
-  budget?: number;           // default to BUDGET
-  benchBoostEnabled?: boolean;
-  numberEnablers?: number;   // ≥ 0 – minimal number of high‑price players to keep squad “priced”
+  players: IOptimalTeamPlayer[]
+  desiredFormation?: string // "3-4-3" etc.
+  budget?: number // default to BUDGET
+  benchBoostEnabled?: boolean
+  numberEnablers?: number // ≥ 0 – minimal number of high‑price players to keep squad “priced”
 }) => {
-
   const {
     players: PLAYERS,
     desiredFormation = "3-4-3",
@@ -126,7 +148,9 @@ export const selectTeam = async (params: {
 
   let { players } = params
 
-  const [defenseXICount, midfieldXICount, forwardXICount] = desiredFormation.split('-').map(Number)
+  const [defenseXICount, midfieldXICount, forwardXICount] = desiredFormation
+    .split("-")
+    .map(Number)
 
   let groupedByPosition = Object.groupBy(players, (p) => p.position)
 
@@ -138,8 +162,12 @@ export const selectTeam = async (params: {
   }
   const positionCount: PositionCount = { GK: 1, DEF: 0, MID: 0, FWD: 0 }
 
-  players = players.filter(p => p.element.id !== groupedByPosition.GK![0].element.id)
-  groupedByPosition.GK = groupedByPosition.GK?.filter(p => p.element.id !== groupedByPosition.GK![0].element.id)
+  players = players.filter(
+    (p) => p.element.id !== groupedByPosition.GK![0].element.id
+  )
+  groupedByPosition.GK = groupedByPosition.GK?.filter(
+    (p) => p.element.id !== groupedByPosition.GK![0].element.id
+  )
 
   // bench positions
   let defenseBenchCount = POSITION_LIMITS.DEF - defenseXICount
@@ -149,10 +177,14 @@ export const selectTeam = async (params: {
   if (!benchBoostEnabled)
     for (let i = 0; i < numberEnablers; i++) {
       if (i === 0) {
-        const cheapestGK = groupedByPosition.GK?.find(player => player.element.now_cost === CHEAPEST.GK)
+        const cheapestGK = groupedByPosition.GK?.find(
+          (player) => player.element.now_cost === CHEAPEST.GK
+        )
         bench.push(cheapestGK!)
-        players = players.filter(p => p.element.id !== cheapestGK!.element.id)
-        groupedByPosition.GK = groupedByPosition.GK?.filter(p => p.element.id !== cheapestGK!.element.id)
+        players = players.filter((p) => p.element.id !== cheapestGK!.element.id)
+        groupedByPosition.GK = groupedByPosition.GK?.filter(
+          (p) => p.element.id !== cheapestGK!.element.id
+        )
         totalCost += cheapestGK!.element.now_cost!
         teamCount[cheapestGK!.teamId] = (teamCount[cheapestGK!.teamId] ?? 0) + 1
         positionCount.GK += 1
@@ -160,37 +192,58 @@ export const selectTeam = async (params: {
       }
 
       if (defenseBenchCount) {
-        const cheapestDef = groupedByPosition.DEF?.find(player => player.element.now_cost === CHEAPEST.DEF)
+        const cheapestDef = groupedByPosition.DEF?.find(
+          (player) => player.element.now_cost === CHEAPEST.DEF
+        )
         bench.push(cheapestDef!)
-        players = players.filter(p => p.element.id !== cheapestDef!.element.id)
-        groupedByPosition.DEF = groupedByPosition.DEF?.filter(p => p.element.id !== cheapestDef!.element.id)
+        players = players.filter(
+          (p) => p.element.id !== cheapestDef!.element.id
+        )
+        groupedByPosition.DEF = groupedByPosition.DEF?.filter(
+          (p) => p.element.id !== cheapestDef!.element.id
+        )
         defenseBenchCount--
         totalCost += cheapestDef!.element.now_cost!
-        teamCount[cheapestDef!.teamId] = (teamCount[cheapestDef!.teamId] ?? 0) + 1
+        teamCount[cheapestDef!.teamId] =
+          (teamCount[cheapestDef!.teamId] ?? 0) + 1
         positionCount.DEF += 1
         continue
       }
 
       if (midfieldBenchCount) {
-        const cheapestMid = groupedByPosition.MID?.find(player => player.element.now_cost === CHEAPEST.MID)
+        const cheapestMid = groupedByPosition.MID?.find(
+          (player) => player.element.now_cost === CHEAPEST.MID
+        )
         bench.push(cheapestMid!)
-        players = players.filter(p => p.element.id !== cheapestMid!.element.id)
-        groupedByPosition.MID = groupedByPosition.MID?.filter(p => p.element.id !== cheapestMid!.element.id)
+        players = players.filter(
+          (p) => p.element.id !== cheapestMid!.element.id
+        )
+        groupedByPosition.MID = groupedByPosition.MID?.filter(
+          (p) => p.element.id !== cheapestMid!.element.id
+        )
         midfieldBenchCount--
         totalCost += cheapestMid!.element.now_cost!
-        teamCount[cheapestMid!.teamId] = (teamCount[cheapestMid!.teamId] ?? 0) + 1
+        teamCount[cheapestMid!.teamId] =
+          (teamCount[cheapestMid!.teamId] ?? 0) + 1
         positionCount.MID += 1
         continue
       }
 
       if (forwardBenchCount) {
-        const cheapestFwd = groupedByPosition.FWD?.find(player => player.element.now_cost === CHEAPEST.FWD)
+        const cheapestFwd = groupedByPosition.FWD?.find(
+          (player) => player.element.now_cost === CHEAPEST.FWD
+        )
         bench.push(cheapestFwd!)
-        players = players.filter(p => p.element.id !== cheapestFwd!.element.id)
-        groupedByPosition.FWD = groupedByPosition.FWD?.filter(p => p.element.id !== cheapestFwd!.element.id)
+        players = players.filter(
+          (p) => p.element.id !== cheapestFwd!.element.id
+        )
+        groupedByPosition.FWD = groupedByPosition.FWD?.filter(
+          (p) => p.element.id !== cheapestFwd!.element.id
+        )
         forwardBenchCount--
         totalCost += cheapestFwd!.element.now_cost!
-        teamCount[cheapestFwd!.teamId] = (teamCount[cheapestFwd!.teamId] ?? 0) + 1
+        teamCount[cheapestFwd!.teamId] =
+          (teamCount[cheapestFwd!.teamId] ?? 0) + 1
         positionCount.FWD += 1
         continue
       }
@@ -198,7 +251,9 @@ export const selectTeam = async (params: {
 
   for (let i = 0; i < players.length; i++) {
     const player = players[i]
-    if ([...starting, ...bench].some(p => p.element.id === player.element.id)) {
+    if (
+      [...starting, ...bench].some((p) => p.element.id === player.element.id)
+    ) {
       players.splice(i, 1)
       i--
       continue
@@ -207,9 +262,12 @@ export const selectTeam = async (params: {
     const { eligible, reasons } = checkEligibility({
       budgetUsed: totalCost,
       candidate: player,
-      selected: [...starting.map((p) => p.element.id), ...bench.map((p) => p.element.id)],
+      selected: [
+        ...starting.map((p) => p.element.id),
+        ...bench.map((p) => p.element.id),
+      ],
       teamCount,
-      positionCount
+      positionCount,
     })
 
     if (eligible) {
@@ -241,11 +299,18 @@ export const selectTeam = async (params: {
       if (benchBoostEnabled && bench.length) {
         removed = bench.pop()
       } else {
-        removed = starting.splice(Math.floor(Math.random()) * starting.length - 1, 1)[0]
+        removed = starting.splice(
+          Math.floor(Math.random()) * starting.length - 1,
+          1
+        )[0]
       }
       totalCost -= removed!.element.now_cost!
       positionCount[removed!.position as Position] -= 1
-      players = players.filter((p) => p.element.now_cost >= player.element.now_cost && p.element.id !== removed!.element.id)
+      players = players.filter(
+        (p) =>
+          p.element.now_cost >= player.element.now_cost &&
+          p.element.id !== removed!.element.id
+      )
       i--
       continue
     }
@@ -270,9 +335,8 @@ export const selectTeam = async (params: {
     }
   }
 
-
   return {
     starting,
-    bench
+    bench,
   }
 }

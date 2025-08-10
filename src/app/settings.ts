@@ -8,6 +8,9 @@ export const SUPPORT_ADDRESSES = {
   BTC: "bc1p5n9ya2k63trk6k7xrh2jp0lzgyhn0xadj4utgqcpu855q9my9rtq0q5n8e",
   XMR: "45nCrEa8LpJd9DFmh9nmfL3hpUhAdDyik3emMyNhNozk9VSDK9WEwNLZPAHL3MCFW2L84tXRKCbaQ3GkjaPuj51wAGs36Ai",
 } as const
+
+export const MAX_TUNES = 20
+
 export const BUDGET = 1000
 export const TEAM_LIMIT = 3
 export const POSITION_LIMITS = { GK: 2, DEF: 5, MID: 5, FWD: 3 }
@@ -31,24 +34,24 @@ export const MIN_POSITIONS_XI = {
   FWD: 1,
 }
 export const WEIGHTS = {
-  expectedPoints: 4,
-  form: 2,
-  teamAdvantage: 2,
-  xGI: 3,
-  xGC: -0.5,
-  BPS: 0.5,
-  lastSeasonPoints: 1,
+  expectedPoints: 5,
+  form: 3,
+  teamAdvantage: 3,
+  xGI: 5,
+  xGC: -1.5,
+  BPS: 1,
+  lastSeasonPoints: 1.5,
   startRatio: 5,
   minutesPerMatch: 5,
   available: 5,
   notAvailable: -5,
-  cleanSheets: 2,
+  cleanSheets: 3,
   savesPerMatch: 2,
   conceded: -2,
-  defcon: 2,
-  cost: -2
-}
-
+  defcon: 1,
+  discipline: -2,
+  cost: 1,
+} as const
 
 export const BENCH_GK_COST_LIMIT = 40
 export const BENCH_DEF_COST_LIMIT = 40
@@ -58,7 +61,6 @@ export const BUDGET_FOR_XI = 820
 export const NUMBER_OF_MATCHES = 38
 
 export const teamMap = new Map<number, Team>()
-
 
 export const CURRENT_GW = snapshot.events.find((e) => !e.finished) as Event
 
@@ -75,7 +77,6 @@ export const CURRENT_GW = snapshot.events.find((e) => !e.finished) as Event
 // export const FDR = FDR_BEGINNING.slice(CURRENT_GW.id - 1)
 
 // export const FDR_PER_TEAM = Object.groupBy(FDR, (f) => f.team.id)
-
 
 export const CHEAPEST = {
   GK: 40,
@@ -125,6 +126,8 @@ export const DEFAULT_TEAM_COLOR = "#888888"
 export const getTeamColor = (team: string | TeamName): string =>
   (TEAM_COLOR as Record<string, string>)[team] ?? DEFAULT_TEAM_COLOR
 
+export type WeightKey = keyof typeof WEIGHTS
+
 interface SettingsState {
   desiredFormation: string
   benchBoostEnabled: boolean
@@ -132,12 +135,14 @@ interface SettingsState {
   numberEnablers: number
   snapshot: ISnapshot | null
   sortedPlayers: IOptimalTeamPlayer[]
+  weights: typeof WEIGHTS
   setDesiredFormation: (formation: string) => void
   setBenchBoostEnabled: (enabled: boolean) => void
   setTripleCaptainEnabled: (enabled: boolean) => void
   setNumberEnablers: (number: number) => void
   setSnapshot: (snapshot: ISnapshot) => void
   setSortedPlayers: (players: IOptimalTeamPlayer[]) => void
+  setWeights: (weights: typeof WEIGHTS) => void
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
@@ -147,10 +152,12 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   numberEnablers: 4,
   snapshot: snapshot as unknown as ISnapshot,
   sortedPlayers: [],
+  weights: WEIGHTS,
   setSortedPlayers: (players) => set({ sortedPlayers: players }),
   setDesiredFormation: (formation) => set({ desiredFormation: formation }),
   setBenchBoostEnabled: (enabled) => set({ benchBoostEnabled: enabled }),
   setTripleCaptainEnabled: (enabled) => set({ tripleCaptainEnabled: enabled }),
   setNumberEnablers: (number) => set({ numberEnablers: number }),
   setSnapshot: (snapshot) => set({ snapshot: snapshot }),
+  setWeights: (weights) => set({ weights }),
 }))
