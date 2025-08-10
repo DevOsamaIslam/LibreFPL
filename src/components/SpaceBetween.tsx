@@ -19,7 +19,7 @@ const SpaceBetween: React.FC<SpaceBetweenProps> = ({
   children,
   justify = "space-between",
   align = "center",
-  spacing = 0,
+  spacing = 1,
   sx,
 }) => {
   return (

@@ -73,7 +73,7 @@ export interface Player {
   dreamteam_count: number
   element_type: keyof typeof elementTypeToPosition
   ep_next: string
-  ep_this: null
+  ep_this: string | null
   event_points: number
   first_name: string
   form: string

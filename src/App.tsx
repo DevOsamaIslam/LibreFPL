@@ -19,6 +19,7 @@ import Players from "./modules/Players"
 import PlayersCompare from "./modules/PlayersCompare/PlayersCompare"
 import SquadRatingPage from "./modules/SquadRating/SquadRatingPage"
 import Support from "./modules/Support"
+import WeightSettings from "./modules/WeightSettings"
 
 function App() {
   const { setSortedPlayers, snapshot } = useSettingsStore()
@@ -68,6 +69,12 @@ function App() {
                     FDR
                   </Button>
                   <Button
+                    color="inherit"
+                    component={Link}
+                    to="/weight-settings">
+                    Weight Settings
+                  </Button>
+                  <Button
                     color="secondary"
                     component={Link}
                     to="/support"
@@ -87,6 +94,7 @@ function App() {
               <Route path="/squad-rating" element={<SquadRatingPage />} />
               <Route path="/charts" element={<Charts />} />
               <Route path="/fdr" element={<FDRPage />} />
+              <Route path="/weight-settings" element={<WeightSettings />} />
               <Route path="/support" element={<Support />} />
             </Routes>
           </Box>

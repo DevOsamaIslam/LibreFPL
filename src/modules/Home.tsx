@@ -18,6 +18,7 @@ const ROUTES = {
   compare: "/players-compare",
   rating: "/squad-rating",
   fdr: "/fdr",
+  weightSettings: "/weight-settings",
   rules: "/rules",
   support: "/support",
 } as const
@@ -58,6 +59,13 @@ const FEATURES = [
     description: "Generate the optimal lineup based on our inhouse algorithm.",
     route: ROUTES.teams,
     badge: "Beta",
+  },
+  {
+    key: "weight-settings",
+    title: "Weight Settings",
+    description: "Customize algorithm weights for player evaluation.",
+    route: ROUTES.weightSettings,
+    badge: "Advanced",
   },
 ] as const
 
