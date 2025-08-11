@@ -24,8 +24,7 @@ const Cell: React.FC<CellProps> = ({ score, label, showLabel }) => {
           textAlign: "center",
           borderRadius: 1,
           border: (theme) => `1px solid ${theme.palette.divider}`,
-          minWidth: 44,
-          lineHeight: 1.25,
+          minWidth: 10,
         }}
         children={showLabel ? label : ""}
       />

@@ -224,8 +224,18 @@ function PlayerBox({ player, armband }: PlayerBoxProps) {
                 </Tooltip>
               </Stack>
               <SpaceBetween>
+                <Chip
+                  label={`xPoints: ${
+                    player.element.ep_this || player.element.ep_next
+                  }`}
+                  size="small"
+                />
                 {FDR.teamFDR.map((score, gw) => (
-                  <Cell key={gw} score={score.score} label={score.score} />
+                  <Cell
+                    key={gw}
+                    score={score.score}
+                    label={score.score.toFixed(2)}
+                  />
                 ))}
                 <Cell
                   score={FDR.average}

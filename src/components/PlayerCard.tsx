@@ -13,7 +13,7 @@ import {
 import type { ReactNode } from "react"
 import { NUMBER_OF_MATCHES } from "../app/settings"
 import type { IOptimalTeamPlayer } from "../lib/types"
-import type { Team } from "../modules/PlayersCompare/control"
+import type { Team } from "../modules/player-compare/control"
 import {
   ELEMENT_TYPE,
   label,
@@ -22,7 +22,9 @@ import {
   priceFmt,
   teamAttackStrength,
   teamDefenseStrength,
-} from "../modules/PlayersCompare/control"
+} from "../modules/player-compare/control"
+import { getTeamFDR } from "../app/fdrAlgo"
+import Cell from "./Cell"
 
 export default function PlayerCard({
   element,
@@ -43,6 +45,8 @@ export default function PlayerCard({
 
   const att = teamAttackStrength(team)
   const def = teamDefenseStrength(team)
+
+  const FDR = getTeamFDR(player.team, { span: 5 })
 
   const Row = ({ left, right }: { left: ReactNode; right: ReactNode }) => (
     <Stack
@@ -175,6 +179,25 @@ export default function PlayerCard({
           <Row
             left={label.defense}
             right={def !== undefined ? String(numberFmt(def, 0)) : "-"}
+          />
+          <Row
+            left={label.upcomingGWs}
+            right={
+              <Stack direction={"row"} spacing={1}>
+                {FDR.teamFDR.map((fdr) => (
+                  <Cell
+                    key={fdr.score}
+                    label={fdr.score.toFixed(2)}
+                    score={fdr.score}
+                  />
+                ))}
+                <Cell
+                  label={FDR.average.toFixed(2)}
+                  score={FDR.average}
+                  showLabel
+                />
+              </Stack>
+            }
           />
         </Section>
       </CardContent>
