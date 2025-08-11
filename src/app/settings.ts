@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import snapshot from "../data/snapshot.json"
 import type { Event, IOptimalTeamPlayer, ISnapshot } from "../lib/types"
-import type { Team } from "../modules/PlayersCompare/control"
+import type { Team } from "../modules/player-compare/control"
 
 export const APP_NAME = "LibreFPL"
 export const SUPPORT_ADDRESSES = {
@@ -34,8 +34,8 @@ export const MIN_POSITIONS_XI = {
   FWD: 1,
 }
 export const WEIGHTS = {
-  expectedPoints: 5,
-  form: 3,
+  expectedPoints: 8,
+  form: 5,
   teamAdvantage: 3,
   xGI: 5,
   xGC: -1.5,
