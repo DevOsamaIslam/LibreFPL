@@ -1,7 +1,7 @@
 import React from "react"
 import PageTitle from "../components/PageTitle"
 import SpaceBetween from "../components/SpaceBetween"
-import ScoreVsCost from "./Charts/ScoreVsCost"
+import ScoreVsCost from "./charts/ScoreVsCost"
 
 const sectionStyle: React.CSSProperties = {
   padding: "1rem",

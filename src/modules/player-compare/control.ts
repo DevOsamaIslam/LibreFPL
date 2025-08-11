@@ -48,6 +48,7 @@ export const label = {
   form: "Form",
   attack: "Attack",
   defense: "Defense",
+  upcomingGWs: "Upcoming GWs",
 } as const
 
 export function useCompareData() {
