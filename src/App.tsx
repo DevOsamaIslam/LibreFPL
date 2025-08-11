@@ -16,10 +16,10 @@ import FDRPage from "./modules/FDR"
 import GenerateLineup from "./modules/GenerateLineup"
 import Home from "./modules/Home"
 import Players from "./modules/Players"
-import PlayersCompare from "./modules/PlayersCompare/PlayersCompare"
-import SquadRatingPage from "./modules/SquadRating/SquadRatingPage"
+import PlayersCompare from "./modules/player-compare/PlayersCompare"
+import SquadRatingPage from "./modules/squad-rating/SquadRatingPage"
 import Support from "./modules/Support"
-import WeightSettings from "./modules/WeightSettings"
+import TuneAlgo from "./modules/tune-algo"
 
 function App() {
   const { setSortedPlayers, snapshot } = useSettingsStore()
@@ -50,12 +50,12 @@ function App() {
                   <Button color="inherit" component={Link} to="/players">
                     Players
                   </Button>
-                  <Button
+                  {/* <Button
                     color="inherit"
                     component={Link}
                     to="/generate-lineup">
-                    Generate Lineup
-                  </Button>
+                    Generate Lineup (Beta)
+                  </Button> */}
                   <Button color="inherit" component={Link} to="/compare">
                     Compare
                   </Button>
@@ -94,7 +94,7 @@ function App() {
               <Route path="/squad-rating" element={<SquadRatingPage />} />
               <Route path="/charts" element={<Charts />} />
               <Route path="/fdr" element={<FDRPage />} />
-              <Route path="/weight-settings" element={<WeightSettings />} />
+              <Route path="/weight-settings" element={<TuneAlgo />} />
               <Route path="/support" element={<Support />} />
             </Routes>
           </Box>
