@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from "react"
+import React, { useMemo, useCallback, useEffect } from "react"
 import {
   Box,
   Stack,
@@ -10,8 +10,14 @@ import {
   ListItemButton,
   ListItemText,
   Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Button,
 } from "@mui/material"
 import Grid from "@mui/material/Grid"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import SaveIcon from "@mui/icons-material/Save"
 import { useSettingsStore } from "../../app/settings"
 import { checkEligibility } from "../../app/eligibility"
 import PageTitle from "../../components/PageTitle"
@@ -28,6 +34,7 @@ import {
   type PositionCount,
   type TeamCount,
 } from "../../lib/types"
+import { useSavedSquads } from "../../hooks/useSavedSquads"
 
 const SquadRatingPage: React.FC = ({}) => {
   const { sortedPlayers: players } = useSettingsStore()
@@ -53,6 +60,12 @@ const SquadRatingPage: React.FC = ({}) => {
   const { selectedIds, setSelectedIds, togglePlayer, max } = usePlayerSelector({
     players,
   })
+
+  const { SavedSquadSelector, activeSquad, setActiveSquad } = useSavedSquads()
+
+  useEffect(() => {
+    if (activeSquad) setSelectedSquad(activeSquad.playerIds)
+  }, [activeSquad])
 
   const { q, setQ, result } = useSearchBase(players)
 
@@ -80,9 +93,15 @@ const SquadRatingPage: React.FC = ({}) => {
   }, [selectedIds])
 
   // Sync hook with URL-driven state
-  useMemo(() => {
+  useEffect(() => {
     if (selectedIds.join(",") !== selectedSquad.join(",")) {
       setSelectedIds(selectedSquad)
+      setActiveSquad({
+        title: "",
+        description: "",
+        playerIds: selectedSquad,
+        updatedAt: new Date(),
+      })
     }
   }, [selectedIds, selectedSquad, setSelectedIds])
 
@@ -294,6 +313,8 @@ const SquadRatingPage: React.FC = ({}) => {
             cancel selection.
           </Typography>
         </Paper>
+
+        <SavedSquadSelector />
 
         <Typography variant="h6" sx={{ mb: 1 }}>
           Starting XI

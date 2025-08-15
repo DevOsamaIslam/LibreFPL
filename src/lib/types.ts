@@ -391,3 +391,10 @@ export interface IFixture {
   team_a_difficulty: number
   pulse_id: number
 }
+
+export interface ISavedSquad {
+  title: string
+  description?: string
+  playerIds: number[]
+  updatedAt: Date
+}

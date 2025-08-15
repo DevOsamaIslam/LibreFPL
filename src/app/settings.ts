@@ -34,7 +34,7 @@ export const MIN_POSITIONS_XI = {
   FWD: 1,
 }
 export const WEIGHTS = {
-  expectedPoints: 8,
+  expectedPoints: 3,
   form: 5,
   teamAdvantage: 3,
   xGI: 5,
@@ -52,6 +52,8 @@ export const WEIGHTS = {
   discipline: -2,
   cost: 1,
 } as const
+
+export const CURRENCY = "£"
 
 export const BENCH_GK_COST_LIMIT = 40
 export const BENCH_DEF_COST_LIMIT = 40

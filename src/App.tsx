@@ -1,32 +1,32 @@
-import { Box, Stack } from "@mui/material";
-import AppBar from "@mui/material/AppBar";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import { ThemeProvider } from "@mui/material/styles";
-import Toolbar from "@mui/material/Toolbar";
-import { useEffect } from "react";
-import { HashRouter, Link, Route, Routes } from "react-router";
-import { pickOptimalFPLTeamAdvanced } from "./app/algo";
-import { useSettingsStore } from "./app/settings";
-import theme from "./app/theme";
-import PageTitle from "./components/PageTitle";
-import SpaceBetween from "./components/SpaceBetween";
-import Charts from "./modules/Charts";
-import FDRPage from "./modules/FDR";
-import GenerateLineup from "./modules/GenerateLineup";
-import Home from "./modules/Home";
-import Players from "./modules/Players";
-import SuggestedTransfersPage from "./modules/SuggestedTransfers";
-import PlayersCompare from "./modules/player-compare/PlayersCompare";
-import SquadRatingPage from "./modules/squad-rating/SquadRatingPage";
-import Support from "./modules/Support";
-import TuneAlgo from "./modules/tune-algo";
+import { Box, Stack } from "@mui/material"
+import AppBar from "@mui/material/AppBar"
+import Button from "@mui/material/Button"
+import CssBaseline from "@mui/material/CssBaseline"
+import { ThemeProvider } from "@mui/material/styles"
+import Toolbar from "@mui/material/Toolbar"
+import { useEffect } from "react"
+import { HashRouter, Link, Route, Routes } from "react-router"
+import { pickOptimalFPLTeamAdvanced } from "./app/algo"
+import { useSettingsStore } from "./app/settings"
+import theme from "./app/theme"
+import PageTitle from "./components/PageTitle"
+import SpaceBetween from "./components/SpaceBetween"
+import Charts from "./modules/Charts"
+import FDRPage from "./modules/FDR"
+import GenerateLineup from "./modules/GenerateLineup"
+import Home from "./modules/Home"
+import Players from "./modules/Players"
+import SuggestedTransfersPage from "./modules/suggested-transfers"
+import PlayersCompare from "./modules/player-compare/PlayersCompare"
+import SquadRatingPage from "./modules/squad-rating/SquadRatingPage"
+import Support from "./modules/Support"
+import TuneAlgo from "./modules/tune-algo"
 
 function App() {
-  const { setSortedPlayers, snapshot } = useSettingsStore();
+  const { setSortedPlayers, snapshot } = useSettingsStore()
   useEffect(() => {
-    if (snapshot) setSortedPlayers(pickOptimalFPLTeamAdvanced(snapshot));
-  }, []);
+    if (snapshot) setSortedPlayers(pickOptimalFPLTeamAdvanced(snapshot))
+  }, [])
 
   return (
     <>
@@ -66,8 +66,7 @@ function App() {
                   <Button
                     color="inherit"
                     component={Link}
-                    to="/suggested-transfers"
-                  >
+                    to="/suggested-transfers">
                     Suggested Transfers
                   </Button>
                   <Button color="inherit" component={Link} to="/charts">
@@ -79,16 +78,14 @@ function App() {
                   <Button
                     color="inherit"
                     component={Link}
-                    to="/weight-settings"
-                  >
+                    to="/weight-settings">
                     Weight Settings
                   </Button>
                   <Button
                     color="secondary"
                     component={Link}
                     to="/support"
-                    variant="contained"
-                  >
+                    variant="contained">
                     Support
                   </Button>
                 </Stack>
@@ -115,7 +112,7 @@ function App() {
         </HashRouter>
       </ThemeProvider>
     </>
-  );
+  )
 }
 
-export default App;
+export default App

@@ -1,3 +1,4 @@
+import { getItem } from "../lib/helpers"
 import {
   Status,
   type IOptimalTeamPlayer,
@@ -39,24 +40,18 @@ export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot) => {
  * This function filters players based on their status, cost, and minutes played, and calculates a score for each player based on their expected points (EP), form, and team advantage.
  */
 const filterAndScorePlayers = (fpl: ISnapshot) => {
-  // Get weights from localStorage with fallback to defaults
   const getStoredWeights = (): typeof WEIGHTS => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = window.localStorage.getItem("algorithm-weights")
-        const storedWeights = Object.keys(
-          JSON.parse(stored || "") as typeof WEIGHTS
-        ).reduce((acc, key) => {
-          if (stored && !stored?.[key]) stored[key] = WEIGHTS[key]
-          return acc
-        }, {} as typeof WEIGHTS)
-        return storedWeights
-      } catch (error) {
-        console.error("Error reading stored weights:", error)
-        return WEIGHTS
-      }
+    try {
+      const stored = getItem<typeof WEIGHTS>("algorithm-weights")
+      const storedWeights = Object.keys(stored ?? {}).reduce((acc, key) => {
+        if (stored && !stored?.[key]) stored[key] = WEIGHTS[key]
+        return acc
+      }, WEIGHTS)
+      return storedWeights
+    } catch (error) {
+      console.error("Error reading stored weights:", error)
+      return WEIGHTS
     }
-    return WEIGHTS
   }
 
   const weights = getStoredWeights()
@@ -93,7 +88,9 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
       score += isAvailable ? weights.available : weights.notAvailable
 
-      score += parseFloat(player.ep_this ?? "0") * weights.expectedPoints
+      score +=
+        parseFloat(player.ep_this || player.ep_next || "0") *
+        weights.expectedPoints
       score += parseFloat(player.form) * weights.form
       score -=
         ((+(player.red_cards ?? 0) + +(player.yellow_cards ?? 0)) /

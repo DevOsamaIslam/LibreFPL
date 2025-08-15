@@ -3,6 +3,7 @@ import type { IOptimalTeamPlayer, Team } from "../../lib/types"
 import { useSearchParams } from "react-router"
 import { elementTypeToPosition } from "../../app/settings"
 import { Position } from "../../store/playerFilter.store"
+import { calculateTeamScore } from "../../app/transfers"
 
 // Centralized constants to avoid hard-coded strings
 const QUERY_KEYS = {
@@ -134,15 +135,7 @@ function useSquadRating({ players, teams }: ControllerArgs) {
   )
 
   // Helper: weighted total for whole team (bench 10%)
-  const recalcWeightedTeamScore = useCallback(
-    (ids: number[]) =>
-      ids.reduce((acc, id, idx) => {
-        const p = validIds[id]
-        if (!p) return acc
-        return acc + p.score * (idx < 11 ? 1 : 0.1)
-      }, 0),
-    [validIds]
-  )
+  const reCalcWeightedTeamScore = useCallback(calculateTeamScore, [validIds])
 
   // Derived ids for sections
   const startersIds = useMemo(() => selectedSquad.slice(0, 11), [selectedSquad])
@@ -158,10 +151,13 @@ function useSquadRating({ players, teams }: ControllerArgs) {
   useEffect(() => {
     const xi = sumScore(startersIds)
     const bench = sumScore(benchIds)
+    const selectedPlayers = [...startersIds, ...benchIds].map(
+      (id) => validIds[id]
+    )
     setXiScore(xi)
     setBenchScore(bench)
     // Keep teamScore representing the weighted whole team display by default
-    setTeamScore(recalcWeightedTeamScore([...startersIds, ...benchIds]))
+    setTeamScore(reCalcWeightedTeamScore(selectedPlayers))
 
     // Determine captain and vice from XI by highest scores
     if (startersIds.length > 0) {
@@ -187,7 +183,7 @@ function useSquadRating({ players, teams }: ControllerArgs) {
     } else {
       setCaptaincy({ captainId: null, viceCaptainId: null })
     }
-  }, [startersIds, benchIds, sumScore, recalcWeightedTeamScore, validIds])
+  }, [startersIds, benchIds, sumScore, reCalcWeightedTeamScore, validIds])
 
   // Click-to-swap selection state
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
