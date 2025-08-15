@@ -23,6 +23,7 @@ const theme = createTheme({
   zIndex: {
     // provide a baseline so component zIndex can derive from this instead of magic numbers
     appBar: 1100,
+    snackbar: 1400,
   },
 })
 

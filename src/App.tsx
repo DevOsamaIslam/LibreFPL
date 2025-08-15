@@ -11,6 +11,7 @@ import { useSettingsStore } from "./app/settings"
 import theme from "./app/theme"
 import PageTitle from "./components/PageTitle"
 import SpaceBetween from "./components/SpaceBetween"
+import Snackbar from "./components/Snackbar"
 import Charts from "./modules/Charts"
 import FDRPage from "./modules/FDR"
 import GenerateLineup from "./modules/GenerateLineup"
@@ -21,12 +22,21 @@ import PlayersCompare from "./modules/player-compare/PlayersCompare"
 import SquadRatingPage from "./modules/squad-rating/SquadRatingPage"
 import Support from "./modules/Support"
 import TuneAlgo from "./modules/tune-algo"
+import { SnackbarProvider } from "./context/SnackbarContext"
+import { useSnackbarUtils, initializeGlobalSnackbar } from "./lib/snackbar"
 
 function App() {
   const { setSortedPlayers, snapshot } = useSettingsStore()
+  const snackbarUtils = useSnackbarUtils()
+
   useEffect(() => {
     if (snapshot) setSortedPlayers(pickOptimalFPLTeamAdvanced(snapshot))
   }, [])
+
+  // Initialize global snackbar
+  useEffect(() => {
+    initializeGlobalSnackbar(snackbarUtils)
+  }, [snackbarUtils])
 
   return (
     <>
@@ -109,6 +119,7 @@ function App() {
               <Route path="/support" element={<Support />} />
             </Routes>
           </Box>
+          <Snackbar />
         </HashRouter>
       </ThemeProvider>
     </>

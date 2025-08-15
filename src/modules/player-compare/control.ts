@@ -37,6 +37,7 @@ export const label = {
   mins: "Minutes",
   goals: "Goals",
   assists: "Assists",
+  xPointsNext: "Expected Points Next GW",
   cleanSheet: "Clean Sheet",
   conceded: "Conceded",
   saves: "Saves",

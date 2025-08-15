@@ -80,7 +80,7 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
       score += lastSeasonPPG * weights.lastSeasonPoints
 
       if (player.element_type !== positionToElementType.GK)
-        score -= player.now_cost * weights.cost
+        score += player.now_cost * weights.cost
 
       score += startsRatio * weights.startRatio
       score += minutesPerMatch * weights.minutesPerMatch
@@ -92,10 +92,12 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
         parseFloat(player.ep_this || player.ep_next || "0") *
         weights.expectedPoints
       score += parseFloat(player.form) * weights.form
-      score -=
-        ((+(player.red_cards ?? 0) + +(player.yellow_cards ?? 0)) /
-          NUMBER_OF_MATCHES) *
-        weights.discipline
+
+      const discipline =
+        ((player.red_cards ?? 0) + (player.yellow_cards ?? 0)) /
+        NUMBER_OF_MATCHES
+
+      score += discipline * weights.discipline
 
       const team = teamMap.get(player.team)
 
@@ -105,12 +107,12 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
       score += teamAdvantageScore
 
-      const position = elementTypeToPosition[player.element_type] // Get the player's position
+      const position = elementTypeToPosition[player.element_type]
       if (position === "GK" || position === "DEF") {
         score += cleanSheets * weights.cleanSheets
         score += player.saves_per_90 * weights.savesPerMatch
         score += player.defensive_contribution * weights.defcon
-        score -= goalsConceded * weights.conceded
+        score += goalsConceded * weights.conceded
       }
 
       score = score / Object.keys(weights).length

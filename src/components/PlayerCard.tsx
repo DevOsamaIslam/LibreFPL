@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material"
 import type { ReactNode } from "react"
-import { NUMBER_OF_MATCHES } from "../app/settings"
+import { colorByPos, NUMBER_OF_MATCHES } from "../app/settings"
 import type { IOptimalTeamPlayer } from "../lib/types"
 import type { Team } from "../modules/player-compare/control"
 import {
@@ -71,15 +71,23 @@ export default function PlayerCard({
             </Typography>
             <Chip
               size="small"
-              color="primary"
-              label={`Score: ${element.score.toFixed(0)}`}
-              sx={{ height: 20, "& .MuiChip-label": { px: 0.75 } }}
+              label={position}
+              sx={{
+                height: 20,
+                "& .MuiChip-label": { px: 0.75 },
+                background: colorByPos[position],
+                color: "white",
+              }}
             />
             <Chip
               size="small"
-              color="secondary"
-              label={position}
-              sx={{ height: 20, "& .MuiChip-label": { px: 0.75 } }}
+              color="primary"
+              label={`Score: ${element.score.toFixed(0)}`}
+              sx={{
+                height: 20,
+                "& .MuiChip-label": { px: 0.75 },
+                color: "white",
+              }}
             />
           </Stack>
         }
@@ -128,6 +136,10 @@ export default function PlayerCard({
           <Row
             left={label.assists}
             right={String(numberFmt(player.assists, 0))}
+          />
+          <Row
+            left={label.xPointsNext}
+            right={String(numberFmt(+(player.ep_this || player.ep_next), 0))}
           />
           <Row
             left={label.cleanSheet}

@@ -14,10 +14,13 @@ import BaseDialog from "../components/BaseDialog"
 import SpaceBetween from "../components/SpaceBetween"
 import type { ISavedSquad } from "../lib/types"
 import { useLocalStorage } from "./useLocalStorage"
+import { DeleteForeverOutlined } from "@mui/icons-material"
+import { useSnackbarUtils } from "../lib/snackbar"
 
 export const useSavedSquads = () => {
   const [activeSquad, setActiveSquad] = useState<ISavedSquad>()
   const [openDialog, setOpenDialog] = useState(false)
+  const { success, error } = useSnackbarUtils()
 
   const [savedSquads, setSavedSquads] = useLocalStorage<ISavedSquad[]>(
     "saved-squads",
@@ -28,22 +31,25 @@ export const useSavedSquads = () => {
   const addSquad = useCallback(
     (squad: ISavedSquad) => {
       setSavedSquads((prev) => [...prev, squad])
+      success(`Squad "${squad.title}" saved successfully!`)
     },
-    [setSavedSquads]
+    [setSavedSquads, success]
   )
   const updateSquad = useCallback(
     (squad: ISavedSquad) => {
       setSavedSquads((prev) =>
         prev.map((x) => (x.title === squad.title ? squad : x))
       )
+      success(`Squad "${squad.title}" updated successfully!`)
     },
-    [setSavedSquads]
+    [setSavedSquads, success]
   )
   const deleteSquad = useCallback(
     (squad: ISavedSquad) => {
       setSavedSquads((prev) => prev.filter((x) => x.title !== squad.title))
+      error(`Squad "${squad.title}" deleted successfully!`)
     },
-    [setSavedSquads]
+    [setSavedSquads, error]
   )
 
   // a memoized MUI component for writing the title, description, and submit button
@@ -70,7 +76,13 @@ export const useSavedSquads = () => {
                     key={squad.title}
                     value={squad.title}
                     onClick={() => setActiveSquad(squad)}>
-                    {squad.title}
+                    <SpaceBetween>
+                      {squad.title}
+                      <DeleteForeverOutlined
+                        color="error"
+                        onClick={() => deleteSquad(squad)}
+                      />
+                    </SpaceBetween>
                   </MenuItem>
                 ))}
 

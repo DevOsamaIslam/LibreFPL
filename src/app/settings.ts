@@ -40,7 +40,7 @@ export const WEIGHTS = {
   xGI: 5,
   xGC: -1.5,
   BPS: 1,
-  lastSeasonPoints: 1.5,
+  lastSeasonPoints: 0.5,
   startRatio: 5,
   minutesPerMatch: 5,
   available: 5,
