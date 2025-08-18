@@ -1,30 +1,31 @@
 import {
-  Stack,
-  Typography,
+  Button,
+  Card,
+  Divider,
   FormControl,
   InputLabel,
-  Select,
   MenuItem,
-  Card,
-  Button,
-  Divider,
   Paper,
+  Select,
+  Stack,
+  Typography,
 } from "@mui/material"
 import React from "react"
-import HeatmapTable from "./HeatmapTable"
-import { useFDRData } from "./useFDRData"
-import Legend from "./Legend"
+import { CURRENT_GW, NUMBER_OF_MATCHES } from "../../app/settings"
 import PageTitle from "../../components/PageTitle"
-import { useSettingsStore } from "../../app/settings"
+import HeatmapTable from "./HeatmapTable"
+import Legend from "./Legend"
+import { useFDRData } from "./useFDRData"
 
 export const FDRPage: React.FC = () => {
   const [span, setSpan] = React.useState(6)
-  const { snapshot } = useSettingsStore()
-  const nextGW = snapshot?.events.find((e) => !e.finished)
-  const data = useFDRData({ spanGWs: span, startingFrom: nextGW?.id ?? 0 })
+  const data = useFDRData({ spanGWs: span, startingFrom: CURRENT_GW.id })
+  const gwIndex = CURRENT_GW.id - 1
 
   const events = React.useMemo(() => {
-    return new Array(span).fill(1).map((_, i) => (nextGW?.id ?? 0) + i)
+    return new Array(span + gwIndex > NUMBER_OF_MATCHES ? span - gwIndex : span)
+      .fill(null)
+      .map((_, i) => CURRENT_GW.id + i)
   }, [data])
 
   const [selected, setSelected] = React.useState<Set<number>>(new Set())

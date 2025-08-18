@@ -1,40 +1,34 @@
-import React, { useMemo, useCallback, useEffect } from "react"
 import {
   Box,
-  Stack,
-  Typography,
-  TextField,
   Chip,
-  Paper,
+  Divider,
   List,
   ListItemButton,
   ListItemText,
-  Divider,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Button,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material"
 import Grid from "@mui/material/Grid"
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import SaveIcon from "@mui/icons-material/Save"
-import { useSettingsStore } from "../../app/settings"
+import React, { useCallback, useEffect } from "react"
 import { checkEligibility } from "../../app/eligibility"
+import { useSettingsStore } from "../../app/settings"
 import PageTitle from "../../components/PageTitle"
 import PlayerBox from "../../components/PlayerBox"
-import useSquadRating from "./useSquadRating"
 import {
-  usePlayerSelector,
   PLAYER_SELECTOR_CONST,
+  usePlayerSelector,
   useSearchBase,
 } from "../../hooks/usePlayerSelector"
+import { useSavedSquads } from "../../hooks/useSavedSquads"
 import {
   ARMBAND,
   type IOptimalTeamPlayer,
   type PositionCount,
   type TeamCount,
 } from "../../lib/types"
-import { useSavedSquads } from "../../hooks/useSavedSquads"
+import useSquadRating from "./useSquadRating"
 
 const SquadRatingPage: React.FC = ({}) => {
   const { sortedPlayers: players } = useSettingsStore()

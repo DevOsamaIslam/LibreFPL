@@ -69,7 +69,7 @@ function Players() {
       field: "",
       headerName: "Minutes per 90",
       width: 100,
-      renderCell: ({ row }) => (row.minutes / NUMBER_OF_MATCHES).toFixed(0),
+      renderCell: ({ row }) => (row.minutes / row.starts).toFixed(0),
     },
     { field: "points_per_game", headerName: "Points per Game", width: 150 },
     { field: "selected_by_percent", headerName: "Selected By (%)", width: 150 },

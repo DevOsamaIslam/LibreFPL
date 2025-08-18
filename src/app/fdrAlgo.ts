@@ -1,7 +1,7 @@
 import type { IFixture, ISnapshot, Team } from "../lib/types"
 import _fixtures from "../data/fixtures.json"
 import _snapshot from "../data/snapshot.json"
-import { CURRENT_GW } from "./settings"
+import { CURRENT_GW, NUMBER_OF_MATCHES } from "./settings"
 
 const fixtures = _fixtures as unknown as IFixture[]
 const snapshot = _snapshot as unknown as ISnapshot
@@ -72,7 +72,7 @@ export function interpolateColor(score: FDRScore): string {
 
 export function computeFDR({
   spanGWs = 6,
-  startingFrom = 1,
+  startingFrom = CURRENT_GW.id - 1,
 }: {
   spanGWs: number
   startingFrom: number
@@ -95,7 +95,11 @@ export function computeFDR({
     return {
       team: teamMap.get(team.id)!,
       byEvent: new Array(spanGWs).fill(null).map((_, index) => {
-        const teamFixture = matchesByTeam[team.id][index]
+        const gwIndex = Math.min(
+          startingFrom - 1 + index,
+          NUMBER_OF_MATCHES - 1
+        )
+        const teamFixture = matchesByTeam[team.id][gwIndex]
         const opponent =
           teamFixture.team_h === team.id
             ? teamMap.get(teamFixture.team_a)!
@@ -154,20 +158,23 @@ function getTeamScore({
 export const ALL_FDR = computeFDR({ spanGWs: 38, startingFrom: 1 })
 
 export const FDR_PER_TEAM = ALL_FDR.reduce((acc, curr) => {
-
   return {
     ...acc,
-    [curr.team.id]: curr.byEvent
+    [curr.team.id]: curr.byEvent,
   }
-}, {} as Record<number, TeamFDRByGw['byEvent']>)
+}, {} as Record<number, TeamFDRByGw["byEvent"]>)
 
-export const getTeamFDR = (teamId: number, options?: { span?: number, startingGW?: number }) => {
+export const getTeamFDR = (
+  teamId: number,
+  options?: { span?: number; startingGW?: number }
+) => {
   const startingFrom = options?.startingGW || CURRENT_GW.id
   const teamFDR = FDR_PER_TEAM[teamId]?.slice(startingFrom - 1, options?.span)!
-  const average = teamFDR.reduce((acc, curr) => acc + curr.score, 0) / teamFDR.length
+  const average =
+    teamFDR.reduce((acc, curr) => acc + curr.score, 0) / teamFDR.length
 
   return {
     teamFDR,
-    average
+    average,
   }
 }

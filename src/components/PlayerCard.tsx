@@ -11,7 +11,8 @@ import {
   Typography,
 } from "@mui/material"
 import type { ReactNode } from "react"
-import { colorByPos, NUMBER_OF_MATCHES } from "../app/settings"
+import { getTeamFDR } from "../app/fdrAlgo"
+import { colorByPos } from "../app/settings"
 import type { IOptimalTeamPlayer } from "../lib/types"
 import type { Team } from "../modules/player-compare/control"
 import {
@@ -23,7 +24,6 @@ import {
   teamAttackStrength,
   teamDefenseStrength,
 } from "../modules/player-compare/control"
-import { getTeamFDR } from "../app/fdrAlgo"
 import Cell from "./Cell"
 
 export default function PlayerCard({
@@ -127,7 +127,7 @@ export default function PlayerCard({
           <Row left={label.mins} right={String(numberFmt(player.minutes, 0))} />
           <Row
             left={"Minutes per 90"}
-            right={String(numberFmt(player.minutes / NUMBER_OF_MATCHES, 0))}
+            right={String(numberFmt(player.minutes / player.starts, 0))}
           />
           <Row
             left={label.goals}

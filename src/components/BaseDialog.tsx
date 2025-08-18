@@ -1,15 +1,14 @@
-import React from "react"
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
-  Box,
-  IconButton,
-} from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Typography,
+} from "@mui/material"
+import React from "react"
 
 export interface BaseDialogProps {
   open: boolean

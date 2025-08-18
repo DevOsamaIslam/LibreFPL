@@ -19,6 +19,7 @@ import {
   teamMap,
   WEIGHTS,
 } from "./settings"
+import lastSeason from "../data/lastSeason.json"
 
 /**
  * pickOptimalFPLTeamAdvanced
@@ -58,72 +59,104 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
   // Create a map of team IDs to Team objects for easy lookup
   fpl.teams.forEach((t) => teamMap.set(t.id, t))
+  const lastSeasonPlayersMap = new Map<number, Player>(
+    lastSeason.elements.map((player) => [player.id, player as Player])
+  )
+
+  // const lastSeasonWeights = Object.keys(storedWeights ?? {}).reduce((acc, key) => {
+
+  //   return {
+  //     ...acc,
+  //     [acc[key]]: storedWeights[key]
+  //   }
+  // }, WEIGHTS)
 
   // Filter and map players to calculate their score
   const players = fpl.elements
-    .map((player: Player) => {
-      const lastSeasonPPG = +player.total_points / NUMBER_OF_MATCHES
-      const startsRatio = !player.starts
-        ? 0
-        : (player.starts / (player.minutes / NUMBER_OF_MATCHES)) * 100
+    .map((currentPlayer: Player) => {
+      const getPlayerScore = (player: Player) => {
+        const lastSeasonPPG = +player.total_points / NUMBER_OF_MATCHES
+        const startsRatio = !player.starts
+          ? 0
+          : (player.starts / (player.minutes / player.starts)) * 100
 
-      const minutesPerMatch = !player.minutes
-        ? 0
-        : player.minutes / NUMBER_OF_MATCHES
+        const minutesPerMatch = !player.minutes
+          ? 0
+          : player.minutes / (player.starts || 1)
 
-      const expectedGoalInvolvement = player.expected_goal_involvements // has better expected goal involvement
-      const isAvailable = player.status === Status.A // has status of 'a'
-      const cleanSheets = player.clean_sheets // For GK and Def the clean sheets should be high
-      const goalsConceded = player.goals_conceded // and the goals conceded should be low
-      let score = 0
+        const expectedGoalInvolvement = player.expected_goal_involvements // has better expected goal involvement
+        const isAvailable = player.status === Status.A // has status of 'a'
+        const cleanSheets = player.clean_sheets // For GK and Def the clean sheets should be high
+        const goalsConceded = player.goals_conceded // and the goals conceded should be low
+        let score = 0
 
-      score += lastSeasonPPG * weights.lastSeasonPoints
+        score += lastSeasonPPG * weights.lastSeasonPoints
 
-      if (player.element_type !== positionToElementType.GK)
-        score += player.now_cost * weights.cost
+        if (player.element_type !== positionToElementType.GK)
+          score += player.now_cost * weights.cost
 
-      score += startsRatio * weights.startRatio
-      score += minutesPerMatch * weights.minutesPerMatch
-      score += parseFloat(expectedGoalInvolvement ?? 0) * weights.xGI
+        score += startsRatio * weights.startRatio
+        score += minutesPerMatch * weights.minutesPerMatch
+        score += parseFloat(expectedGoalInvolvement ?? 0) * weights.xGI
 
-      score += isAvailable ? weights.available : weights.notAvailable
+        score += isAvailable ? weights.available : weights.notAvailable
 
-      score +=
-        parseFloat(player.ep_this || player.ep_next || "0") *
-        weights.expectedPoints
-      score += parseFloat(player.form) * weights.form
+        score +=
+          parseFloat(player.ep_this || player.ep_next || "0") *
+          weights.expectedPoints
+        score += parseFloat(player.form) * weights.form
 
-      const discipline =
-        ((player.red_cards ?? 0) + (player.yellow_cards ?? 0)) /
-        NUMBER_OF_MATCHES
+        const discipline = player.starts
+          ? ((player.red_cards ?? 0) + (player.yellow_cards ?? 0)) /
+            player.starts
+          : 0
 
-      score += discipline * weights.discipline
+        score += discipline * weights.discipline
 
-      const team = teamMap.get(player.team)
+        const team = teamMap.get(player.team)
 
-      if (!team) return null
+        if (!team) return null
 
-      const teamAdvantageScore = getTeamFDR(team.id, { span: 6 }).average - 2.5
+        const teamAdvantageScore =
+          getTeamFDR(team.id, { span: 6 }).average - 2.5
 
-      score += teamAdvantageScore
+        score += teamAdvantageScore
 
-      const position = elementTypeToPosition[player.element_type]
-      if (position === "GK" || position === "DEF") {
-        score += cleanSheets * weights.cleanSheets
-        score += player.saves_per_90 * weights.savesPerMatch
-        score += player.defensive_contribution * weights.defcon
-        score += goalsConceded * weights.conceded
+        const position = elementTypeToPosition[player.element_type]
+        if (position === "GK" || position === "DEF") {
+          score += cleanSheets * weights.cleanSheets
+          score += player.saves_per_90 * weights.savesPerMatch
+          score += player.defensive_contribution * weights.defcon
+          score += goalsConceded * weights.conceded
+        }
+
+        score = score / Object.keys(weights).length
+
+        return {
+          element: player,
+          score,
+          position,
+          teamId: team.id,
+          teamName: team.name,
+        } as IOptimalTeamPlayer
       }
+      const playerScore = getPlayerScore(currentPlayer)
+      const lastSeasonPlayer = lastSeasonPlayersMap.get(currentPlayer.id)
 
-      score = score / Object.keys(weights).length
+      const lastSeasonScore = lastSeasonPlayer
+        ? getPlayerScore(lastSeasonPlayer)
+        : null
+
+      const remainingWeight = 1 - weights.lastSeasonStats
+
+      const score =
+        (lastSeasonScore?.score ?? 0) * weights.lastSeasonStats +
+        (playerScore?.score ?? 0) * remainingWeight
 
       return {
-        element: player,
+        ...playerScore,
         score,
-        position,
-        teamId: team.id,
-        teamName: team.name,
-      } as IOptimalTeamPlayer
+      }
     })
     .filter(Boolean) // Filter out players that returned null in the previous step
     .sort((a, b) => b!.score - a!.score) as IOptimalTeamPlayer[] // Sort players by score in descending order (highest score first)

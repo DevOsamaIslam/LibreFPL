@@ -34,6 +34,7 @@ export const MIN_POSITIONS_XI = {
   FWD: 1,
 }
 export const WEIGHTS = {
+  lastSeasonStats: 0.3,
   expectedPoints: 3,
   form: 5,
   teamAdvantage: 3,
@@ -64,21 +65,11 @@ export const NUMBER_OF_MATCHES = 38
 
 export const teamMap = new Map<number, Team>()
 
-export const CURRENT_GW = snapshot.events.find((e) => !e.finished) as Event
+export const CURRENT_GW = snapshot.events.find((e) => e.is_next) as Event
 
-// export const teamMap = snapshot.teams.reduce(
-//   (m, t) => m.set(t.id, t),
-//   new Map<number, Team>()
-// )
-
-// export const FDR_BEGINNING = computeFDR({
-//   spanGWs: NUMBER_OF_MATCHES,
-//   startingFrom: CURRENT_GW.id,
-// })
-
-// export const FDR = FDR_BEGINNING.slice(CURRENT_GW.id - 1)
-
-// export const FDR_PER_TEAM = Object.groupBy(FDR, (f) => f.team.id)
+export const DONE_GWS = snapshot.events.filter(
+  (e) => e.finished || e.is_current
+) as Event[]
 
 export const CHEAPEST = {
   GK: 40,
@@ -160,6 +151,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setBenchBoostEnabled: (enabled) => set({ benchBoostEnabled: enabled }),
   setTripleCaptainEnabled: (enabled) => set({ tripleCaptainEnabled: enabled }),
   setNumberEnablers: (number) => set({ numberEnablers: number }),
-  setSnapshot: (snapshot) => set({ snapshot: snapshot }),
+  setSnapshot: (snapshot) => set({ snapshot }),
   setWeights: (weights) => set({ weights }),
 }))

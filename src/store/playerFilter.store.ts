@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { IOptimalTeamPlayer, Team } from "../lib/types"
+import type { IOptimalTeamPlayer, Player, Team } from "../lib/types"
 
 export const FilterOp = {
   eq: "eq",
@@ -66,27 +66,7 @@ export interface PlayerFilterStore extends PlayerFilterState {
   getFilteredRows: (args: {
     players: IOptimalTeamPlayer[]
     teams: Team[] | undefined
-  }) => Array<{
-    id: number
-    name: string
-    team: string
-    position: string
-    chance_of_playing_next_round: number | null
-    total_points: number
-    now_cost: number
-    form: string
-    points_per_game: string
-    selected_by_percent: string
-    transfers_in_event: number
-    transfers_out_event: number
-    value_form: string
-    value_season: string
-    minutes: number
-    goals_scored: number
-    assists: number
-    clean_sheets: number
-    goals_conceded: number
-  }>
+  }) => Player[]
 }
 
 const initialState: PlayerFilterState = {

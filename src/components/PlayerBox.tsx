@@ -12,7 +12,13 @@ import {
   Typography,
 } from "@mui/material"
 import { ARMBAND, type Armband, type IOptimalTeamPlayer } from "../lib/types"
-import { colorByPos, TEAM_COLOR, type TeamName } from "../app/settings"
+import {
+  colorByPos,
+  CURRENT_GW,
+  DONE_GWS,
+  TEAM_COLOR,
+  type TeamName,
+} from "../app/settings"
 import { useMemo } from "react"
 import { getTeamFDR } from "../app/fdrAlgo"
 import SpaceBetween from "./SpaceBetween"
@@ -31,8 +37,8 @@ function PlayerBox({ player, armband }: PlayerBoxProps) {
   const price = player.element.now_cost
   const score = player.score
   const minutesPlayed = player.element.minutes
-  const startsPct = player.element.starts / 0.38 // original calc kept for parity
-  const minutesAvg = minutesPlayed / 38
+  const startsPct = (player.element.starts / DONE_GWS.length) * 100 // original calc kept for parity
+  const minutesAvg = minutesPlayed / (player.element.starts || 1)
 
   const pos = player.position
   const name = player.element.web_name
