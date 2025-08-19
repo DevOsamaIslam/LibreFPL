@@ -133,13 +133,13 @@ function getTeamScore({
   if (isHome) {
     rawScore =
       currentTeam.strength_attack_home -
-      opponent.strength_defence_home +
-      (currentTeam.strength_defence_home - opponent.strength_attack_home)
+      opponent.strength_defence_away +
+      (currentTeam.strength_defence_home - opponent.strength_attack_away)
   } else {
     rawScore =
       currentTeam.strength_attack_away -
-      opponent.strength_defence_away +
-      (currentTeam.strength_defence_away - opponent.strength_attack_away)
+      opponent.strength_defence_home +
+      (currentTeam.strength_defence_away - opponent.strength_attack_home)
   }
 
   // Normalize the score to be between 0.00 and 5.00
