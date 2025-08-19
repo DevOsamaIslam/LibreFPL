@@ -1,16 +1,16 @@
-import type { SxProps } from "@mui/material";
-import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
-import CardActionArea from "@mui/material/CardActionArea";
-import CardContent from "@mui/material/CardContent";
-import Chip from "@mui/material/Chip";
-import Container from "@mui/material/Container";
-import type { GridProps } from "@mui/material/Grid";
-import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import { Link as RouterLink } from "react-router-dom";
+import type { SxProps } from "@mui/material"
+import Box from "@mui/material/Box"
+import Card from "@mui/material/Card"
+import CardActionArea from "@mui/material/CardActionArea"
+import CardContent from "@mui/material/CardContent"
+import Chip from "@mui/material/Chip"
+import Container from "@mui/material/Container"
+import type { GridProps } from "@mui/material/Grid"
+import Grid from "@mui/material/Grid"
+import Typography from "@mui/material/Typography"
+import { Link as RouterLink } from "react-router-dom"
 
-type Feature = (typeof FEATURES)[number];
+type Feature = (typeof FEATURES)[number]
 
 const ROUTES = {
   players: "/players",
@@ -23,7 +23,7 @@ const ROUTES = {
   weightSettings: "/weight-settings",
   rules: "/rules",
   support: "/support",
-} as const;
+} as const
 
 const FEATURES = [
   {
@@ -45,7 +45,7 @@ const FEATURES = [
     title: "Squad Rating",
     description: "Evaluate your squad with eligibility and rating.",
     route: ROUTES.rating,
-    badge: "Insights",
+    badge: "Planning",
   },
   {
     key: "fdr",
@@ -53,14 +53,14 @@ const FEATURES = [
     description:
       "Extended heatmap of upcoming fixtures, with difficulty ratings, and averages for each team.",
     route: ROUTES.fdr,
-    badge: "New",
+    badge: "Insights",
   },
   {
     key: "charts",
     title: "Charts",
     description: "Visualizations of player stats and projections.",
     route: ROUTES.charts,
-    badge: "New",
+    badge: "Insights",
   },
   // {
   //   key: "generate-lineup",
@@ -74,7 +74,14 @@ const FEATURES = [
     title: "Suggested Transfers",
     description: "Pick your squad and get optimal swap suggestions.",
     route: ROUTES.suggestedTransfers,
-    badge: "New",
+    badge: "Planning",
+  },
+  {
+    key: "gwTodos",
+    title: "GW Todos",
+    description: "Manage your game week todos and track completion.",
+    route: false,
+    badge: "Productivity",
   },
   {
     key: "weight-settings",
@@ -83,7 +90,7 @@ const FEATURES = [
     route: ROUTES.weightSettings,
     badge: "Advanced",
   },
-] as const;
+] as const
 
 function Home() {
   const cardSx: SxProps = {
@@ -99,13 +106,13 @@ function Home() {
       boxShadow: 6,
       borderColor: (theme: any) => theme.palette.primary.light,
     },
-  } as const;
+  } as const
 
   const actionSx = {
     display: "flex",
     alignItems: "stretch",
     height: "100%",
-  } as const;
+  } as const
 
   const contentSx = {
     display: "flex",
@@ -113,14 +120,14 @@ function Home() {
     gap: 1,
     height: "100%",
     p: 3,
-  } as const;
+  } as const
 
   const headerRowSx = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     mb: 1,
-  } as const;
+  } as const
 
   return (
     <Container maxWidth="lg">
@@ -129,8 +136,7 @@ function Home() {
           variant="h3"
           component="h1"
           gutterBottom
-          sx={{ fontWeight: 700 }}
-        >
+          sx={{ fontWeight: 700 }}>
           Fantasy Tools
         </Typography>
         <Typography variant="subtitle1" color="text.secondary" gutterBottom>
@@ -140,29 +146,27 @@ function Home() {
       </Box>
 
       <Grid container spacing={3}>
-        {FEATURES.map((f: Feature) => (
+        {FEATURES.map((feature: Feature) => (
           <Grid
             {...({
-              key: f.key,
+              key: feature.key,
               item: true,
               xs: 12,
               sm: 6,
               md: 4,
-            } as GridProps)}
-          >
+            } as GridProps)}>
             <Card elevation={0} sx={cardSx}>
               <CardActionArea
-                component={RouterLink}
-                to={f.route}
-                sx={{ ...actionSx, width: "100%" }}
-              >
+                component={feature.route ? RouterLink : "div"}
+                to={feature.route || ""}
+                sx={{ ...actionSx, width: "100%" }}>
                 <CardContent sx={{ ...contentSx, width: "100%" }}>
                   <Box sx={headerRowSx}>
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {f.title}
+                      {feature.title}
                     </Typography>
                     <Chip
-                      label={f.badge}
+                      label={feature.badge}
                       size="small"
                       color="primary"
                       variant="outlined"
@@ -172,9 +176,8 @@ function Home() {
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ flexGrow: 1 }}
-                  >
-                    {f.description}
+                    sx={{ flexGrow: 1 }}>
+                    {feature.description}
                   </Typography>
 
                   <Box
@@ -184,11 +187,12 @@ function Home() {
                       alignItems: "center",
                       gap: 1,
                       pt: 1,
-                    }}
-                  >
-                    <Typography variant="button" color="primary">
-                      Open
-                    </Typography>
+                    }}>
+                    {feature.route && (
+                      <Typography variant="button" color="primary">
+                        Open
+                      </Typography>
+                    )}
                   </Box>
                 </CardContent>
               </CardActionArea>
@@ -199,7 +203,7 @@ function Home() {
 
       <Box sx={{ py: 6 }} />
     </Container>
-  );
+  )
 }
 
-export default Home;
+export default Home

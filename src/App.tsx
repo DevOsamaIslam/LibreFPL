@@ -4,7 +4,7 @@ import Button from "@mui/material/Button"
 import CssBaseline from "@mui/material/CssBaseline"
 import { ThemeProvider } from "@mui/material/styles"
 import Toolbar from "@mui/material/Toolbar"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { HashRouter, Link, Route, Routes } from "react-router"
 import { pickOptimalFPLTeamAdvanced } from "./app/algo"
 import { useSettingsStore } from "./app/settings"
@@ -16,6 +16,7 @@ import { initializeGlobalSnackbar, useSnackbarUtils } from "./lib/snackbar"
 import Charts from "./modules/Charts"
 import FDRPage from "./modules/FDR"
 import GenerateLineup from "./modules/GenerateLineup"
+import GWTodosDrawer from "./components/GWTodosDrawer"
 import Home from "./modules/Home"
 import PlayersCompare from "./modules/player-compare/PlayersCompare"
 import Players from "./modules/Players"
@@ -23,10 +24,14 @@ import SquadRatingPage from "./modules/squad-rating/SquadRatingPage"
 import SuggestedTransfersPage from "./modules/suggested-transfers"
 import Support from "./modules/Support"
 import TuneAlgo from "./modules/tune-algo"
+import { useGWTodos } from "./hooks/useGWTodos"
 
 function App() {
   const { setSortedPlayers, snapshot } = useSettingsStore()
   const snackbarUtils = useSnackbarUtils()
+  const [isTodosDrawerOpen, setIsTodosDrawerOpen] = useState(false)
+  const { todoStats, addTodos, toggleTodo, deleteTodo, getTodosForGW } =
+    useGWTodos()
 
   useEffect(() => {
     if (snapshot) setSortedPlayers(pickOptimalFPLTeamAdvanced(snapshot))
@@ -91,6 +96,12 @@ function App() {
                     Weight Settings
                   </Button>
                   <Button
+                    color="inherit"
+                    onClick={() => setIsTodosDrawerOpen(true)}
+                    startIcon={<span style={{ fontSize: "20px" }}>✓</span>}>
+                    GW Todos
+                  </Button>
+                  <Button
                     color="secondary"
                     component={Link}
                     to="/support"
@@ -119,6 +130,15 @@ function App() {
             </Routes>
           </Box>
           <Snackbar />
+          <GWTodosDrawer
+            isOpen={isTodosDrawerOpen}
+            onClose={() => setIsTodosDrawerOpen(false)}
+            todoStats={todoStats}
+            onAddTodo={addTodos}
+            onToggleTodo={toggleTodo}
+            onDeleteTodo={deleteTodo}
+            getTodosForGW={getTodosForGW}
+          />
         </HashRouter>
       </ThemeProvider>
     </>
