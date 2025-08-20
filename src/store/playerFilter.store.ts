@@ -66,18 +66,11 @@ export interface PlayerFilterStore extends PlayerFilterState {
   getFilteredRows: (args: {
     players: IOptimalTeamPlayer[]
     teams: Team[] | undefined
-  }) => Player[]
+  }) => Array<Player & { score: number; position: string; teamName: string }>
 }
 
 const initialState: PlayerFilterState = {
   filters: [],
-}
-
-const elementTypeToPositionMap: Record<number, string> = {
-  1: Position.GK,
-  2: Position.DEF,
-  3: Position.MID,
-  4: Position.FWD,
 }
 
 function applyFilter(row: any, [field, op, value]: FilterTuple): boolean {
@@ -113,34 +106,15 @@ export const usePlayerFilterStore = create<PlayerFilterStore>()((set, get) => ({
   removeFilter: (index) =>
     set((s) => ({ filters: s.filters.filter((_, i) => i !== index) })),
   reset: () => set(() => ({ ...initialState })),
-  getFilteredRows: ({ players, teams }) => {
+  getFilteredRows: ({ players }) => {
     const s = get()
 
     const rows =
       players?.map((p) => ({
-        id: p.element.id,
-        name: p.element.web_name,
-        team: teams?.find((t) => t.id === p.element.team)?.name || "Unknown",
-        position:
-          elementTypeToPositionMap[p.element.element_type as number] ||
-          "Unknown",
-        chance_of_playing_next_round: p.element.chance_of_playing_next_round,
-        total_points: p.element.total_points,
-        score: p.score.toFixed(1),
-        now_cost: p.element.now_cost,
-        form: p.element.form,
-        points_per_game: p.element.points_per_game,
-        selected_by_percent: p.element.selected_by_percent,
-        transfers_in_event: p.element.transfers_in_event,
-        transfers_out_event: p.element.transfers_out_event,
-        value_form: p.element.value_form,
-        value_season: p.element.value_season,
-        minutes: p.element.minutes,
-        goals_scored: p.element.goals_scored,
-        assists: p.element.assists,
-        clean_sheets: p.element.clean_sheets,
-        goals_conceded: p.element.goals_conceded,
-        ep_next: p.element.ep_next,
+        ...p.element,
+        position: p.position,
+        teamName: p.teamName,
+        score: p.score,
       })) ?? []
 
     const filters = s.filters || []

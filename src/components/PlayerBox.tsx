@@ -11,18 +11,17 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material"
-import { ARMBAND, type Armband, type IOptimalTeamPlayer } from "../lib/types"
+import { useMemo } from "react"
+import { getTeamFDR } from "../app/fdrAlgo"
 import {
   colorByPos,
-  CURRENT_GW,
   DONE_GWS,
   TEAM_COLOR,
   type TeamName,
 } from "../app/settings"
-import { useMemo } from "react"
-import { getTeamFDR } from "../app/fdrAlgo"
-import SpaceBetween from "./SpaceBetween"
+import { ARMBAND, type Armband, type IOptimalTeamPlayer } from "../lib/types"
 import Cell from "./Cell"
+import SpaceBetween from "./SpaceBetween"
 
 interface PlayerBoxProps {
   player: IOptimalTeamPlayer
