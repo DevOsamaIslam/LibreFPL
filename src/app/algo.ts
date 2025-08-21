@@ -45,8 +45,10 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
     try {
       const stored = getItem<typeof WEIGHTS>("algorithm-weights")
       const storedWeights = Object.keys(stored ?? {}).reduce((acc, key) => {
-        if (stored && !stored?.[key]) stored[key] = WEIGHTS[key]
-        return acc
+        return {
+          ...acc,
+          [key]: stored?.[key] || WEIGHTS[key],
+        }
       }, WEIGHTS)
       return storedWeights
     } catch (error) {
@@ -63,15 +65,6 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
     lastSeason.elements.map((player) => [player.id, player as Player])
   )
 
-  // const lastSeasonWeights = Object.keys(storedWeights ?? {}).reduce((acc, key) => {
-
-  //   return {
-  //     ...acc,
-  //     [acc[key]]: storedWeights[key]
-  //   }
-  // }, WEIGHTS)
-
-  // Filter and map players to calculate their score
   const players = fpl.elements
     .map((currentPlayer: Player) => {
       const getPlayerScore = (player: Player) => {
