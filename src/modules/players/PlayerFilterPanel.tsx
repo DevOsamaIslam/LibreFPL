@@ -14,14 +14,17 @@ import {
 } from "@mui/material"
 import React, { memo, useMemo } from "react"
 import { useShallow } from "zustand/shallow"
+import { stat2label, useSettingsStore } from "../../app/settings"
+import SpaceBetween from "../../components/SpaceBetween"
 import {
-  FilterField,
-  FilterOp,
+  NUMBER_FILTER_OPS,
   Position,
+  STRING_FILTER_OPS,
   usePlayerFilterStore,
+  type FilterOp,
   type FilterTuple,
-} from "../store/playerFilter.store"
-import SpaceBetween from "./SpaceBetween"
+} from "../../store/playerFilter.store"
+import { convert2label } from "../../lib/helpers"
 
 type TeamOption = { id: number; name: string }
 
@@ -31,39 +34,11 @@ interface PlayerFilterPanelProps {
 
 const gap = 1
 
-const textFields = [
-  FilterField.name,
-  FilterField.team,
-  FilterField.position,
-  FilterField.form,
-  FilterField.points_per_game,
-  FilterField.selected_by_percent,
-  FilterField.value_form,
-  FilterField.value_season,
-] as const
-
-const operatorOptionsByField: Record<
-  (typeof FilterField)[keyof typeof FilterField],
-  readonly FilterOp[]
-> = {
-  name: [FilterOp.contains, FilterOp.eq],
-  team: [FilterOp.contains, FilterOp.eq],
-  position: [FilterOp.contains, FilterOp.eq],
-  chance_of_playing_next_round: [FilterOp.eq, FilterOp.gt, FilterOp.lt],
-  total_points: [FilterOp.eq, FilterOp.gt, FilterOp.lt],
-  now_cost: [FilterOp.eq, FilterOp.gt, FilterOp.lt],
-  form: [FilterOp.contains, FilterOp.eq],
-  points_per_game: [FilterOp.contains, FilterOp.eq],
-  selected_by_percent: [FilterOp.contains, FilterOp.eq],
-  transfers_in_event: [FilterOp.eq, FilterOp.gt, FilterOp.lt],
-  transfers_out_event: [FilterOp.eq, FilterOp.gt, FilterOp.lt],
-  value_form: [FilterOp.contains, FilterOp.eq],
-  value_season: [FilterOp.contains, FilterOp.eq],
-  minutes: [FilterOp.eq, FilterOp.gt, FilterOp.lt],
-  goals_scored: [FilterOp.eq, FilterOp.gt, FilterOp.lt],
-  assists: [FilterOp.eq, FilterOp.gt, FilterOp.lt],
-  clean_sheets: [FilterOp.eq, FilterOp.gt, FilterOp.lt],
-  goals_conceded: [FilterOp.eq, FilterOp.gt, FilterOp.lt],
+const isNumericValue = (value: any) => {
+  if (typeof value === "number") return true
+  if (typeof value === "string") return !isNaN(+value)
+  if (typeof value === "boolean") return false
+  return false
 }
 
 const PlayerFilterPanel: React.FC<PlayerFilterPanelProps> = ({ teams }) => {
@@ -78,28 +53,31 @@ const PlayerFilterPanel: React.FC<PlayerFilterPanelProps> = ({ teams }) => {
       }))
     )
 
+  const { sortedPlayers } = useSettingsStore()
+  const randomPlayer = {
+    ...sortedPlayers[0],
+    ...sortedPlayers[0]?.element,
+  }
+
   const teamOptions = teams.map((t) => t.name)
 
+  const getOperators = (field: string) => {
+    const value = randomPlayer?.[field]
+    if (isNumericValue(value)) return NUMBER_FILTER_OPS
+    return STRING_FILTER_OPS
+  }
+
   const handleAddNameFilter = () =>
-    addFilter([FilterField.name, FilterOp.contains, ""])
+    addFilter(["web_name", STRING_FILTER_OPS[0], ""])
 
   const handleAddTeamFilter = () =>
-    addFilter([FilterField.team, FilterOp.eq, ""])
+    addFilter(["teamName", STRING_FILTER_OPS[0], ""])
 
   const handleAddPositionFilter = () =>
-    addFilter([FilterField.position, FilterOp.eq, ""])
+    addFilter(["position", STRING_FILTER_OPS[0], ""])
 
-  const handleAddNumeric = (
-    field:
-      | typeof FilterField.chance_of_playing_next_round
-      | typeof FilterField.total_points
-      | typeof FilterField.now_cost
-      | typeof FilterField.minutes
-      | typeof FilterField.goals_scored
-      | typeof FilterField.assists
-      | typeof FilterField.clean_sheets
-      | typeof FilterField.goals_conceded
-  ) => addFilter([field, FilterOp.eq, 0])
+  const handleAddNumeric = (field: FilterTuple[0]) =>
+    addFilter([field, NUMBER_FILTER_OPS[0], 0])
 
   // Example of some quick-adds. In a real UI you might render a dynamic list.
   const quickAdds = useMemo(
@@ -109,11 +87,11 @@ const PlayerFilterPanel: React.FC<PlayerFilterPanelProps> = ({ teams }) => {
       { label: "Add Position filter", onClick: handleAddPositionFilter },
       {
         label: "Add Total Points filter",
-        onClick: () => handleAddNumeric(FilterField.total_points),
+        onClick: () => handleAddNumeric("total_points"),
       },
       {
-        label: "Add Cost filter",
-        onClick: () => handleAddNumeric(FilterField.now_cost),
+        label: "Add Custom filter",
+        onClick: () => handleAddNumeric("now_cost"),
       },
     ],
     []
@@ -158,10 +136,10 @@ const PlayerFilterPanel: React.FC<PlayerFilterPanelProps> = ({ teams }) => {
         <Stack sx={{ gap }}>
           {filters.map((f, idx) => {
             const [field, op, value] = f
-            const ops = operatorOptionsByField[field]
-            const isText = (textFields as readonly string[]).includes(field)
-            const isTeam = field === FilterField.team
-            const isPosition = field === FilterField.position
+            const ops = getOperators(field as any)
+            const isText = !isNumericValue(randomPlayer?.[field])
+            const isTeam = field === "team"
+            const isPosition = field === "position"
 
             return (
               <SpaceBetween spacing={1} key={idx}>
@@ -172,20 +150,17 @@ const PlayerFilterPanel: React.FC<PlayerFilterPanelProps> = ({ teams }) => {
                     label="Field"
                     value={field}
                     onChange={(e) => {
-                      const nf = e.target
-                        .value as (typeof FilterField)[keyof typeof FilterField]
-                      const next: FilterTuple = [
-                        nf,
-                        operatorOptionsByField[nf][0],
-                        "",
-                      ]
+                      const nf = e.target.value
+                      const next: FilterTuple = [nf, getOperators(nf)[0], ""]
                       updateFilter(idx, next)
                     }}>
-                    {Object.values(FilterField).map((ff) => (
-                      <MenuItem key={ff} value={ff}>
-                        {ff}
-                      </MenuItem>
-                    ))}
+                    {Object.keys(randomPlayer)
+                      .sort()
+                      .map((ff, idx) => (
+                        <MenuItem key={idx} value={ff}>
+                          {stat2label[ff] || convert2label(ff)}
+                        </MenuItem>
+                      ))}
                   </Select>
                 </FormControl>
 

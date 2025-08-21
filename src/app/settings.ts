@@ -64,6 +64,12 @@ export const BUDGET_FOR_XI = 820
 export const NUMBER_OF_MATCHES = 38
 
 export const teamMap = new Map<number, Team>()
+export const stat2label = snapshot.element_stats.reduce((acc, curr) => {
+  return {
+    ...acc,
+    [curr.name]: curr.label,
+  }
+}, {} as Record<string, string>)
 
 export const CURRENT_GW = snapshot.events.find((e) => e.is_next) as Event
 

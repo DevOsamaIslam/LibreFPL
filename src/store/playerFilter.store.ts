@@ -1,12 +1,20 @@
 import { create } from "zustand"
 import type { IOptimalTeamPlayer, Player, Team } from "../lib/types"
 
-export const FilterOp = {
+const FilterOp = {
   eq: "eq",
   gt: "gt",
   lt: "lt",
   contains: "contains",
 } as const
+
+export const NUMBER_FILTER_OPS = [
+  FilterOp.eq,
+  FilterOp.gt,
+  FilterOp.lt,
+] as const
+
+export const STRING_FILTER_OPS = [FilterOp.eq, FilterOp.contains] as const
 
 export type FilterOp = (typeof FilterOp)[keyof typeof FilterOp]
 
@@ -22,30 +30,10 @@ export type Position = (typeof Position)[keyof typeof Position]
 /**
  * Field names are constrained to the projected row keys below for safety.
  */
-export const FilterField = {
-  name: "name",
-  team: "team",
-  position: "position",
-  chance_of_playing_next_round: "chance_of_playing_next_round",
-  total_points: "total_points",
-  now_cost: "now_cost",
-  form: "form",
-  points_per_game: "points_per_game",
-  selected_by_percent: "selected_by_percent",
-  transfers_in_event: "transfers_in_event",
-  transfers_out_event: "transfers_out_event",
-  value_form: "value_form",
-  value_season: "value_season",
-  minutes: "minutes",
-  goals_scored: "goals_scored",
-  assists: "assists",
-  clean_sheets: "clean_sheets",
-  goals_conceded: "goals_conceded",
-} as const
-export type FilterField = (typeof FilterField)[keyof typeof FilterField]
+export type FilterField = Player & Omit<IOptimalTeamPlayer, "element">
 
 export type FilterTuple = readonly [
-  field: FilterField,
+  field: keyof FilterField,
   op: FilterOp,
   value: string | number | null
 ]
@@ -55,6 +43,11 @@ export interface PlayerFilterState {
 }
 
 type SetManyArg = Partial<PlayerFilterState>
+export interface IPlayerColumn extends Player {
+  score: number
+  position: Position
+  teamName: string
+}
 
 export interface PlayerFilterStore extends PlayerFilterState {
   setMany: (patch: SetManyArg) => void
@@ -66,7 +59,7 @@ export interface PlayerFilterStore extends PlayerFilterState {
   getFilteredRows: (args: {
     players: IOptimalTeamPlayer[]
     teams: Team[] | undefined
-  }) => Array<Player & { score: number; position: string; teamName: string }>
+  }) => Array<IPlayerColumn>
 }
 
 const initialState: PlayerFilterState = {
@@ -75,6 +68,8 @@ const initialState: PlayerFilterState = {
 
 function applyFilter(row: any, [field, op, value]: FilterTuple): boolean {
   const cell = row[field]
+  const isNumeric = !isNaN(+cell)
+
   if (value === null || value === "" || value === undefined) return true
 
   if (op === FilterOp.contains) {
@@ -84,8 +79,8 @@ function applyFilter(row: any, [field, op, value]: FilterTuple): boolean {
   }
 
   // numeric comparisons where possible
-  const a = typeof cell === "string" ? Number(cell) : cell
-  const b = typeof value === "string" ? Number(value) : value
+  const a = isNumeric ? Number(cell) : cell
+  const b = isNumeric ? Number(value) : value
 
   if (op === FilterOp.eq) return a === b
   if (op === FilterOp.gt) return Number(a) > Number(b)
@@ -112,7 +107,7 @@ export const usePlayerFilterStore = create<PlayerFilterStore>()((set, get) => ({
     const rows =
       players?.map((p) => ({
         ...p.element,
-        position: p.position,
+        position: p.position as Position,
         teamName: p.teamName,
         score: p.score,
       })) ?? []
