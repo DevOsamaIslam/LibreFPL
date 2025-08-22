@@ -36,7 +36,7 @@ const gap = 1
 
 const isNumericValue = (value: any) => {
   if (typeof value === "number") return true
-  if (typeof value === "string") return !isNaN(+value)
+  if (typeof value === "string" && value !== "") return !isNaN(+value)
   if (typeof value === "boolean") return false
   return false
 }

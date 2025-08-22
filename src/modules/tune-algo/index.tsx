@@ -12,7 +12,7 @@ import {
   Slider,
   Typography,
 } from "@mui/material"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   MAX_TUNES,
   useSettingsStore,
@@ -22,9 +22,15 @@ import {
 import PageTitle from "../../components/PageTitle"
 import SpaceBetween from "../../components/SpaceBetween"
 import { useLocalStorage } from "../../hooks/useLocalStorage"
+import { pickOptimalFPLTeamAdvanced } from "../../app/algo"
 
 const TuneAlgo = () => {
-  const { weights: currentWeights, setWeights } = useSettingsStore()
+  const {
+    weights: currentWeights,
+    setWeights,
+    snapshot,
+    setSortedPlayers,
+  } = useSettingsStore()
   const [weightsState, setWeightsState] = useLocalStorage(
     "algorithm-weights",
     currentWeights,
@@ -62,6 +68,10 @@ const TuneAlgo = () => {
     defaultValue: currentWeights[key as WeightKey],
     deviation: value - currentWeights[key as WeightKey],
   }))
+
+  useEffect(() => {
+    if (snapshot) setSortedPlayers(pickOptimalFPLTeamAdvanced(snapshot))
+  }, [weightsState])
 
   return (
     <>

@@ -20,11 +20,11 @@ import {
   label,
   numberFmt,
   pctFmt,
-  priceFmt,
   teamAttackStrength,
   teamDefenseStrength,
 } from "../modules/player-compare/control"
 import Cell from "./Cell"
+import { priceFmt } from "../lib/helpers"
 
 export default function PlayerCard({
   element,
@@ -107,7 +107,7 @@ export default function PlayerCard({
             right={String(team?.short_name ?? team?.name ?? "-")}
           />
           <Row left={label.position} right={position} />
-          <Row left={label.price} right={String(priceFmt(player.now_cost))} />
+          <Row left={label.price} right={priceFmt(player.now_cost)} />
           <Row
             left={label.selection}
             right={

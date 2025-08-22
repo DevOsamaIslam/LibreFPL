@@ -1,6 +1,6 @@
 import { Chip } from "@mui/material"
 import type { IOptimalTeamPlayer } from "../../lib/types"
-import { priceFmt } from "../../hooks/usePlayerSelector"
+import { priceFmt } from "../../lib/helpers"
 
 interface SelectedChipProps {
   p: IOptimalTeamPlayer

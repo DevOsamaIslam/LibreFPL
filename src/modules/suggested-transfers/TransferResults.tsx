@@ -1,7 +1,7 @@
 import { Box, Chip, Stack, Typography } from "@mui/material"
 import { CURRENCY } from "../../app/settings"
 import type { SuggestTransfersResult } from "../../app/transfers"
-import { priceFmt } from "../../hooks/usePlayerSelector"
+import { priceFmt } from "../../lib/helpers"
 
 interface TransferResultsProps {
   calc: SuggestTransfersResult | null

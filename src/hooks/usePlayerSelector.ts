@@ -1,7 +1,6 @@
 import { useMemo, useState, useCallback } from "react"
 import type { IOptimalTeamPlayer, ISnapshot } from "../lib/types"
 import snapshot from "../data/snapshot.json"
-import { CURRENCY } from "../app/settings"
 
 export const PLAYER_SELECTOR_CONST = {
   maxSelected: 15,
@@ -18,11 +17,6 @@ const ELEMENT_TYPE: Record<number, "GK" | "DEF" | "MID" | "FWD"> = {
   3: "MID",
   4: "FWD",
 } as const
-
-export function priceFmt(n: number | undefined) {
-  if (n === undefined || n === null) return "-"
-  return CURRENCY + (n / 10).toFixed(1)
-}
 
 export function useSearchBase(list: IOptimalTeamPlayer[]) {
   const [q, setQ] = useState("")

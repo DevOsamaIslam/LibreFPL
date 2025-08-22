@@ -17,11 +17,11 @@ import {
   ELEMENT_TYPE,
   MAX_SELECTED,
   label,
-  priceFmt,
   useCompareData,
   usePlayersCompareState,
   useSearch,
 } from "./control"
+import { priceFmt } from "../../lib/helpers"
 
 export default function PlayersCompare() {
   const { players, teamsById } = useCompareData()

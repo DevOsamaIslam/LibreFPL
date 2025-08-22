@@ -1,5 +1,5 @@
 import { Stack, TextField, Typography } from "@mui/material"
-import { priceFmt } from "../../hooks/usePlayerSelector"
+import { priceFmt } from "../../lib/helpers"
 
 interface PlayerSearchProps {
   q: string

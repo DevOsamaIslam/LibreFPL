@@ -95,11 +95,6 @@ export function pctFmt(n: number | undefined, digits = 1) {
   return `${n.toFixed(digits)}%`
 }
 
-export function priceFmt(n: number | undefined) {
-  if (n === undefined || n === null) return "-"
-  return (n / 10).toFixed(1)
-}
-
 export function safeMean(a?: number, b?: number) {
   const vals = [a, b].filter((v): v is number => typeof v === "number")
   if (!vals.length) return undefined

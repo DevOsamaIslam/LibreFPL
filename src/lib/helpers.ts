@@ -1,3 +1,5 @@
+import { CURRENCY } from "../app/settings"
+
 export const getItem = <T>(key: string): T | null => {
   try {
     return JSON.parse(localStorage.getItem(key) || "") as T
@@ -56,4 +58,9 @@ export const convert2label = (input = ""): string => {
   s = s.split(" ").map(mapFn).join(" ").trim()
 
   return s
+}
+
+export function priceFmt(n: number | undefined) {
+  if (n === undefined || n === null) return "-"
+  return CURRENCY + (n / 10).toFixed(1)
 }
