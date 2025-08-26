@@ -63,8 +63,8 @@ export function useCompareData() {
 }
 
 export function useSearch(list: IOptimalTeamPlayer[]) {
-  const [q, setQ] = useState("")
-  const normalized = q.trim().toLowerCase()
+  const [term, setTerm] = useState<string>()
+  const normalized = term?.trim().toLowerCase()
   const result = useMemo(() => {
     if (!normalized) return list
     return list.filter((p) => {
@@ -81,7 +81,7 @@ export function useSearch(list: IOptimalTeamPlayer[]) {
       return hay.includes(normalized)
     })
   }, [list, normalized])
-  return { q, setQ, result }
+  return { term, setTerm, result }
 }
 
 // formatters and helpers

@@ -239,7 +239,9 @@ function PlayerBox({ player, armband }: PlayerBoxProps) {
                   <Cell
                     key={gw}
                     score={score.score}
-                    label={score.score.toFixed(2)}
+                    label={`${score.score.toFixed(2)} - ${
+                      score.opponent.short_name
+                    } (${score.isHome ? "H" : "A"})`}
                   />
                 ))}
                 <Cell

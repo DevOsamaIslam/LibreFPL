@@ -25,7 +25,7 @@ export const playerColumns: GridColDef<IPlayerColumn>[] = [
     field: "now_cost",
     headerName: "Cost",
     width: 100,
-    renderCell: ({ row }) => priceFmt(row.now_cost / 10),
+    renderCell: ({ row }) => priceFmt(row.now_cost),
   },
   {
     field: "",

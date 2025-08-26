@@ -36,8 +36,6 @@ export default function PlayerCard({
   onRemove?: () => void
 }) {
   const { element: player, score } = element
-  const ownership =
-    (player.selected_by_percent as unknown as number) ?? undefined
   const xg = (player as any).expected_goals as number | undefined
   const xa = (player as any).expected_assists as number | undefined
 
@@ -110,11 +108,7 @@ export default function PlayerCard({
           <Row left={label.price} right={priceFmt(player.now_cost)} />
           <Row
             left={label.selection}
-            right={
-              typeof ownership === "number"
-                ? String(pctFmt(ownership))
-                : String(player.selected_by_percent ?? "-")
-            }
+            right={String(player.selected_by_percent ?? "-")}
           />
         </Section>
 
@@ -160,7 +154,13 @@ export default function PlayerCard({
           />
           <Row
             left={label.defCon}
-            right={numberFmt(player.defensive_contribution, 0) || "-"}
+            right={
+              player.defensive_contribution
+                ? `${numberFmt(player.defensive_contribution, 0)} (${
+                    player.defensive_contribution / player.starts
+                  } per match)`
+                : "-"
+            }
           />
           <Row
             left={label.xG}

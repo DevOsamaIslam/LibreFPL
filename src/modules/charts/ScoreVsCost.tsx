@@ -10,6 +10,7 @@ import { useMemo } from "react"
 import { Scatter } from "react-chartjs-2"
 import { useSearchParams } from "react-router"
 import { colorByPos, useSettingsStore } from "../../app/settings"
+import { priceFmt } from "../../lib/helpers"
 
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend, Title)
 
@@ -101,7 +102,11 @@ export default function ScoreVsCost() {
               const raw = ctx.raw as {
                 x: number
                 y: number
-                meta?: { name?: string; position?: string | number }
+                meta?: {
+                  name?: string
+                  position?: string | number
+                  team: string
+                }
               }
               const name = raw.meta?.name ?? "Player"
               const posVal = String(raw.meta?.position ?? "")
@@ -115,7 +120,9 @@ export default function ScoreVsCost() {
                   : posVal === "4"
                   ? "FWD"
                   : posVal
-              return `${name} (${posCode}): Price ${raw.x}, Points ${raw.y}`
+              return `${name} (${
+                raw.meta?.team
+              } - ${posCode}): Price ${priceFmt(raw.x)}, Points ${raw.y}`
             },
           },
         },

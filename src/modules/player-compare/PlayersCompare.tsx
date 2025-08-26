@@ -25,7 +25,7 @@ import { priceFmt } from "../../lib/helpers"
 
 export default function PlayersCompare() {
   const { players, teamsById } = useCompareData()
-  const { q, setQ, result } = useSearch(players)
+  const { term, setTerm, result } = useSearch(players)
   const {
     selectedIds,
     selectedPlayers,
@@ -48,8 +48,8 @@ export default function PlayersCompare() {
         useFlexGap
         flexWrap="wrap">
         <TextField
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
           placeholder={label.searchPlaceholder}
           variant="outlined"
           size="small"
@@ -87,7 +87,10 @@ export default function PlayersCompare() {
                   return (
                     <Box key={p.element.id}>
                       <ListItemButton
-                        onClick={() => togglePlayer(p.element.id)}
+                        onClick={() => {
+                          togglePlayer(p.element.id)
+                          setTerm("")
+                        }}
                         disabled={!chosen && !canAddMore}
                         selected={chosen}
                         sx={{
