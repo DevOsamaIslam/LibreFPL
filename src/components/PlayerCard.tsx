@@ -19,7 +19,6 @@ import {
   ELEMENT_TYPE,
   label,
   numberFmt,
-  pctFmt,
   teamAttackStrength,
   teamDefenseStrength,
 } from "../modules/player-compare/control"
@@ -44,7 +43,7 @@ export default function PlayerCard({
   const att = teamAttackStrength(team)
   const def = teamDefenseStrength(team)
 
-  const FDR = getTeamFDR(player.team, { span: 5 })
+  const FDR = getTeamFDR(player.team, { span: 4 })
 
   const Row = ({ left, right }: { left: ReactNode; right: ReactNode }) => (
     <Stack
@@ -118,10 +117,14 @@ export default function PlayerCard({
             left={label.points}
             right={String(numberFmt(player.total_points, 0))}
           />
+          <Row
+            left={label.starts}
+            right={player.starts ? String(numberFmt(player.starts, 0)) : "0"}
+          />
           <Row left={label.mins} right={String(numberFmt(player.minutes, 0))} />
           <Row
             left={"Minutes per 90"}
-            right={String(numberFmt(player.minutes / player.starts, 0))}
+            right={String(numberFmt(player.minutes / (player.starts || 1), 0))}
           />
           <Row
             left={label.goals}
@@ -157,7 +160,7 @@ export default function PlayerCard({
             right={
               player.defensive_contribution
                 ? `${numberFmt(player.defensive_contribution, 0)} (${
-                    player.defensive_contribution / player.starts
+                    player.defensive_contribution / (player.starts || 1)
                   } per match)`
                 : "-"
             }
@@ -199,7 +202,9 @@ export default function PlayerCard({
                 {FDR.teamFDR.map((fdr) => (
                   <Cell
                     key={fdr.score}
-                    label={fdr.score.toFixed(2)}
+                    label={`${fdr.score.toFixed(2)} - ${
+                      fdr.opponent.short_name
+                    } (${fdr.isHome ? "H" : "A"})`}
                     score={fdr.score}
                   />
                 ))}

@@ -168,8 +168,14 @@ export const getTeamFDR = (
   teamId: number,
   options?: { span?: number; startingGW?: number }
 ) => {
-  const startingFrom = options?.startingGW || CURRENT_GW.id
-  const teamFDR = FDR_PER_TEAM[teamId]?.slice(startingFrom - 1, options?.span)!
+  const startingFrom = (options?.startingGW || CURRENT_GW.id) - 1
+  const teamFDR = FDR_PER_TEAM[teamId]?.slice(
+    startingFrom,
+    Math.min(
+      (options?.span || NUMBER_OF_MATCHES) + startingFrom,
+      NUMBER_OF_MATCHES - 1
+    )
+  )!
   const average =
     teamFDR.reduce((acc, curr) => acc + curr.score, 0) / teamFDR.length
 
