@@ -25,15 +25,11 @@ import { useLocalStorage } from "../../hooks/useLocalStorage"
 import { pickOptimalFPLTeamAdvanced } from "../../app/algo"
 
 const TuneAlgo = () => {
-  const {
-    weights: currentWeights,
-    setWeights,
-    snapshot,
-    setSortedPlayers,
-  } = useSettingsStore()
+  const { setWeights, snapshot, setSortedPlayers } = useSettingsStore()
+
   const [weightsState, setWeightsState] = useLocalStorage(
     "algorithm-weights",
-    currentWeights,
+    WEIGHTS,
     500
   )
   const [resetDialogOpen, setResetDialogOpen] = useState(false)
@@ -59,14 +55,14 @@ const TuneAlgo = () => {
     setResetDialogOpen(false)
   }
 
-  const weightEntries = Object.entries(weightsState).map(([key, value]) => ({
+  const weightEntries = Object.entries(WEIGHTS).map(([key, value]) => ({
     key: key as WeightKey,
     name: key
       .replace(/([A-Z])/g, " $1")
       .replace(/^./, (str) => str.toUpperCase()),
-    value,
-    defaultValue: currentWeights[key as WeightKey],
-    deviation: value - currentWeights[key as WeightKey],
+    value: weightsState[key as WeightKey] || value,
+    defaultValue: WEIGHTS[key as WeightKey],
+    deviation: value - WEIGHTS[key as WeightKey],
   }))
 
   useEffect(() => {
