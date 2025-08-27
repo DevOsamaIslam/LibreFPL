@@ -52,6 +52,9 @@ export const WEIGHTS = {
   defcon: 1,
   discipline: -2,
   cost: 1,
+  onPenalties: 1,
+  onFK: 0.5,
+  onCorners: 0.5,
 } as const
 
 export const CURRENCY = "£"
