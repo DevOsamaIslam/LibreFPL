@@ -34,6 +34,7 @@ export const label = {
   teamLabel: "Team",
   selection: "Selected by %",
   points: "Points",
+  starts: "Starts",
   mins: "Minutes",
   goals: "Goals",
   assists: "Assists",
@@ -85,14 +86,14 @@ export function useSearch(list: IOptimalTeamPlayer[]) {
 }
 
 // formatters and helpers
-export function numberFmt(n: number | undefined, digits = 1) {
+export function numberFmt(n: number | undefined, decimals = 1) {
   if (n === undefined || n === null || !n) return "-"
-  return (+n).toFixed(digits)
+  return (+n).toFixed(decimals)
 }
 
-export function pctFmt(n: number | undefined, digits = 1) {
+export function pctFmt(n: number | undefined, decimals = 1) {
   if (n === undefined || n === null) return "-"
-  return `${n.toFixed(digits)}%`
+  return `${n.toFixed(decimals)}%`
 }
 
 export function safeMean(a?: number, b?: number) {
