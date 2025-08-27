@@ -91,6 +91,11 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
         score += startsRatio * weights.startRatio
         score += minutesPerMatch * weights.minutesPerMatch
         score += parseFloat(expectedGoalInvolvement ?? 0) * weights.xGI
+        score += (4 - (player.penalties_order || 4)) * weights.onPenalties
+        score += (4 - (player.direct_freekicks_order || 4)) * weights.onFK
+        score +=
+          (4 - (player.corners_and_indirect_freekicks_order || 4)) *
+          weights.onCorners
 
         score += isAvailable ? weights.available : weights.notAvailable
 
@@ -113,7 +118,7 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
         const teamAdvantageScore =
           getTeamFDR(team.id, { span: 6 }).average - 2.5
 
-        score += teamAdvantageScore
+        score += teamAdvantageScore * weights.teamAdvantage
 
         const position = elementTypeToPosition[player.element_type]
         if (position === "GK" || position === "DEF") {
