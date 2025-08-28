@@ -143,8 +143,8 @@ function getTeamScore({
   }
 
   // Normalize the score to be between 0.00 and 5.00
-  const minScore = -700 // Example minimum score based on possible strength values
-  const maxScore = 700 // Example maximum score based on possible strength values
+  const minScore = -750 // Example minimum score based on possible strength values
+  const maxScore = 600 // Example maximum score based on possible strength values
 
   if (rawScore <= minScore) return 0.0
   if (rawScore >= maxScore) return 5.0
