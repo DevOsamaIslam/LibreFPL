@@ -6,11 +6,13 @@ import {
   Title,
   Tooltip,
 } from "chart.js"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Scatter } from "react-chartjs-2"
 import { useSearchParams } from "react-router"
 import { colorByPos, useSettingsStore } from "../../app/settings"
 import { priceFmt } from "../../lib/helpers"
+import { Checkbox } from "@mui/material"
+import SpaceBetween from "../../components/SpaceBetween"
 
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend, Title)
 
@@ -31,11 +33,17 @@ function toNumber(value: unknown): number | null {
 export default function ScoreVsCost() {
   const { sortedPlayers: allPlayers = [] } = useSettingsStore()
   const [searchParams] = useSearchParams()
+  const [onlyAvailable, setOnlyAvailable] = useState(false)
 
   // Constrain player pool if ?players=... is present (same behavior as Squad Rating)
   const players = useMemo(() => {
     const raw = searchParams.get(QUERY_KEYS.players)
-    if (!raw) return allPlayers
+    if (!raw)
+      return allPlayers.filter(
+        (player) =>
+          player.score > 0 &&
+          (onlyAvailable ? player.element.status === "a" : true)
+      ) // only players with positive score
     const wantedIds = new Set(
       raw
         .split(",")
@@ -45,7 +53,7 @@ export default function ScoreVsCost() {
     // keep only valid ones that exist in the current pool
     const filtered = allPlayers.filter((p) => wantedIds.has(p.element.id))
     return filtered
-  }, [allPlayers, searchParams])
+  }, [allPlayers, searchParams, onlyAvailable])
 
   const pointsVsPrice = useMemo(() => {
     const ptsPrice = players
@@ -150,6 +158,17 @@ export default function ScoreVsCost() {
         display: "flex",
         flexDirection: "column",
       }}>
+      <SpaceBetween>
+        <div>
+          <label htmlFor="onlyAvailable">Only available</label>
+          <Checkbox
+            id="onlyAvailable"
+            value={onlyAvailable}
+            onChange={(event) => setOnlyAvailable(event.target.checked)}
+          />
+        </div>
+        <div>Total players: {players.length}</div>
+      </SpaceBetween>
       <div style={{ flex: 1 }}>
         <Scatter data={chartData} options={options} />
       </div>
