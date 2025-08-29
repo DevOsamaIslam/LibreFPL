@@ -25,18 +25,31 @@ import {
 import Cell from "./Cell"
 import { priceFmt } from "../lib/helpers"
 
+const Row = ({ left, right }: { left: ReactNode; right: ReactNode }) => (
+  <Stack
+    direction="row"
+    justifyContent="space-between"
+    gap={2}
+    sx={{ py: 0.25 }}>
+    <Typography variant="body2" color="text.secondary">
+      {left}
+    </Typography>
+    <Typography variant="body2">{right}</Typography>
+  </Stack>
+)
+
 export default function PlayerCard({
   element,
   team,
   onRemove,
 }: {
   element: IOptimalTeamPlayer
-  team?: Team
+  team: Team
   onRemove?: () => void
 }) {
   const { element: player, score } = element
-  const xg = (player as any).expected_goals as number | undefined
-  const xa = (player as any).expected_assists as number | undefined
+  const xg = +(player.expected_goals || 0)
+  const xa = +(player.expected_assists || 0)
 
   const position = ELEMENT_TYPE[player.element_type]
 
@@ -44,19 +57,6 @@ export default function PlayerCard({
   const def = teamDefenseStrength(team)
 
   const FDR = getTeamFDR(player.team, { span: 4 })
-
-  const Row = ({ left, right }: { left: ReactNode; right: ReactNode }) => (
-    <Stack
-      direction="row"
-      justifyContent="space-between"
-      gap={2}
-      sx={{ py: 0.25 }}>
-      <Typography variant="body2" color="text.secondary">
-        {left}
-      </Typography>
-      <Typography variant="body2">{right}</Typography>
-    </Stack>
-  )
 
   return (
     <Card variant="outlined" sx={{ borderRadius: 2 }}>
@@ -136,7 +136,7 @@ export default function PlayerCard({
           />
           <Row
             left={label.xPointsNext}
-            right={String(numberFmt(+(player.ep_this || player.ep_next), 0))}
+            right={String(numberFmt(element.xPoints, 0))}
           />
           <Row
             left={label.cleanSheet}

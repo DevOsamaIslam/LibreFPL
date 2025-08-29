@@ -6,6 +6,7 @@ import {
   type Player,
   type Position,
   type PositionCount,
+  type Team,
   type TeamCount,
 } from "../lib/types"
 import { checkEligibility, RULE_KEYS } from "./eligibility"
@@ -21,6 +22,30 @@ import {
 } from "./settings"
 import lastSeason from "../data/lastSeason.json"
 
+const getXPoints = (params: {
+  player: Player
+  team: Team
+  opponent: Team
+  isHome: boolean
+}) => {
+  const { player, team, opponent, isHome } = params
+  const expected = +(player.ep_this || player.ep_next || 0)
+  let score = expected
+  if (["FWD", "MID"].includes(elementTypeToPosition[player.element_type])) {
+    score +=
+      (isHome
+        ? team.strength_attack_home - opponent.strength_defence_away
+        : team.strength_attack_away - opponent.strength_defence_home) / 90
+  } else {
+    score +=
+      (isHome
+        ? team.strength_defence_home - opponent.strength_attack_away
+        : team.strength_defence_away - opponent.strength_attack_home) / 100
+  }
+
+  return Math.max(score, 0)
+}
+
 /**
  * pickOptimalFPLTeamAdvanced
  *
@@ -29,7 +54,7 @@ import lastSeason from "../data/lastSeason.json"
  * and then picks the best players to form a team within the given constraints (budget, team limits, position limits).
  *
  */
-export const pickOptimalFPLTeamAdvanced = (fpl: ISnapshot) => {
+export const pickOptimalFPLTeam = (fpl: ISnapshot) => {
   const { players } = filterAndScorePlayers(fpl)
 
   return players as IOptimalTeamPlayer[]
@@ -99,9 +124,6 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
         score += isAvailable ? weights.available : weights.notAvailable
 
-        score +=
-          parseFloat(player.ep_this || player.ep_next || "0") *
-          weights.expectedPoints
         score += parseFloat(player.form) * weights.form
 
         const discipline = player.starts
@@ -115,10 +137,22 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
         if (!team) return null
 
-        const teamAdvantageScore =
-          getTeamFDR(team.id, { span: 6 }).average - 2.5
+        const FDR = getTeamFDR(team.id, { span: 6 })
+
+        const teamAdvantageScore = FDR.average - 2.5
 
         score += teamAdvantageScore * weights.teamAdvantage
+
+        const expectedPoints = getXPoints({
+          player,
+          team,
+          isHome: FDR.teamFDR[0].isHome,
+          opponent: FDR.teamFDR[0].opponent,
+        })
+        // +(player.ep_this || player.ep_next || 0) +
+        // ((FDR.teamFDR[0]?.score || 2.5) - 2.5)
+
+        score += expectedPoints * weights.expectedPoints
 
         const position = elementTypeToPosition[player.element_type]
         if (position === "GK" || position === "DEF") {
@@ -136,6 +170,7 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
           position,
           teamId: team.id,
           teamName: team.name,
+          xPoints: expectedPoints,
         } as IOptimalTeamPlayer
       }
       const playerScore = getPlayerScore(currentPlayer)

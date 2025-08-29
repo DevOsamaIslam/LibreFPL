@@ -156,7 +156,7 @@ export default function PlayersCompare() {
                 <PlayerCard
                   key={p.element.id}
                   element={p}
-                  team={teamsById.get(p.element.team)}
+                  team={teamsById.get(p.element.team)!}
                   onRemove={() => removePlayer(p.element.id)}
                 />
               ))}

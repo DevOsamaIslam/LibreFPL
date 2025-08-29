@@ -22,7 +22,7 @@ import {
 import PageTitle from "../../components/PageTitle"
 import SpaceBetween from "../../components/SpaceBetween"
 import { useLocalStorage } from "../../hooks/useLocalStorage"
-import { pickOptimalFPLTeamAdvanced } from "../../app/algo"
+import { pickOptimalFPLTeam } from "../../app/algo"
 
 const TuneAlgo = () => {
   const { setWeights, snapshot, setSortedPlayers } = useSettingsStore()
@@ -66,7 +66,7 @@ const TuneAlgo = () => {
   }))
 
   useEffect(() => {
-    if (snapshot) setSortedPlayers(pickOptimalFPLTeamAdvanced(snapshot))
+    if (snapshot) setSortedPlayers(pickOptimalFPLTeam(snapshot))
   }, [weightsState])
 
   return (

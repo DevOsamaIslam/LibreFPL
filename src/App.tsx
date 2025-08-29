@@ -6,7 +6,7 @@ import { ThemeProvider } from "@mui/material/styles"
 import Toolbar from "@mui/material/Toolbar"
 import { useEffect, useState } from "react"
 import { HashRouter, Link, Route, Routes } from "react-router"
-import { pickOptimalFPLTeamAdvanced } from "./app/algo"
+import { pickOptimalFPLTeam } from "./app/algo"
 import { useSettingsStore } from "./app/settings"
 import theme from "./app/theme"
 import PageTitle from "./components/PageTitle"
@@ -34,7 +34,7 @@ function App() {
     useGWTodos()
 
   useEffect(() => {
-    if (snapshot) setSortedPlayers(pickOptimalFPLTeamAdvanced(snapshot))
+    if (snapshot) setSortedPlayers(pickOptimalFPLTeam(snapshot))
   }, [])
 
   // Initialize global snackbar

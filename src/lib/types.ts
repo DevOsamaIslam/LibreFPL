@@ -325,6 +325,7 @@ export interface IOptimalTeamPlayer {
   position: string
   teamId: number
   teamName: string
+  xPoints: number
 }
 
 export interface IMyTeam {

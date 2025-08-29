@@ -230,9 +230,7 @@ function PlayerBox({ player, armband }: PlayerBoxProps) {
               </Stack>
               <SpaceBetween>
                 <Chip
-                  label={`xPoints: ${
-                    player.element.ep_this || player.element.ep_next
-                  }`}
+                  label={`xPoints: ${player.xPoints.toFixed(0)}`}
                   size="small"
                 />
                 {FDR.teamFDR.map((score, gw) => (

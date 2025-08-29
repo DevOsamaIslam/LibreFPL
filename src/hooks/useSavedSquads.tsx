@@ -1,3 +1,4 @@
+import { DeleteForeverOutlined, RefreshOutlined } from "@mui/icons-material"
 import {
   Button,
   Card,
@@ -8,14 +9,14 @@ import {
   Select,
   Stack,
   TextField,
+  Tooltip,
 } from "@mui/material"
 import { memo, useCallback, useState } from "react"
 import BaseDialog from "../components/BaseDialog"
 import SpaceBetween from "../components/SpaceBetween"
+import { useSnackbarUtils } from "../lib/snackbar"
 import type { ISavedSquad } from "../lib/types"
 import { useLocalStorage } from "./useLocalStorage"
-import { DeleteForeverOutlined } from "@mui/icons-material"
-import { useSnackbarUtils } from "../lib/snackbar"
 
 export const useSavedSquads = () => {
   const [activeSquad, setActiveSquad] = useState<ISavedSquad>()
@@ -78,10 +79,27 @@ export const useSavedSquads = () => {
                     onClick={() => setActiveSquad(squad)}>
                     <SpaceBetween>
                       {squad.title}
-                      <DeleteForeverOutlined
-                        color="error"
-                        onClick={() => deleteSquad(squad)}
-                      />
+                      <Stack direction={"row"} spacing={1}>
+                        <Tooltip title="Update to current squad" arrow>
+                          <RefreshOutlined
+                            onClick={(event) => {
+                              updateSquad({
+                                ...squad,
+                                playerIds: activeSquad?.playerIds || [],
+                                updatedAt: new Date(),
+                              })
+                              event.stopPropagation()
+                            }}
+                          />
+                        </Tooltip>
+                        <DeleteForeverOutlined
+                          color="error"
+                          onClick={(event) => {
+                            deleteSquad(squad)
+                            event.stopPropagation()
+                          }}
+                        />
+                      </Stack>
                     </SpaceBetween>
                   </MenuItem>
                 ))}

@@ -96,19 +96,18 @@ export function pctFmt(n: number | undefined, decimals = 1) {
   return `${n.toFixed(decimals)}%`
 }
 
-export function safeMean(a?: number, b?: number) {
-  const vals = [a, b].filter((v): v is number => typeof v === "number")
-  if (!vals.length) return undefined
+export function safeMean(a = 0, b = 0) {
+  const vals = [a, b]
   return vals.reduce((s, v) => s + v, 0) / vals.length
 }
 
-export function teamAttackStrength(team?: Team) {
+export function teamAttackStrength(team: Team) {
   if (!team) return undefined
   const att = safeMean(team.strength_attack_home, team.strength_attack_away)
   return att
 }
 
-export function teamDefenseStrength(team?: Team) {
+export function teamDefenseStrength(team: Team) {
   if (!team) return undefined
   const def = safeMean(team.strength_defence_home, team.strength_defence_away)
   return def
