@@ -122,7 +122,9 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
           (4 - (player.corners_and_indirect_freekicks_order || 4)) *
           weights.onCorners
 
-        score += isAvailable ? weights.available : weights.notAvailable
+        score += isAvailable
+          ? 10 * weights.available
+          : 50 * weights.notAvailable
 
         score += parseFloat(player.form) * weights.form
 

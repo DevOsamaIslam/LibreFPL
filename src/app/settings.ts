@@ -138,6 +138,7 @@ interface SettingsState {
   snapshot: ISnapshot | null
   sortedPlayers: IOptimalTeamPlayer[]
   weights: typeof WEIGHTS
+  teams: Map<number, Team>
   setDesiredFormation: (formation: string) => void
   setBenchBoostEnabled: (enabled: boolean) => void
   setTripleCaptainEnabled: (enabled: boolean) => void
@@ -155,6 +156,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   snapshot: snapshot as unknown as ISnapshot,
   sortedPlayers: [],
   weights: WEIGHTS,
+  teams: new Map(snapshot.teams.map((t) => [t.id, t])),
   setSortedPlayers: (players) => set({ sortedPlayers: players }),
   setDesiredFormation: (formation) => set({ desiredFormation: formation }),
   setBenchBoostEnabled: (enabled) => set({ benchBoostEnabled: enabled }),

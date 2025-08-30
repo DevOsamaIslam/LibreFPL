@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import type { IOptimalTeamPlayer, Team } from "../../lib/types"
 import { useSearchParams } from "react-router"
 import { elementTypeToPosition } from "../../app/settings"
-import { Position } from "../../store/playerFilter.store"
 import { calculateTeamScore } from "../../app/transfers"
+import type { IOptimalTeamPlayer } from "../../lib/types"
+import { Position } from "../../store/playerFilter.store"
 
 // Centralized constants to avoid hard-coded strings
 const QUERY_KEYS = {
@@ -14,7 +14,6 @@ type QueryKey = typeof QUERY_KEYS.players
 
 interface ControllerArgs {
   players: IOptimalTeamPlayer[]
-  teams?: Team[]
 }
 
 type Captaincy = {
@@ -22,7 +21,7 @@ type Captaincy = {
   viceCaptainId: number | null
 }
 
-function useSquadRating({ players, teams }: ControllerArgs) {
+function useSquadRating({ players }: ControllerArgs) {
   // Build a quick lookup set of valid element ids to validate URL input.
   const validIds = useMemo(
     () =>
@@ -93,12 +92,6 @@ function useSquadRating({ players, teams }: ControllerArgs) {
     }
     setSearchParams(sp, { replace: true })
   }, [selectedSquad, searchParams, setSearchParams])
-
-  const teamMap = useMemo(() => {
-    const m = new Map<number, Team>()
-    teams?.forEach((t) => m.set(t.id, t))
-    return m
-  }, [teams])
 
   const positionLabel = useMemo(
     () =>
@@ -241,7 +234,6 @@ function useSquadRating({ players, teams }: ControllerArgs) {
     QUERY_KEYS,
     positionLabel,
     groupedPlayers,
-    teamMap,
     startersIds,
     benchIds,
     selectedSquad,

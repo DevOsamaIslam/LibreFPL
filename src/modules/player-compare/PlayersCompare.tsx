@@ -1,27 +1,27 @@
-import PageTitle from "../../components/PageTitle"
-import PlayerCard from "../../components/PlayerCard"
 import {
   Box,
-  Stack,
-  Typography,
-  TextField,
   Chip,
-  Paper,
+  Divider,
+  Grid,
   List,
   ListItemButton,
   ListItemText,
-  Divider,
-  Grid,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material"
+import { colorByPos, TEAM_COLOR } from "../../app/settings"
+import PageTitle from "../../components/PageTitle"
+import PlayerCard from "../../components/PlayerCard"
+import SpaceBetween from "../../components/SpaceBetween"
 import {
-  ELEMENT_TYPE,
-  MAX_SELECTED,
   label,
+  MAX_SELECTED,
   useCompareData,
   usePlayersCompareState,
   useSearch,
 } from "./control"
-import { priceFmt } from "../../lib/helpers"
 
 export default function PlayersCompare() {
   const { players, teamsById } = useCompareData()
@@ -81,14 +81,14 @@ export default function PlayersCompare() {
               variant="outlined"
               sx={{ maxHeight: "60vh", overflow: "auto" }}>
               <List disablePadding>
-                {result.map((p, idx) => {
-                  const t = teamsById.get(p.element.team)
-                  const chosen = selectedIds.includes(p.element.id)
+                {result.map((player, idx) => {
+                  const team = teamsById.get(player.element.team)
+                  const chosen = selectedIds.includes(player.element.id)
                   return (
-                    <Box key={p.element.id}>
+                    <Box key={player.element.id}>
                       <ListItemButton
                         onClick={() => {
-                          togglePlayer(p.element.id)
+                          togglePlayer(player.element.id)
                           setTerm("")
                         }}
                         disabled={!chosen && !canAddMore}
@@ -102,20 +102,46 @@ export default function PlayersCompare() {
                         }}>
                         <ListItemText
                           primary={
-                            <Typography fontWeight={600}>
-                              {p.element.web_name}
-                            </Typography>
-                          }
-                          secondary={
-                            <Typography
-                              variant="caption"
-                              color="text.secondary">
-                              {(t?.short_name ?? t?.name ?? "-") +
-                                " • " +
-                                ELEMENT_TYPE[p.element.element_type] +
-                                " • £" +
-                                priceFmt(p.element.now_cost)}
-                            </Typography>
+                            <SpaceBetween>
+                              <Typography fontWeight={600}>
+                                {player.element.web_name}
+                              </Typography>
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="center">
+                                <Chip
+                                  size="small"
+                                  label={team?.short_name}
+                                  sx={{
+                                    height: 20,
+                                    "& .MuiChip-label": { px: 0.75 },
+                                    background: TEAM_COLOR[team?.name || ""],
+                                    color: "white",
+                                  }}
+                                />
+                                <Chip
+                                  size="small"
+                                  label={player.position}
+                                  sx={{
+                                    height: 20,
+                                    "& .MuiChip-label": { px: 0.75 },
+                                    background: colorByPos[player.position],
+                                    color: "white",
+                                  }}
+                                />
+                                <Chip
+                                  size="small"
+                                  color="primary"
+                                  label={`Score: ${player.score.toFixed(0)}`}
+                                  sx={{
+                                    height: 20,
+                                    "& .MuiChip-label": { px: 0.75 },
+                                    color: "white",
+                                  }}
+                                />
+                              </Stack>
+                            </SpaceBetween>
                           }
                         />
                       </ListItemButton>

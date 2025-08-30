@@ -13,7 +13,7 @@ import {
 import Grid from "@mui/material/Grid"
 import React, { useCallback, useEffect } from "react"
 import { checkEligibility } from "../../app/eligibility"
-import { useSettingsStore } from "../../app/settings"
+import { colorByPos, TEAM_COLOR, useSettingsStore } from "../../app/settings"
 import PageTitle from "../../components/PageTitle"
 import PlayerBox from "../../components/PlayerBox"
 import {
@@ -29,11 +29,11 @@ import {
   type TeamCount,
 } from "../../lib/types"
 import useSquadRating from "./useSquadRating"
+import SpaceBetween from "../../components/SpaceBetween"
 
 const SquadRatingPage: React.FC = ({}) => {
-  const { sortedPlayers: players } = useSettingsStore()
+  const { sortedPlayers: players, teams } = useSettingsStore()
   const {
-    teamMap,
     startersIds,
     benchIds,
     selectedSquad,
@@ -174,10 +174,11 @@ const SquadRatingPage: React.FC = ({}) => {
 
           <Paper
             variant="outlined"
-            sx={{ maxHeight: "60vh", overflow: "auto" }}>
+            sx={{ maxHeight: "70vh", overflow: "auto" }}>
             <List disablePadding>
               {result.map((player, idx) => {
                 const chosen = selectedSquad.includes(player.element.id)
+                const team = teams.get(player.teamId)
                 const { eligible } = checkEligibility({
                   selected: selectedSquad,
                   candidate: player,
@@ -209,23 +210,46 @@ const SquadRatingPage: React.FC = ({}) => {
                       }}>
                       <ListItemText
                         primary={
-                          <Typography
-                            fontWeight={(theme) =>
-                              theme.typography.fontWeightBold ?? 600
-                            }>
-                            {player.element.web_name}
-                          </Typography>
-                        }
-                        secondary={
-                          <Typography variant="caption" color="text.secondary">
-                            {teamMap.get(player.element.team)?.name ?? "-"} •{" "}
-                            {
-                              ["", "GK", "DEF", "MID", "FWD"][
-                                player.element.element_type
-                              ]
-                            }{" "}
-                            • {player.score.toFixed(0)}
-                          </Typography>
+                          <SpaceBetween>
+                            <Typography fontWeight={600}>
+                              {player.element.web_name}
+                            </Typography>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center">
+                              <Chip
+                                size="small"
+                                label={team?.short_name}
+                                sx={{
+                                  height: 20,
+                                  "& .MuiChip-label": { px: 0.75 },
+                                  background: TEAM_COLOR[team?.name || ""],
+                                  color: "white",
+                                }}
+                              />
+                              <Chip
+                                size="small"
+                                label={player.position}
+                                sx={{
+                                  height: 20,
+                                  "& .MuiChip-label": { px: 0.75 },
+                                  background: colorByPos[player.position],
+                                  color: "white",
+                                }}
+                              />
+                              <Chip
+                                size="small"
+                                color="primary"
+                                label={`Score: ${player.score.toFixed(0)}`}
+                                sx={{
+                                  height: 20,
+                                  "& .MuiChip-label": { px: 0.75 },
+                                  color: "white",
+                                }}
+                              />
+                            </Stack>
+                          </SpaceBetween>
                         }
                       />
                     </ListItemButton>
