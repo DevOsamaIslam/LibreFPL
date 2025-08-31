@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router"
-import { elementTypeToPosition, useSettingsStore } from "../../app/settings"
+import { useSettingsStore } from "../../app/settings"
 import { calculateTeamScore } from "../../app/transfers"
 import type { IOptimalTeamPlayer, IPick } from "../../lib/types"
-import { Position } from "../../store/playerFilter.store"
 
 // Centralized constants to avoid hard-coded strings
 const QUERY_KEYS = {
@@ -180,24 +179,11 @@ function useSquadRating({ players }: ControllerArgs) {
 
     // Determine captain and vice from XI by highest scores
     if (startersIds.length > 0) {
-      const withScores = startersIds
-        .map((id) => {
-          const ep_this =
-            validIds[id]?.element.ep_this ||
-            validIds[id]?.element.ep_next ||
-            "0"
-          return { id, xPoints: Number(ep_this) }
-        })
-        .sort((a, b) => {
-          const position = elementTypeToPosition[validIds[a.id]?.position]
-          if (position === Position.DEF || position === Position.GK) {
-            return b.xPoints + a.xPoints
-          }
-          return b.xPoints - a.xPoints
-        })
-
-      const captainId = withScores[0]?.id ?? null
-      const viceCaptainId = withScores[1]?.id ?? null
+      const sortedByXPoints = startersIds.sort(
+        (a, b) => validIds[b]?.xPoints - validIds[a]?.xPoints
+      )
+      const captainId = sortedByXPoints[0] ?? null
+      const viceCaptainId = sortedByXPoints[1] ?? null
       setCaptaincy({ captainId, viceCaptainId })
     } else {
       setCaptaincy({ captainId: null, viceCaptainId: null })

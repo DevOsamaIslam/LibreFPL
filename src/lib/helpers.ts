@@ -1,10 +1,10 @@
 import { CURRENCY } from "../app/settings"
 
-export const getItem = <T>(key: string): T | null => {
+export const getItem = <T>(key: string): T | undefined => {
   try {
     return JSON.parse(localStorage.getItem(key) || "") as T
   } catch (error) {
-    return null
+    return
   }
 }
 

@@ -1,4 +1,11 @@
-import type { SxProps } from "@mui/material"
+import {
+  Button,
+  FormControl,
+  Stack,
+  TextareaAutosize,
+  type SxProps,
+  type Theme,
+} from "@mui/material"
 import Box from "@mui/material/Box"
 import Card from "@mui/material/Card"
 import CardActionArea from "@mui/material/CardActionArea"
@@ -8,7 +15,13 @@ import Container from "@mui/material/Container"
 import type { GridProps } from "@mui/material/Grid"
 import Grid from "@mui/material/Grid"
 import Typography from "@mui/material/Typography"
+import { useState } from "react"
 import { Link as RouterLink } from "react-router-dom"
+import { useSettingsStore } from "../app/settings"
+import BaseDialog from "../components/BaseDialog"
+import SpaceBetween from "../components/SpaceBetween"
+import { setItem } from "../lib/helpers"
+import { useSnackbarUtils } from "../lib/snackbar"
 
 type Feature = (typeof FEATURES)[number]
 
@@ -93,18 +106,18 @@ const FEATURES = [
 ] as const
 
 function Home() {
-  const cardSx: SxProps = {
+  const cardSx: SxProps<Theme> = {
     display: "flex",
     height: "100%",
     width: 400,
     borderRadius: 2,
     transition:
       "transform 150ms ease, box-shadow 200ms ease, border-color 200ms ease",
-    border: (theme: any) => `1px solid ${theme.palette.divider}`,
+    border: (theme) => `1px solid ${theme.palette.divider}`,
     "&:hover": {
       transform: "translateY(-4px)",
       boxShadow: 6,
-      borderColor: (theme: any) => theme.palette.primary.light,
+      borderColor: (theme) => theme.palette.primary.light,
     },
   } as const
 
@@ -129,21 +142,39 @@ function Home() {
     mb: 1,
   } as const
 
+  const { setMyTeam, myTeam } = useSettingsStore()
+
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [teamInfo, setTeamInfo] = useState("")
+  const { success, error } = useSnackbarUtils()
+
   return (
     <Container maxWidth="lg">
-      <Box sx={{ py: 6, textAlign: { xs: "left", md: "left" } }}>
-        <Typography
-          variant="h3"
-          component="h1"
-          gutterBottom
-          sx={{ fontWeight: 700 }}>
-          Fantasy Tools
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-          A suite of utilities to research players, compare options, and rate
-          squads.
-        </Typography>
-      </Box>
+      <SpaceBetween>
+        <Box sx={{ py: 6, textAlign: { xs: "left", md: "left" } }}>
+          <Typography
+            variant="h3"
+            component="h1"
+            gutterBottom
+            sx={{ fontWeight: 700 }}>
+            Fantasy Tools
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+            A suite of utilities to research players, compare options, and rate
+            squads.
+          </Typography>
+        </Box>
+        <Stack direction={"column"} spacing={2} alignItems="flex-end">
+          <Button variant="contained" onClick={() => setAddDialogOpen(true)}>
+            Add my team
+          </Button>
+          {myTeam && (
+            <Typography variant="caption" color="text.secondary">
+              {myTeam.picks_last_updated}
+            </Typography>
+          )}
+        </Stack>
+      </SpaceBetween>
 
       <Grid container spacing={3}>
         {FEATURES.map((feature: Feature) => (
@@ -201,7 +232,45 @@ function Home() {
         ))}
       </Grid>
 
-      <Box sx={{ py: 6 }} />
+      <BaseDialog
+        open={addDialogOpen}
+        onClose={() => setAddDialogOpen(false)}
+        title="Add my team"
+        onSubmit={() => {
+          try {
+            const parsed = JSON.parse(teamInfo)
+            if (parsed.picks && Array.isArray(parsed.picks)) {
+              setMyTeam(parsed)
+              setItem("myTeam", parsed)
+              success("Team added successfully")
+              setAddDialogOpen(false)
+            } else {
+              error(
+                "Invalid team data. Please ensure you pasted the correct JSON."
+              )
+            }
+          } catch (err) {
+            error("Error parsing JSON. Please ensure it is valid.")
+          } finally {
+            setTeamInfo("")
+          }
+        }}>
+        <FormControl fullWidth sx={{ mt: 2 }}>
+          <TextareaAutosize
+            minRows={6}
+            maxRows={6}
+            placeholder="Paste team JSON here"
+            style={{
+              width: "100%",
+              padding: 8,
+              fontFamily: "inherit",
+              fontSize: "inherit",
+            }}
+            value={teamInfo}
+            onChange={(e) => setTeamInfo(e.target.value)}
+          />
+        </FormControl>
+      </BaseDialog>
     </Container>
   )
 }

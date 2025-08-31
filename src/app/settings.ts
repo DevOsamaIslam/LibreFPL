@@ -1,6 +1,5 @@
 import { create } from "zustand"
 import snapshot from "../data/snapshot.json"
-import myTeam from "../data/my-team.json"
 import type {
   Event,
   IMyTeam,
@@ -17,7 +16,7 @@ export const SUPPORT_ADDRESSES = {
 
 export const MAX_TUNES = 20
 
-export const BUDGET = myTeam.transfers.bank + myTeam.transfers.value || 1000
+export const BUDGET = 1000
 export const TEAM_LIMIT = 3
 export const POSITION_LIMITS = { GK: 2, DEF: 5, MID: 5, FWD: 3 }
 export const elementTypeToPosition = {
@@ -147,6 +146,7 @@ interface SettingsState {
   weights: typeof WEIGHTS
   teams: Map<number, Team>
   myTeam: IMyTeam | undefined
+  budget: number
   setSortedPlayers: (players: IOptimalTeamPlayer[]) => void
   setPlayersMap: (players: IOptimalTeamPlayer[]) => void
   setDesiredFormation: (formation: string) => void
@@ -155,6 +155,8 @@ interface SettingsState {
   setNumberEnablers: (number: number) => void
   setSnapshot: (snapshot: ISnapshot) => void
   setWeights: (weights: typeof WEIGHTS) => void
+  setMyTeam: (myTeam: IMyTeam) => void
+  setBudget: (budget: number) => void
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
@@ -166,8 +168,9 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   sortedPlayers: [],
   playersMap: new Map(),
   weights: WEIGHTS,
+  budget: BUDGET,
   teams: new Map(snapshot.teams.map((t) => [t.id, t])),
-  myTeam: myTeam as unknown as IMyTeam | undefined,
+  myTeam: undefined,
   setSortedPlayers: (players) => set({ sortedPlayers: players }),
   setPlayersMap: (players) =>
     set({
@@ -179,4 +182,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setNumberEnablers: (number) => set({ numberEnablers: number }),
   setSnapshot: (snapshot) => set({ snapshot }),
   setWeights: (weights) => set({ weights }),
+  setMyTeam: (myTeam) =>
+    set({ myTeam, budget: myTeam.transfers.bank + myTeam.transfers.value }),
+  setBudget: (budget) => set({ budget }),
 }))

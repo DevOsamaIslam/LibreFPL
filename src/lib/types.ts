@@ -330,7 +330,7 @@ export interface IOptimalTeamPlayer {
 
 export interface IMyTeam {
   picks: IPick[]
-  picks_last_updated: Date
+  picks_last_updated: string
   chips: Chip[]
   transfers: Transfers
 }

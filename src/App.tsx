@@ -25,9 +25,12 @@ import SuggestedTransfersPage from "./modules/suggested-transfers"
 import Support from "./modules/Support"
 import TuneAlgo from "./modules/tune-algo"
 import { useGWTodos } from "./hooks/useGWTodos"
+import { useLocalStorage } from "./hooks/useLocalStorage"
 
 function App() {
-  const { setSortedPlayers, snapshot, setPlayersMap } = useSettingsStore()
+  const { setSortedPlayers, snapshot, setPlayersMap, setMyTeam } =
+    useSettingsStore()
+  const [myStoredTeam] = useLocalStorage("myTeam", null)
   const snackbarUtils = useSnackbarUtils()
   const [isTodosDrawerOpen, setIsTodosDrawerOpen] = useState(false)
   const { todoStats, addTodos, toggleTodo, deleteTodo, getTodosForGW } =
@@ -39,6 +42,7 @@ function App() {
       setSortedPlayers(optimalPlayers)
       setPlayersMap(optimalPlayers)
     }
+    if (myStoredTeam) setMyTeam(myStoredTeam)
   }, [])
 
   // Initialize global snackbar
