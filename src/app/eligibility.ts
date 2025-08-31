@@ -23,8 +23,8 @@ export type RuleKey = (typeof RULE_KEYS)[keyof typeof RULE_KEYS]
 export const SQUAD_CONSTRAINTS = {
   MAX_PER_TEAM: TEAM_LIMIT,
   MAX_PLAYERS: 15,
-  BUDGET: BUDGET,
-  POSITION_LIMITS: POSITION_LIMITS,
+  BUDGET,
+  POSITION_LIMITS,
 } as const
 
 export interface EligibilityInput {
@@ -63,9 +63,7 @@ export function checkEligibility(input: EligibilityInput): EligibilityResult {
   const reasons: RuleKey[] = []
 
   // Max players overall
-  if (
-    selected.length === 15
-  ) {
+  if (selected.length === 15) {
     reasons.push(RULE_KEYS.maxPlayers)
   }
 

@@ -1,6 +1,12 @@
 import { create } from "zustand"
 import snapshot from "../data/snapshot.json"
-import type { Event, IOptimalTeamPlayer, ISnapshot } from "../lib/types"
+import myTeam from "../data/my-team.json"
+import type {
+  Event,
+  IMyTeam,
+  IOptimalTeamPlayer,
+  ISnapshot,
+} from "../lib/types"
 import type { Team } from "../modules/player-compare/control"
 
 export const APP_NAME = "LibreFPL"
@@ -11,7 +17,7 @@ export const SUPPORT_ADDRESSES = {
 
 export const MAX_TUNES = 20
 
-export const BUDGET = 1000
+export const BUDGET = myTeam.transfers.bank + myTeam.transfers.value || 1000
 export const TEAM_LIMIT = 3
 export const POSITION_LIMITS = { GK: 2, DEF: 5, MID: 5, FWD: 3 }
 export const elementTypeToPosition = {
@@ -137,14 +143,17 @@ interface SettingsState {
   numberEnablers: number
   snapshot: ISnapshot | null
   sortedPlayers: IOptimalTeamPlayer[]
+  playersMap: Map<number, IOptimalTeamPlayer>
   weights: typeof WEIGHTS
   teams: Map<number, Team>
+  myTeam: IMyTeam | undefined
+  setSortedPlayers: (players: IOptimalTeamPlayer[]) => void
+  setPlayersMap: (players: IOptimalTeamPlayer[]) => void
   setDesiredFormation: (formation: string) => void
   setBenchBoostEnabled: (enabled: boolean) => void
   setTripleCaptainEnabled: (enabled: boolean) => void
   setNumberEnablers: (number: number) => void
   setSnapshot: (snapshot: ISnapshot) => void
-  setSortedPlayers: (players: IOptimalTeamPlayer[]) => void
   setWeights: (weights: typeof WEIGHTS) => void
 }
 
@@ -155,9 +164,15 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   numberEnablers: 4,
   snapshot: snapshot as unknown as ISnapshot,
   sortedPlayers: [],
+  playersMap: new Map(),
   weights: WEIGHTS,
   teams: new Map(snapshot.teams.map((t) => [t.id, t])),
+  myTeam: myTeam as unknown as IMyTeam | undefined,
   setSortedPlayers: (players) => set({ sortedPlayers: players }),
+  setPlayersMap: (players) =>
+    set({
+      playersMap: new Map(players.map((player) => [player.element.id, player])),
+    }),
   setDesiredFormation: (formation) => set({ desiredFormation: formation }),
   setBenchBoostEnabled: (enabled) => set({ benchBoostEnabled: enabled }),
   setTripleCaptainEnabled: (enabled) => set({ tripleCaptainEnabled: enabled }),
