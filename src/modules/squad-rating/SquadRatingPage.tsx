@@ -46,6 +46,7 @@ const SquadRatingPage: React.FC = ({}) => {
     xiScore,
     benchScore,
     captaincy,
+    teamCost,
   } = useSquadRating({
     players,
   })
@@ -94,7 +95,7 @@ const SquadRatingPage: React.FC = ({}) => {
         title: "",
         description: "",
         playerIds: selectedSquad,
-        updatedAt: new Date(),
+        updatedAt: new Date().toString(),
       })
     }
   }, [selectedIds, selectedSquad, setSelectedIds])
@@ -184,13 +185,7 @@ const SquadRatingPage: React.FC = ({}) => {
                   candidate: player,
                   positionCount,
                   teamCount,
-                  budgetUsed: selectedSquad
-                    .map((id) => players.find((pp) => pp.element.id === id))
-                    .filter(Boolean)
-                    .reduce(
-                      (sum, pp) => sum + (pp as typeof player).element.now_cost,
-                      0
-                    ),
+                  budgetUsed: teamCost,
                 })
                 const canAddMore = !chosen && selectedSquad.length >= max
 

@@ -329,7 +329,7 @@ export interface IOptimalTeamPlayer {
 }
 
 export interface IMyTeam {
-  picks: Pick[]
+  picks: IPick[]
   picks_last_updated: Date
   chips: Chip[]
   transfers: Transfers
@@ -347,7 +347,7 @@ export interface Chip {
   is_pending: boolean
 }
 
-export interface Pick {
+export interface IPick {
   element: number
   position: number
   multiplier: number
@@ -361,7 +361,7 @@ export interface Pick {
 export interface Transfers {
   cost: number
   status: string
-  limit: null
+  limit: number | null
   made: number
   bank: number
   value: number
@@ -397,5 +397,5 @@ export interface ISavedSquad {
   title: string
   description?: string
   playerIds: number[]
-  updatedAt: Date
+  updatedAt: string
 }

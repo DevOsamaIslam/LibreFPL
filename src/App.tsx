@@ -27,14 +27,18 @@ import TuneAlgo from "./modules/tune-algo"
 import { useGWTodos } from "./hooks/useGWTodos"
 
 function App() {
-  const { setSortedPlayers, snapshot } = useSettingsStore()
+  const { setSortedPlayers, snapshot, setPlayersMap } = useSettingsStore()
   const snackbarUtils = useSnackbarUtils()
   const [isTodosDrawerOpen, setIsTodosDrawerOpen] = useState(false)
   const { todoStats, addTodos, toggleTodo, deleteTodo, getTodosForGW } =
     useGWTodos()
 
   useEffect(() => {
-    if (snapshot) setSortedPlayers(pickOptimalFPLTeam(snapshot))
+    if (snapshot) {
+      const optimalPlayers = pickOptimalFPLTeam(snapshot)
+      setSortedPlayers(optimalPlayers)
+      setPlayersMap(optimalPlayers)
+    }
   }, [])
 
   // Initialize global snackbar

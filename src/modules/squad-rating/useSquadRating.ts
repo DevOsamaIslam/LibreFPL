@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router"
-import { elementTypeToPosition } from "../../app/settings"
+import { elementTypeToPosition, useSettingsStore } from "../../app/settings"
 import { calculateTeamScore } from "../../app/transfers"
-import type { IOptimalTeamPlayer } from "../../lib/types"
+import type { IOptimalTeamPlayer, IPick } from "../../lib/types"
 import { Position } from "../../store/playerFilter.store"
 
 // Centralized constants to avoid hard-coded strings
@@ -22,6 +22,7 @@ type Captaincy = {
 }
 
 function useSquadRating({ players }: ControllerArgs) {
+  const { myTeam } = useSettingsStore()
   // Build a quick lookup set of valid element ids to validate URL input.
   const validIds = useMemo(
     () =>
@@ -105,7 +106,7 @@ function useSquadRating({ players }: ControllerArgs) {
   )
 
   const groupedPlayers = useMemo(() => {
-    return (players as Array<(typeof players)[number]>).reduce(
+    return players.reduce(
       (acc: Record<number, Array<(typeof players)[number]>>, p) => {
         const pos = p.element.element_type as number
         if (!acc[pos]) acc[pos] = []
@@ -115,6 +116,31 @@ function useSquadRating({ players }: ControllerArgs) {
       {}
     )
   }, [players])
+
+  const myPlayers = useMemo(
+    () =>
+      myTeam?.picks.reduce(
+        (acc, curr) => ({
+          ...acc,
+          [curr.element]: curr,
+        }),
+        {} as Record<number, IPick>
+      ) || {},
+    [players, myTeam]
+  )
+
+  const teamCost = useMemo(
+    () =>
+      selectedSquad.reduce((acc, id) => {
+        const myPlayer = myPlayers[id]
+        const player = validIds[id]
+        if (myPlayer) return acc + myPlayer.selling_price
+        if (player) return acc + player.element.now_cost
+
+        return acc
+      }, 0),
+    [selectedSquad]
+  )
 
   // Helper: total of ids (no weighting)
   const sumScore = useCallback(
@@ -249,6 +275,8 @@ function useSquadRating({ players }: ControllerArgs) {
     setOpenGroups,
     players,
     captaincy,
+    teamCost,
+    myPlayers,
   }
 }
 

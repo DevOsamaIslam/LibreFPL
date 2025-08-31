@@ -8,11 +8,17 @@ import {
   Paper,
   Select,
   Stack,
+  Switch,
   Typography,
 } from "@mui/material"
-import React from "react"
-import { CURRENT_GW, NUMBER_OF_MATCHES } from "../../app/settings"
+import React, { useMemo } from "react"
+import {
+  CURRENT_GW,
+  NUMBER_OF_MATCHES,
+  useSettingsStore,
+} from "../../app/settings"
 import PageTitle from "../../components/PageTitle"
+import SpaceBetween from "../../components/SpaceBetween"
 import HeatmapTable from "./HeatmapTable"
 import Legend from "./Legend"
 import { useFDRData } from "./useFDRData"
@@ -21,6 +27,16 @@ export const FDRPage: React.FC = () => {
   const [span, setSpan] = React.useState(6)
   const data = useFDRData({ spanGWs: span, startingFrom: CURRENT_GW.id })
   const gwIndex = CURRENT_GW.id - 1
+  const { myTeam, playersMap } = useSettingsStore()
+  const [myTeamFDR, setMyTeamFDR] = React.useState(false)
+
+  const myTeamFDRData = useMemo(() => {
+    if (!myTeamFDR || !playersMap.size) return []
+    const teamsSet = new Set(
+      myTeam?.picks.map((player) => playersMap.get(player.element)!.teamId)
+    )
+    return data.filter((row) => teamsSet.has(row.team.id))
+  }, [data, myTeam, playersMap, myTeamFDR])
 
   const events = React.useMemo(() => {
     return new Array(span + gwIndex > NUMBER_OF_MATCHES ? span - gwIndex : span)
@@ -46,15 +62,18 @@ export const FDRPage: React.FC = () => {
   return (
     <>
       <PageTitle>FDR</PageTitle>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        sx={{ mb: 2 }}>
+      <SpaceBetween sx={{ mb: 2 }}>
         <Typography variant="h5" fontWeight={700}>
           Fixture Difficulty Rating (FDR)
         </Typography>
         <Stack direction="row" spacing={2} alignItems="center">
+          <div>
+            <Typography variant="caption">My team</Typography>
+            <Switch
+              checked={myTeamFDR}
+              onChange={(e) => setMyTeamFDR(e.target.checked)}
+            />
+          </div>
           <FormControl size="small">
             <InputLabel id="span-label">Span (GWs)</InputLabel>
             <Select
@@ -73,10 +92,10 @@ export const FDRPage: React.FC = () => {
           </FormControl>
           <Legend />
         </Stack>
-      </Stack>
+      </SpaceBetween>
 
       <HeatmapTable
-        data={data}
+        data={myTeamFDR ? myTeamFDRData : data}
         events={events}
         withCheckbox
         selected={selected}
