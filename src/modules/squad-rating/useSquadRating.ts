@@ -179,7 +179,7 @@ function useSquadRating({ players }: ControllerArgs) {
 
     // Determine captain and vice from XI by highest scores
     if (startersIds.length > 0) {
-      const sortedByXPoints = startersIds.sort(
+      const sortedByXPoints = startersIds.toSorted(
         (a, b) => validIds[b]?.xPoints - validIds[a]?.xPoints
       )
       const captainId = sortedByXPoints[0] ?? null
