@@ -120,7 +120,7 @@ export const useSavedSquads = () => {
                   </MenuItem>
                 ))}
 
-                {!savedSquads.length && (
+                {!savedSquads.length && !myTeam && (
                   <MenuItem value={undefined}>None</MenuItem>
                 )}
               </Select>
