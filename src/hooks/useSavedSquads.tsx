@@ -17,11 +17,14 @@ import SpaceBetween from "../components/SpaceBetween"
 import { useSnackbarUtils } from "../lib/snackbar"
 import type { ISavedSquad } from "../lib/types"
 import { useLocalStorage } from "./useLocalStorage"
+import { useSettingsStore } from "../app/settings"
 
 export const useSavedSquads = () => {
   const [activeSquad, setActiveSquad] = useState<ISavedSquad>()
   const [openDialog, setOpenDialog] = useState(false)
   const { success, error } = useSnackbarUtils()
+
+  const { myTeam } = useSettingsStore()
 
   const [savedSquads, setSavedSquads] = useLocalStorage<ISavedSquad[]>(
     "saved-squads",
@@ -72,6 +75,19 @@ export const useSavedSquads = () => {
                 labelId="select-saved-team"
                 value={activeSquad?.title}
                 label="Age">
+                {myTeam && (
+                  <MenuItem
+                    value="my-team"
+                    onClick={() =>
+                      setActiveSquad({
+                        title: "My Team",
+                        playerIds: myTeam.picks.map((p) => p.element),
+                        updatedAt: new Date().toString(),
+                      })
+                    }>
+                    - My Team -
+                  </MenuItem>
+                )}
                 {savedSquads.map((squad) => (
                   <MenuItem
                     key={squad.title}
@@ -86,7 +102,7 @@ export const useSavedSquads = () => {
                               updateSquad({
                                 ...squad,
                                 playerIds: activeSquad?.playerIds || [],
-                                updatedAt: new Date(),
+                                updatedAt: new Date().toString(),
                               })
                               event.stopPropagation()
                             }}
@@ -123,7 +139,7 @@ export const useSavedSquads = () => {
             addSquad({
               ...formData,
               playerIds: activeSquad?.playerIds || [],
-              updatedAt: new Date(),
+              updatedAt: new Date().toString(),
             })
             setOpenDialog(false)
           }}>
