@@ -1,7 +1,8 @@
-import React from "react"
+import React, { useEffect } from "react"
 import PageTitle from "../components/PageTitle"
-import SpaceBetween from "../components/SpaceBetween"
 import ScoreVsCost from "./charts/ScoreVsCost"
+import { useSavedSquads } from "../hooks/useSavedSquads"
+import { useSearchParams } from "react-router"
 
 const sectionStyle: React.CSSProperties = {
   padding: "1rem",
@@ -11,13 +12,19 @@ const sectionStyle: React.CSSProperties = {
 }
 
 export default function Charts(): React.ReactElement {
+  const [query, setQuery] = useSearchParams()
+  const { SavedSquadSelector, activeSquad } = useSavedSquads()
+
+  useEffect(() => {
+    query.set("players", (activeSquad?.playerIds ?? []).join(","))
+    if (activeSquad) setQuery(query)
+    else setQuery({})
+  }, [activeSquad])
+
   return (
     <div style={{ padding: "1rem", maxWidth: 1200, margin: "0 auto" }}>
       <PageTitle>Charts</PageTitle>
-      <SpaceBetween justify="space-between" align="center">
-        <div />
-        <div />
-      </SpaceBetween>
+      <SavedSquadSelector />
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "1rem" }}>
         <section style={sectionStyle}>
           <h2 style={{ margin: "0 0 0.75rem" }}>Player Score vs Cost</h2>
