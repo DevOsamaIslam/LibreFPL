@@ -1,18 +1,11 @@
 import { useMemo, useState } from "react"
 import { NUMBER_OF_MATCHES, useSettingsStore } from "../../app/settings"
-import snapshot from "../../data/snapshot.json"
-import type { IOptimalTeamPlayer } from "../../lib/types"
+import type { IOptimalTeamPlayer, Position, Team } from "../../lib/types"
 
 // Constants and labels (no hard-coded strings)
 export const MAX_SELECTED = 4 as const
 
-export type Snapshot = typeof snapshot
-export type Team = Snapshot["teams"][number]
-
-export type Position = "GK" | "DEF" | "MID" | "FWD"
-export type PositionMap = Record<number, Position>
-
-export const ELEMENT_TYPE: PositionMap = {
+export const ELEMENT_TYPE: Record<number, Position> = {
   1: "GK",
   2: "DEF",
   3: "MID",
@@ -55,21 +48,17 @@ export const label = {
 
 export function useCompareData() {
   const { sortedPlayers: players } = useSettingsStore()
-  const teamsById = useMemo(() => {
-    const map = new Map<number, Team>()
-    snapshot.teams.forEach((t) => map.set(t.id, t))
-    return map
-  }, [])
-  return { players, teamsById }
+  return { players }
 }
 
 export function useSearch(list: IOptimalTeamPlayer[]) {
+  const { teams } = useSettingsStore()
   const [term, setTerm] = useState<string>()
   const normalized = term?.trim().toLowerCase()
   const result = useMemo(() => {
     if (!normalized) return list
     return list.filter((p) => {
-      const team = snapshot.teams.find((t) => t.id === p.element.team)
+      const team = teams.get(p.element.team)
       const hay = [
         p.element.web_name,
         p.element.first_name,

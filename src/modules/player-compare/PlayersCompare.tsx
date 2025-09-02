@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material"
-import { colorByPos, TEAM_COLOR } from "../../app/settings"
+import { colorByPos, TEAM_COLOR, useSettingsStore } from "../../app/settings"
 import PageTitle from "../../components/PageTitle"
 import PlayerCard from "../../components/PlayerCard"
 import SpaceBetween from "../../components/SpaceBetween"
@@ -24,7 +24,8 @@ import {
 } from "./control"
 
 export default function PlayersCompare() {
-  const { players, teamsById } = useCompareData()
+  const { players } = useCompareData()
+  const { teams } = useSettingsStore()
   const { term, setTerm, result } = useSearch(players)
   const {
     selectedIds,
@@ -82,7 +83,7 @@ export default function PlayersCompare() {
               sx={{ maxHeight: "60vh", overflow: "auto" }}>
               <List disablePadding>
                 {result.map((player, idx) => {
-                  const team = teamsById.get(player.element.team)
+                  const team = teams.get(player.element.team)
                   const chosen = selectedIds.includes(player.element.id)
                   return (
                     <Box key={player.element.id}>
@@ -182,7 +183,7 @@ export default function PlayersCompare() {
                 <PlayerCard
                   key={p.element.id}
                   element={p}
-                  team={teamsById.get(p.element.team)!}
+                  team={teams.get(p.element.team)!}
                   onRemove={() => removePlayer(p.element.id)}
                 />
               ))}

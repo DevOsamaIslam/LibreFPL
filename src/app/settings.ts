@@ -5,8 +5,8 @@ import type {
   IMyTeam,
   IOptimalTeamPlayer,
   ISnapshot,
+  Team,
 } from "../lib/types"
-import type { Team } from "../modules/player-compare/control"
 
 export const APP_NAME = "LibreFPL"
 export const SUPPORT_ADDRESSES = {

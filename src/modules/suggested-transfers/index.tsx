@@ -8,11 +8,11 @@ import { TransferCalculator } from "./TransferCalculator"
 import { TransferResults } from "./TransferResults"
 import { useSavedSquads } from "../../hooks/useSavedSquads"
 import { useEffect } from "react"
+import { useSettingsStore } from "../../app/settings"
 
 export default function SuggestedTransfersPage() {
   const {
     // Player selection
-    teamsById,
     selectedPlayers,
     togglePlayer,
     replacePlayers,
@@ -36,6 +36,8 @@ export default function SuggestedTransfersPage() {
   } = useSuggestedTransfers()
 
   const { SavedSquadSelector, activeSquad } = useSavedSquads()
+
+  const { teams } = useSettingsStore()
 
   useEffect(() => {
     if (activeSquad) replacePlayers(activeSquad.playerIds)
@@ -63,15 +65,15 @@ export default function SuggestedTransfersPage() {
 
               <Stack spacing={1} sx={{ maxHeight: 400, overflowY: "auto" }}>
                 {filtered.map((p) => {
-                  const t = teamsById.get(p.element.team)
+                  const team = teams.get(p.element.team)
                   return (
                     <PlayerRow
                       key={p.element.id}
                       p={p}
                       onClick={() => togglePlayer(p.element.id)}
                       selected={selectedIds.includes(p.element.id)}
-                      teamName={t?.name ?? ""}
-                      teamShort={t?.short_name ?? ""}
+                      teamName={team?.name ?? ""}
+                      teamShort={team?.short_name ?? ""}
                     />
                   )
                 })}
@@ -89,7 +91,6 @@ export default function SuggestedTransfersPage() {
               <SavedSquadSelector />
               <SelectedSquad
                 selectedPlayers={selectedPlayers}
-                teamsById={teamsById}
                 removePlayer={removePlayer}
               />
             </CardContent>
@@ -106,7 +107,7 @@ export default function SuggestedTransfersPage() {
                 selectedPlayersLength={selectedPlayers.length}
               />
 
-              <TransferResults calc={calc} teamsById={teamsById} />
+              <TransferResults calc={calc} />
             </CardContent>
           </Card>
         </Grid>

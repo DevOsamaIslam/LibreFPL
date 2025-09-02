@@ -1,22 +1,23 @@
 import { Box } from "@mui/material"
 import type { IOptimalTeamPlayer } from "../../lib/types"
 import { SelectedChip } from "./SelectedChip"
+import { useSettingsStore } from "../../app/settings"
 
 interface SelectedSquadProps {
   selectedPlayers: IOptimalTeamPlayer[]
-  teamsById: Map<number, any>
   removePlayer: (id: number) => void
 }
 
 export function SelectedSquad({
   selectedPlayers,
-  teamsById,
   removePlayer,
 }: SelectedSquadProps) {
+  const { teams } = useSettingsStore()
+
   return (
     <Box>
       {selectedPlayers.map((p) => {
-        const t = teamsById.get(p.element.team)
+        const t = teams.get(p.element.team)
         return (
           <SelectedChip
             key={p.element.id}

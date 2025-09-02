@@ -8,7 +8,6 @@ export function useSuggestedTransfers() {
   const sortedPlayers = useSettingsStore((s) => s.sortedPlayers)
 
   const {
-    teamsById,
     selectedPlayers,
     togglePlayer,
     replacePlayers,
@@ -50,7 +49,6 @@ export function useSuggestedTransfers() {
 
   return {
     // Player selection
-    teamsById,
     selectedPlayers,
     togglePlayer,
     replacePlayers,

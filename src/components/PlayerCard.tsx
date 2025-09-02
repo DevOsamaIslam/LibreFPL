@@ -13,8 +13,7 @@ import {
 import type { ReactNode } from "react"
 import { getTeamFDR } from "../app/fdrAlgo"
 import { colorByPos } from "../app/settings"
-import type { IOptimalTeamPlayer } from "../lib/types"
-import type { Team } from "../modules/player-compare/control"
+import type { IOptimalTeamPlayer, Team } from "../lib/types"
 import {
   ELEMENT_TYPE,
   label,

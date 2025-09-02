@@ -1,6 +1,6 @@
-import { useMemo, useState, useCallback } from "react"
-import type { IOptimalTeamPlayer, ISnapshot } from "../lib/types"
-import snapshot from "../data/snapshot.json"
+import { useCallback, useMemo, useState } from "react"
+import { useSettingsStore } from "../app/settings"
+import type { IOptimalTeamPlayer } from "../lib/types"
 
 export const PLAYER_SELECTOR_CONST = {
   maxSelected: 15,
@@ -8,8 +8,6 @@ export const PLAYER_SELECTOR_CONST = {
   selectedLabel: "Selected",
   addHintPrefix: "Select up to",
 } as const
-
-type Team = ISnapshot["teams"][number]
 
 const ELEMENT_TYPE: Record<number, "GK" | "DEF" | "MID" | "FWD"> = {
   1: "GK",
@@ -19,12 +17,13 @@ const ELEMENT_TYPE: Record<number, "GK" | "DEF" | "MID" | "FWD"> = {
 } as const
 
 export function useSearchBase(list: IOptimalTeamPlayer[]) {
+  const { teams } = useSettingsStore()
   const [q, setQ] = useState("")
   const normalized = q.trim().toLowerCase()
   const result = useMemo(() => {
     if (!normalized) return list
     return list.filter((p) => {
-      const team = snapshot.teams.find((t) => t.id === p.element.team)
+      const team = teams.get(p.element.team)
       const hay = [
         p.element.web_name,
         p.element.first_name,
@@ -58,12 +57,6 @@ export function usePlayerSelector({
 }: UsePlayerSelectorArgs) {
   const max = maxSelected ?? PLAYER_SELECTOR_CONST.maxSelected
 
-  const teamsById = useMemo(() => {
-    const map = new Map<number, Team>()
-    snapshot.teams.forEach((t) => map.set(t.id, t))
-    return map
-  }, [])
-
   const [selectedIds, setSelectedIds] = useState<number[]>([])
 
   const selectedPlayers = useMemo(
@@ -96,7 +89,6 @@ export function usePlayerSelector({
   }, [])
 
   return {
-    teamsById,
     selectedIds,
     setSelectedIds,
     selectedPlayers,

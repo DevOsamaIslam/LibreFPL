@@ -1,14 +1,14 @@
 import { Box, Chip, Stack, Typography } from "@mui/material"
-import { CURRENCY } from "../../app/settings"
+import { CURRENCY, useSettingsStore } from "../../app/settings"
 import type { SuggestTransfersResult } from "../../app/transfers"
 import { priceFmt } from "../../lib/helpers"
 
 interface TransferResultsProps {
   calc: SuggestTransfersResult | null
-  teamsById: Map<number, any>
 }
 
-export function TransferResults({ calc, teamsById }: TransferResultsProps) {
+export function TransferResults({ calc }: TransferResultsProps) {
+  const { teams } = useSettingsStore()
   if (!calc) {
     return null
   }
@@ -25,8 +25,8 @@ export function TransferResults({ calc, teamsById }: TransferResultsProps) {
       )}
       <Stack spacing={1}>
         {calc.suggestions.map((s, i) => {
-          const outTeam = teamsById.get(s.out.element.team)
-          const inTeam = teamsById.get(s.in.element.team)
+          const outTeam = teams.get(s.out.element.team)
+          const inTeam = teams.get(s.in.element.team)
           return (
             <Box
               key={i}
