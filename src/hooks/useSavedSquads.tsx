@@ -69,62 +69,75 @@ export const useSavedSquads = () => {
       <Card>
         <CardContent>
           <SpaceBetween spacing={1}>
-            <FormControl sx={{ minWidth: 300 }}>
-              <InputLabel id="select-saved-team">Select saved team</InputLabel>
-              <Select
-                labelId="select-saved-team"
-                value={activeSquad?.title}
-                label="Age">
-                {myTeam && (
-                  <MenuItem
-                    value="my-team"
-                    onClick={() =>
-                      setActiveSquad({
-                        title: "My Team",
-                        playerIds: myTeam.picks.map((p) => p.element),
-                        updatedAt: new Date().toString(),
-                      })
-                    }>
-                    - My Team -
-                  </MenuItem>
-                )}
-                {savedSquads.map((squad) => (
-                  <MenuItem
-                    key={squad.title}
-                    value={squad.title}
-                    onClick={() => setActiveSquad(squad)}>
-                    <SpaceBetween>
-                      {squad.title}
-                      <Stack direction={"row"} spacing={1}>
-                        <Tooltip title="Update to current squad" arrow>
-                          <RefreshOutlined
+            <Stack direction={"row"} spacing={2} alignItems="center">
+              <FormControl sx={{ minWidth: 300 }}>
+                <InputLabel id="select-saved-team">
+                  Select saved team
+                </InputLabel>
+                <Select
+                  labelId="select-saved-team"
+                  value={activeSquad?.title}
+                  label="Age">
+                  {myTeam && (
+                    <MenuItem
+                      value="my-team"
+                      onClick={() =>
+                        setActiveSquad({
+                          title: "My Team",
+                          playerIds: myTeam.picks.map((p) => p.element),
+                          updatedAt: new Date().toString(),
+                        })
+                      }>
+                      - My Team -
+                    </MenuItem>
+                  )}
+                  {savedSquads.map((squad) => (
+                    <MenuItem
+                      key={squad.title}
+                      value={squad.title}
+                      onClick={() => setActiveSquad(squad)}>
+                      <SpaceBetween>
+                        {squad.title}
+                        <Stack direction={"row"} spacing={1}>
+                          <Tooltip title="Update to current squad" arrow>
+                            <RefreshOutlined
+                              onClick={(event) => {
+                                updateSquad({
+                                  ...squad,
+                                  playerIds: activeSquad?.playerIds || [],
+                                  updatedAt: new Date().toString(),
+                                })
+                                event.stopPropagation()
+                              }}
+                            />
+                          </Tooltip>
+                          <DeleteForeverOutlined
+                            color="error"
                             onClick={(event) => {
-                              updateSquad({
-                                ...squad,
-                                playerIds: activeSquad?.playerIds || [],
-                                updatedAt: new Date().toString(),
-                              })
+                              deleteSquad(squad)
                               event.stopPropagation()
                             }}
                           />
-                        </Tooltip>
-                        <DeleteForeverOutlined
-                          color="error"
-                          onClick={(event) => {
-                            deleteSquad(squad)
-                            event.stopPropagation()
-                          }}
-                        />
-                      </Stack>
-                    </SpaceBetween>
-                  </MenuItem>
-                ))}
+                        </Stack>
+                      </SpaceBetween>
+                    </MenuItem>
+                  ))}
 
-                {!savedSquads.length && !myTeam && (
-                  <MenuItem value={undefined}>None</MenuItem>
-                )}
-              </Select>
-            </FormControl>
+                  {!savedSquads.length && !myTeam && (
+                    <MenuItem value={undefined}>None</MenuItem>
+                  )}
+                </Select>
+              </FormControl>
+              <Button
+                variant="text"
+                color="error"
+                disabled={!activeSquad}
+                onClick={() => {
+                  setActiveSquad(undefined)
+                }}>
+                Clear
+              </Button>
+            </Stack>
             <Button variant="contained" onClick={() => setOpenDialog(true)}>
               Save current squad
             </Button>
