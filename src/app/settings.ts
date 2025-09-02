@@ -43,6 +43,7 @@ export const WEIGHTS = {
   expectedPoints: 3,
   form: 5,
   teamAdvantage: 3,
+  nextDifficulty: 3,
   xGI: 5,
   xGC: -1.5,
   BPS: 1,

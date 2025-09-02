@@ -142,8 +142,10 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
         const FDR = getTeamFDR(team.id, { span: 6 })
 
         const teamAdvantageScore = FDR.average - 2.5
+        const teamNextMatchDifficulty = (FDR.teamFDR[0]?.score ?? 2.5) - 2.5
 
         score += teamAdvantageScore * weights.teamAdvantage
+        score += teamNextMatchDifficulty * 10 * weights.nextDifficulty
 
         const expectedPoints = getXPoints({
           player,
@@ -151,10 +153,8 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
           isHome: FDR.teamFDR[0].isHome,
           opponent: FDR.teamFDR[0].opponent,
         })
-        // +(player.ep_this || player.ep_next || 0) +
-        // ((FDR.teamFDR[0]?.score || 2.5) - 2.5)
 
-        score += expectedPoints * weights.expectedPoints
+        score += (expectedPoints - 2) * weights.expectedPoints
 
         const position = elementTypeToPosition[player.element_type]
         if (position === "GK" || position === "DEF") {
