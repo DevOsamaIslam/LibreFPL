@@ -399,3 +399,8 @@ export interface ISavedSquad {
   playerIds: number[]
   updatedAt: string
 }
+
+export type Captaincy = {
+  captainId: number | null
+  viceCaptainId: number | null
+}

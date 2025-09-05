@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router"
 import { useSettingsStore } from "../../app/settings"
 import { calculateTeamScore } from "../../app/transfers"
-import type { IOptimalTeamPlayer, IPick } from "../../lib/types"
+import type { Captaincy, IOptimalTeamPlayer, IPick } from "../../lib/types"
 
 // Centralized constants to avoid hard-coded strings
 const QUERY_KEYS = {
@@ -13,11 +13,6 @@ type QueryKey = typeof QUERY_KEYS.players
 
 interface ControllerArgs {
   players: IOptimalTeamPlayer[]
-}
-
-type Captaincy = {
-  captainId: number | null
-  viceCaptainId: number | null
 }
 
 function useSquadRating({ players }: ControllerArgs) {
@@ -57,6 +52,7 @@ function useSquadRating({ players }: ControllerArgs) {
   const [teamScore, setTeamScore] = useState(0)
   const [xiScore, setXiScore] = useState(0)
   const [benchScore, setBenchScore] = useState(0)
+  const [xPoints, setXPoints] = useState(0)
 
   const [openGroups, setOpenGroups] = useState<Record<number, boolean>>({
     1: true,
@@ -128,18 +124,23 @@ function useSquadRating({ players }: ControllerArgs) {
     [players, myTeam]
   )
 
-  const teamCost = useMemo(
-    () =>
-      selectedSquad.reduce((acc, id) => {
-        const myPlayer = myPlayers[id]
-        const player = validIds[id]
-        if (myPlayer) return acc + myPlayer.selling_price
-        if (player) return acc + player.element.now_cost
+  const teamCost = useMemo(() => {
+    let xPoints = 0
+    const totalCost = selectedSquad.reduce((acc, id) => {
+      const myPlayer = myPlayers[id]
+      const player = validIds[id]
 
-        return acc
-      }, 0),
-    [selectedSquad]
-  )
+      if (myPlayer) xPoints += validIds[myPlayer.element].xPoints
+      else xPoints += player?.xPoints || 0
+
+      if (myPlayer) return acc + myPlayer.selling_price
+      if (player) return acc + player.element.now_cost
+
+      return acc
+    }, 0)
+    setXPoints(xPoints)
+    return totalCost
+  }, [selectedSquad])
 
   // Helper: total of ids (no weighting)
   const sumScore = useCallback(
@@ -262,6 +263,7 @@ function useSquadRating({ players }: ControllerArgs) {
     players,
     captaincy,
     teamCost,
+    xPoints,
     myPlayers,
   }
 }

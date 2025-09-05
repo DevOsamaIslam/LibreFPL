@@ -30,6 +30,9 @@ const getXPoints = (params: {
 }) => {
   const { player, team, opponent, isHome } = params
   const expected = +(player.ep_this || player.ep_next || 0)
+
+  if ((player.chance_of_playing_this_round || 0) < 50) return expected
+
   let score = expected
   if (["FWD", "MID"].includes(elementTypeToPosition[player.element_type])) {
     score +=
