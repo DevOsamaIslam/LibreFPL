@@ -69,8 +69,8 @@ function PlayerBox({ player, armband }: PlayerBoxProps) {
         <Box
           sx={(theme) => ({
             position: "absolute",
-            top: theme.spacing(1),
-            right: theme.spacing(1),
+            top: 0,
+            right: 0,
             bgcolor: armband === ARMBAND.CAPTAIN ? "warning.main" : "info.main",
             color:
               armband === ARMBAND.CAPTAIN
@@ -113,41 +113,53 @@ function PlayerBox({ player, armband }: PlayerBoxProps) {
                   sx={{ fontWeight: 700, lineHeight: 1.2 }}>
                   {name}
                 </Typography>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Chip
-                    size="small"
-                    label={pos}
-                    sx={{
-                      height: 22,
-                      fontWeight: 600,
-                      background: colorByPos[pos],
-                      color: "white",
-                    }}
-                  />
-                  <Typography variant="caption" color="text.secondary">
-                    {formatMillion(price)}
-                  </Typography>
-                </Stack>
+                <SpaceBetween>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Chip
+                      size="small"
+                      label={pos}
+                      sx={{
+                        height: 22,
+                        fontWeight: 600,
+                        background: colorByPos[pos],
+                        color: "white",
+                      }}
+                    />
+                    <Typography variant="caption" color="text.secondary">
+                      {formatMillion(price)}
+                    </Typography>
+                  </Stack>
+                </SpaceBetween>
               </Box>
 
-              <Stack
-                direction={"row"}
-                spacing={0.5}
-                aria-label="Score"
-                alignItems={"baseline"}
-                sx={{
-                  textAlign: "right",
-                  minWidth: 64,
-                  paddingRight: 2,
-                }}>
-                <Typography variant="caption" color="text.secondary">
-                  Score
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: 800, lineHeight: 1 }}>
-                  {score.toFixed(0)}
-                </Typography>
+              <Stack direction={"column"}>
+                <Stack
+                  direction={"row"}
+                  spacing={0.5}
+                  aria-label="Score"
+                  alignItems={"baseline"}
+                  sx={{
+                    textAlign: "right",
+                    minWidth: 64,
+                    paddingRight: 2,
+                  }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Score
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 800, lineHeight: 1 }}>
+                    {score.toFixed(0)}
+                  </Typography>
+                </Stack>
+                <Stack direction={"row"} spacing={1}>
+                  <Typography variant="caption" color="text.secondary">
+                    xPoints
+                  </Typography>
+                  <Typography variant="caption">
+                    {player.xPoints.toFixed(0)}
+                  </Typography>
+                </Stack>
               </Stack>
             </Stack>
 
@@ -229,10 +241,6 @@ function PlayerBox({ player, armband }: PlayerBoxProps) {
                 </Tooltip>
               </Stack>
               <SpaceBetween>
-                <Chip
-                  label={`xPoints: ${player.xPoints.toFixed(0)}`}
-                  size="small"
-                />
                 {FDR.teamFDR.map((score, gw) => (
                   <Cell
                     key={gw}

@@ -138,7 +138,7 @@ const SquadRatingPage: React.FC = ({}) => {
   )
 
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={2} pb={4}>
       <PageTitle>Squad Rating</PageTitle>
 
       <Grid size={{ xs: 12, lg: 4, md: 5 }}>
@@ -259,141 +259,303 @@ const SquadRatingPage: React.FC = ({}) => {
 
       {/* Right panel — Selected squad and swap interaction */}
       <Grid size={{ xs: 12, md: 7, lg: 8 }}>
-        <Paper
-          variant="outlined"
-          sx={{
-            p: 2,
-            mb: 2,
-            borderRadius: 2,
-          }}>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            flexWrap="wrap"
-            useFlexGap
-            spacing={1.5}>
-            {/* Title + Subtitle */}
-            <Stack minWidth={200}>
-              <Typography
-                variant="h5"
-                fontWeight={(theme) => theme.typography.fontWeightBold ?? 700}
-                lineHeight={1.2}>
-                Squad Rating
-              </Typography>
-            </Stack>
+        <Stack gap={1}>
+          <SavedSquadSelector />
 
-            {/* Score and quick chips */}
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 2,
+              mb: 2,
+              borderRadius: 2,
+            }}>
             <Stack
               direction="row"
-              spacing={1}
               alignItems="center"
+              justifyContent="space-between"
               flexWrap="wrap"
-              useFlexGap>
-              <Chip
-                color="info"
-                variant="filled"
-                label={`Team Score: ${teamScore.toFixed(0)}`}
-                sx={{
-                  fontWeight: (theme) => theme.typography.fontWeightBold ?? 700,
-                }}
-              />
-              <Chip
-                color="success"
-                variant="filled"
-                label={`XI Score: ${xiScore.toFixed(0)}`}
-                sx={(theme) => ({
-                  fontWeight: theme.typography.fontWeightBold ?? 700,
-                })}
-              />
-              <Chip
-                color="secondary"
-                variant="filled"
-                label={`Bench Score: ${benchScore.toFixed(0)}`}
-                sx={{
-                  fontWeight: (theme) => theme.typography.fontWeightBold ?? 700,
-                }}
-              />
+              useFlexGap
+              spacing={1.5}>
+              {/* Title + Subtitle */}
+              <Stack minWidth={200}>
+                <Typography
+                  variant="h5"
+                  fontWeight={(theme) => theme.typography.fontWeightBold ?? 700}
+                  lineHeight={1.2}>
+                  Squad Rating
+                </Typography>
+              </Stack>
+
+              {/* Score and quick chips */}
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                flexWrap="wrap"
+                useFlexGap>
+                <Chip
+                  color="info"
+                  variant="filled"
+                  label={`Team Score: ${teamScore.toFixed(0)}`}
+                  sx={{
+                    fontWeight: (theme) =>
+                      theme.typography.fontWeightBold ?? 700,
+                  }}
+                />
+                <Chip
+                  color="success"
+                  variant="filled"
+                  label={`XI Score: ${xiScore.toFixed(0)}`}
+                  sx={(theme) => ({
+                    fontWeight: theme.typography.fontWeightBold ?? 700,
+                  })}
+                />
+                <Chip
+                  color="secondary"
+                  variant="filled"
+                  label={`Bench Score: ${benchScore.toFixed(0)}`}
+                  sx={{
+                    fontWeight: (theme) =>
+                      theme.typography.fontWeightBold ?? 700,
+                  }}
+                />
+              </Stack>
             </Stack>
-          </Stack>
 
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: "block", mt: 1.25 }}>
-            Tip: Click a player, then click another to swap their positions
-            (works across Starting XI and Bench). Click the same player again to
-            cancel selection.
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: "block", mt: 1.25 }}>
+              Tip: Click a player, then click another to swap their positions
+              (works across Starting XI and Bench). Click the same player again
+              to cancel selection.
+            </Typography>
+          </Paper>
+
+          {/* Starting XI with position hierarchy */}
+          <Typography variant="h6" sx={{ color: "#1a3d0a", fontWeight: 700 }}>
+            Starting XI
           </Typography>
-        </Paper>
+          <Paper
+            variant="outlined"
+            sx={{
+              mb: 3,
+              p: 2,
+              background:
+                "repeating-linear-gradient(0deg, #a8e063, #a8e063 100px, #7cb342 100px, #7cb342 200px)",
+              border: "2px solid #4a7c2e",
+              borderRadius: 2,
+            }}>
+            {/* Goalkeeper */}
+            <Typography
+              variant="subtitle2"
+              sx={{ mb: 1, color: "#2d5016", fontWeight: 600 }}>
+              Goalkeeper
+            </Typography>
+            <Grid container sx={{ mb: 2, justifyContent: "space-around" }}>
+              {startersIds
+                .filter((playerId) => {
+                  const p = players.find((pp) => pp.element.id === playerId)
+                  return p && p.position === "GK"
+                })
+                .map((playerId) => {
+                  const p = players.find((pp) => pp.element.id === playerId)
+                  if (!p) return null
+                  const combinedIndex = startersIds.indexOf(playerId)
+                  const isSelected = selectedIndex === combinedIndex
+                  const isCaptain = captaincy?.captainId === playerId
+                  const isVice = captaincy?.viceCaptainId === playerId
+                  return (
+                    <Grid
+                      key={p.element.id}
+                      data-id={p.element.id}
+                      size={{ xs: 12, sm: 2.4, md: 2.4 }}
+                      sx={tileStyle(isSelected)}
+                      onClick={() => onTileClick(combinedIndex)}>
+                      <PlayerBox
+                        player={p}
+                        armband={
+                          isCaptain
+                            ? ARMBAND.CAPTAIN
+                            : isVice
+                            ? ARMBAND.VICE
+                            : undefined
+                        }
+                      />
+                    </Grid>
+                  )
+                })}
+            </Grid>
 
-        <SavedSquadSelector />
+            {/* Defenders */}
+            <Typography
+              variant="subtitle2"
+              sx={{ mb: 1, color: "#2d5016", fontWeight: 600 }}>
+              Defenders
+            </Typography>
+            <Grid container sx={{ mb: 2, justifyContent: "space-around" }}>
+              {startersIds
+                .filter((playerId) => {
+                  const p = players.find((pp) => pp.element.id === playerId)
+                  return p && p.position === "DEF"
+                })
+                .map((playerId) => {
+                  const p = players.find((pp) => pp.element.id === playerId)
+                  if (!p) return null
+                  const combinedIndex = startersIds.indexOf(playerId)
+                  const isSelected = selectedIndex === combinedIndex
+                  const isCaptain = captaincy?.captainId === playerId
+                  const isVice = captaincy?.viceCaptainId === playerId
+                  return (
+                    <Grid
+                      key={p.element.id}
+                      data-id={p.element.id}
+                      size={{ xs: 12, sm: 2.4, md: 2.4 }}
+                      sx={tileStyle(isSelected)}
+                      onClick={() => onTileClick(combinedIndex)}>
+                      <PlayerBox
+                        player={p}
+                        armband={
+                          isCaptain
+                            ? ARMBAND.CAPTAIN
+                            : isVice
+                            ? ARMBAND.VICE
+                            : undefined
+                        }
+                      />
+                    </Grid>
+                  )
+                })}
+            </Grid>
 
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Starting XI
-        </Typography>
-        <Grid container spacing={2}>
-          {startersIds.map((playerId, idx) => {
-            const p = players.find((pp) => pp.element.id === playerId)
-            if (!p) return null
-            const combinedIndex = idx
-            const isSelected = selectedIndex === combinedIndex
-            const isCaptain = captaincy?.captainId === playerId
-            const isVice = captaincy?.viceCaptainId === playerId
-            return (
-              <Grid
-                key={p.element.id}
-                data-id={p.element.id}
-                size={{ xs: 12, sm: 6, md: 4 }}
-                sx={tileStyle(isSelected)}
-                onClick={() => onTileClick(combinedIndex)}>
-                <PlayerBox
-                  player={p}
-                  armband={
-                    isCaptain
-                      ? ARMBAND.CAPTAIN
-                      : isVice
-                      ? ARMBAND.VICE
-                      : undefined
-                  }
-                />
-              </Grid>
-            )
-          })}
-        </Grid>
+            {/* Midfielders */}
+            <Typography
+              variant="subtitle2"
+              sx={{ mb: 1, color: "#2d5016", fontWeight: 600 }}>
+              Midfielders
+            </Typography>
+            <Grid container sx={{ mb: 2, justifyContent: "space-around" }}>
+              {startersIds
+                .filter((playerId) => {
+                  const p = players.find((pp) => pp.element.id === playerId)
+                  return p && p.position === "MID"
+                })
+                .map((playerId) => {
+                  const p = players.find((pp) => pp.element.id === playerId)
+                  if (!p) return null
+                  const combinedIndex = startersIds.indexOf(playerId)
+                  const isSelected = selectedIndex === combinedIndex
+                  const isCaptain = captaincy?.captainId === playerId
+                  const isVice = captaincy?.viceCaptainId === playerId
+                  return (
+                    <Grid
+                      key={p.element.id}
+                      data-id={p.element.id}
+                      size={{ xs: 12, sm: 2.4, md: 2.4 }}
+                      sx={tileStyle(isSelected)}
+                      onClick={() => onTileClick(combinedIndex)}>
+                      <PlayerBox
+                        player={p}
+                        armband={
+                          isCaptain
+                            ? ARMBAND.CAPTAIN
+                            : isVice
+                            ? ARMBAND.VICE
+                            : undefined
+                        }
+                      />
+                    </Grid>
+                  )
+                })}
+            </Grid>
 
-        <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
-          Bench
-        </Typography>
-        <Grid container spacing={2}>
-          {benchIds.map((playerId, bIdx) => {
-            const p = players.find((pp) => pp.element.id === playerId)
-            if (!p) return null
-            const combinedIndex = 11 + bIdx
-            const isSelected = selectedIndex === combinedIndex
-            const isCaptain = captaincy?.captainId === playerId
-            const isVice = captaincy?.viceCaptainId === playerId
-            return (
-              <Grid
-                key={p.element.id}
-                data-id={p.element.id}
-                size={{ xs: 12, sm: 6, md: 4 }}
-                sx={tileStyle(isSelected)}
-                onClick={() => onTileClick(combinedIndex)}>
-                <PlayerBox
-                  player={p}
-                  armband={
-                    isCaptain
-                      ? ARMBAND.CAPTAIN
-                      : isVice
-                      ? ARMBAND.VICE
-                      : undefined
-                  }
-                />
-              </Grid>
-            )
-          })}
-        </Grid>
+            {/* Forwards */}
+            <Typography
+              variant="subtitle2"
+              sx={{ mb: 1, color: "#2d5016", fontWeight: 600 }}>
+              Forwards
+            </Typography>
+            <Grid container sx={{ justifyContent: "space-around" }}>
+              {startersIds
+                .filter((playerId) => {
+                  const p = players.find((pp) => pp.element.id === playerId)
+                  return p && p.position === "FWD"
+                })
+                .map((playerId) => {
+                  const p = players.find((pp) => pp.element.id === playerId)
+                  if (!p) return null
+                  const combinedIndex = startersIds.indexOf(playerId)
+                  const isSelected = selectedIndex === combinedIndex
+                  const isCaptain = captaincy?.captainId === playerId
+                  const isVice = captaincy?.viceCaptainId === playerId
+                  return (
+                    <Grid
+                      key={p.element.id}
+                      data-id={p.element.id}
+                      size={{ xs: 12, sm: 2.4, md: 2.4 }}
+                      sx={tileStyle(isSelected)}
+                      onClick={() => onTileClick(combinedIndex)}>
+                      <PlayerBox
+                        player={p}
+                        armband={
+                          isCaptain
+                            ? ARMBAND.CAPTAIN
+                            : isVice
+                            ? ARMBAND.VICE
+                            : undefined
+                        }
+                      />
+                    </Grid>
+                  )
+                })}
+            </Grid>
+          </Paper>
+
+          {/* Bench section */}
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 2,
+              backgroundColor: "rgba(240, 240, 240, 0.95)",
+              border: "2px solid #8b8b8b",
+              borderRadius: 2,
+            }}>
+            <Typography
+              variant="h6"
+              sx={{ mb: 2, color: "#4a4a4a", fontWeight: 700 }}>
+              Bench
+            </Typography>
+            <Grid container spacing={1} sx={{ justifyContent: "space-around" }}>
+              {benchIds.map((playerId, bIdx) => {
+                const p = players.find((pp) => pp.element.id === playerId)
+                if (!p) return null
+                const combinedIndex = 11 + bIdx
+                const isSelected = selectedIndex === combinedIndex
+                const isCaptain = captaincy?.captainId === playerId
+                const isVice = captaincy?.viceCaptainId === playerId
+                return (
+                  <Grid
+                    key={p.element.id}
+                    data-id={p.element.id}
+                    size={{ xs: 12, sm: 2.4, md: 2.4 }}
+                    sx={tileStyle(isSelected)}
+                    onClick={() => onTileClick(combinedIndex)}>
+                    <PlayerBox
+                      player={p}
+                      armband={
+                        isCaptain
+                          ? ARMBAND.CAPTAIN
+                          : isVice
+                          ? ARMBAND.VICE
+                          : undefined
+                      }
+                    />
+                  </Grid>
+                )
+              })}
+            </Grid>
+          </Paper>
+        </Stack>
       </Grid>
     </Grid>
   )
