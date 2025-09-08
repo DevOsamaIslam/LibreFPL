@@ -10,6 +10,7 @@ import PlayerSearch from "./components/PlayerSearch"
 import SquadHeader from "./components/SquadHeader"
 import StartingXI from "./components/StartingXI"
 import useSquadRating from "./useSquadRating"
+import { Stack } from "@mui/material"
 
 const SquadRatingPage: React.FC = ({}) => {
   const { sortedPlayers: players } = useSettingsStore()
@@ -37,7 +38,7 @@ const SquadRatingPage: React.FC = ({}) => {
     players,
   })
 
-  const { activeSquad, setActiveSquad } = useSavedSquads()
+  const { activeSquad, setActiveSquad, SavedSquadSelector } = useSavedSquads()
 
   useEffect(() => {
     if (activeSquad) setSelectedSquad(activeSquad.playerIds)
@@ -113,7 +114,7 @@ const SquadRatingPage: React.FC = ({}) => {
     <Grid container spacing={2} pb={4}>
       <PageTitle>Squad Rating</PageTitle>
 
-      <Grid size={{ xs: 12, lg: 4, md: 5 }}>
+      <Grid size={{ xs: 12, md: 5, lg: 3 }}>
         <PlayerSearch
           players={players}
           selectedSquad={selectedSquad}
@@ -126,31 +127,35 @@ const SquadRatingPage: React.FC = ({}) => {
       </Grid>
 
       {/* Right panel — Selected squad and swap interaction */}
-      <Grid size={{ xs: 12, md: 7, lg: 8 }}>
-        <SquadHeader
-          teamScore={teamScore}
-          xiScore={xiScore}
-          benchScore={benchScore}
-          xPoints={xPoints}
-        />
+      <Grid size={{ xs: 12, md: 7, lg: 9 }}>
+        <Stack spacing={1}>
+          <SavedSquadSelector />
 
-        <StartingXI
-          startersIds={startersIds}
-          players={players}
-          captaincy={captaincy}
-          selectedIndex={selectedIndex}
-          tileStyle={tileStyle}
-          onTileClick={onTileClick}
-        />
+          <SquadHeader
+            teamScore={teamScore}
+            xiScore={xiScore}
+            benchScore={benchScore}
+            xPoints={xPoints}
+          />
 
-        <Bench
-          benchIds={benchIds}
-          players={players}
-          captaincy={captaincy}
-          selectedIndex={selectedIndex}
-          tileStyle={tileStyle}
-          onTileClick={onTileClick}
-        />
+          <StartingXI
+            startersIds={startersIds}
+            players={players}
+            captaincy={captaincy}
+            selectedIndex={selectedIndex}
+            tileStyle={tileStyle}
+            onTileClick={onTileClick}
+          />
+
+          <Bench
+            benchIds={benchIds}
+            players={players}
+            captaincy={captaincy}
+            selectedIndex={selectedIndex}
+            tileStyle={tileStyle}
+            onTileClick={onTileClick}
+          />
+        </Stack>
       </Grid>
     </Grid>
   )
