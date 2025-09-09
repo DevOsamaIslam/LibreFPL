@@ -143,7 +143,7 @@ const TuneAlgo = () => {
                       }
                       min={-10}
                       max={+10}
-                      step={0.5}
+                      step={0.1}
                       valueLabelDisplay="auto"
                       valueLabelFormat={(value) => value.toFixed(1)}
                       sx={{ flex: 1 }}
