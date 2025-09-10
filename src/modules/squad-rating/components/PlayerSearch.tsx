@@ -16,10 +16,13 @@ import { TEAM_COLOR, useSettingsStore } from "../../../app/settings"
 import SpaceBetween from "../../../components/SpaceBetween"
 import {
   PLAYER_SELECTOR_CONST,
-  usePlayerSelector,
   useSearchBase,
 } from "../../../hooks/usePlayerSelector"
-import { type IOptimalTeamPlayer, type PositionCount, type TeamCount } from "../../../lib/types"
+import {
+  type IOptimalTeamPlayer,
+  type PositionCount,
+  type TeamCount,
+} from "../../../lib/types"
 import { colorByPos } from "../../../app/settings"
 
 interface PlayerSearchProps {
@@ -76,9 +79,7 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
         </Typography>
       )}
 
-      <Paper
-        variant="outlined"
-        sx={{ maxHeight: "70vh", overflow: "auto" }}>
+      <Paper variant="outlined" sx={{ maxHeight: "70vh", overflow: "auto" }}>
         <List disablePadding>
           {result.map((player, idx) => {
             const chosen = selectedSquad.includes(player.element.id)
@@ -96,9 +97,7 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
               <Box key={player.element.id}>
                 <ListItemButton
                   onClick={() => onToggleCandidate(player)}
-                  disabled={
-                    (!chosen && canAddMore) || (!chosen && !eligible)
-                  }
+                  disabled={(!chosen && canAddMore) || (!chosen && !eligible)}
                   selected={chosen}
                   sx={{
                     "&.Mui-selected": (theme) => ({
@@ -112,10 +111,7 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
                         <Typography fontWeight={600}>
                           {player.element.web_name}
                         </Typography>
-                        <Stack
-                          direction="row"
-                          spacing={1}
-                          alignItems="center">
+                        <Stack direction="row" spacing={1} alignItems="center">
                           <Chip
                             size="small"
                             label={team?.short_name}
