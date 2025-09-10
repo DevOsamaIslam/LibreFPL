@@ -95,15 +95,15 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
   const players = fpl.elements
     .map((currentPlayer: Player) => {
+      if (!currentPlayer.can_select) return null
+
       const getPlayerScore = (player: Player) => {
         const lastSeasonPPG = +player.total_points / NUMBER_OF_MATCHES
-        const startsRatio = !player.starts
-          ? 0
-          : (player.starts / (player.minutes / player.starts)) * 100
+        const startsRatio = player.starts_per_90 * 100
 
         const minutesPerMatch = !player.minutes
           ? 0
-          : player.minutes / (player.starts || 1)
+          : player.minutes * (player.starts_per_90 || 1)
 
         const expectedGoalInvolvement = player.expected_goal_involvements // has better expected goal involvement
         const isAvailable = player.status === Status.A // has status of 'a'
@@ -117,7 +117,7 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
           score += player.now_cost * weights.cost
 
         score += startsRatio * weights.startRatio
-        score += minutesPerMatch * weights.minutesPerMatch
+        score += (minutesPerMatch / 2) * weights.minutesPerMatch
         score += parseFloat(expectedGoalInvolvement ?? 0) * weights.xGI
         score += (4 - (player.penalties_order || 4)) * weights.onPenalties
         score += (4 - (player.direct_freekicks_order || 4)) * weights.onFK
