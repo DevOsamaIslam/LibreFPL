@@ -31,9 +31,14 @@ const getXPoints = (params: {
   const { player, team, opponent, isHome } = params
   const expected = +(player.ep_this || player.ep_next || 0)
 
-  if ((player.chance_of_playing_this_round || 0) < 50) return expected
-
   let score = expected
+  const chanceOfPlaying =
+    player.chance_of_playing_this_round ||
+    player.chance_of_playing_next_round ||
+    +player.form * 10
+
+  if (chanceOfPlaying < 50) score *= 0.5
+
   if (["FWD", "MID"].includes(elementTypeToPosition[player.element_type])) {
     score +=
       (isHome

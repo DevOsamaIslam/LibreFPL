@@ -64,7 +64,7 @@ export interface Player {
   can_transact: boolean
   can_select: boolean
   chance_of_playing_next_round: number | null
-  chance_of_playing_this_round: null
+  chance_of_playing_this_round: number | null
   code: number
   cost_change_event: number
   cost_change_event_fall: number
