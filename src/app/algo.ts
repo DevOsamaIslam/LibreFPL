@@ -1,3 +1,4 @@
+import lastSeason from "../data/lastSeason.json"
 import { getItem } from "../lib/helpers"
 import {
   Status,
@@ -20,7 +21,6 @@ import {
   teamMap,
   WEIGHTS,
 } from "./settings"
-import lastSeason from "../data/lastSeason.json"
 
 const getXPoints = (params: {
   player: Player
@@ -48,8 +48,16 @@ const getXPoints = (params: {
     score +=
       (isHome
         ? team.strength_defence_home - opponent.strength_attack_away
-        : team.strength_defence_away - opponent.strength_attack_home) / 100
+        : team.strength_defence_away - opponent.strength_attack_home) / 120
   }
+
+  if (player.status === Status.Damaged || player.status === Status.Injured)
+    score /= 2
+  if (
+    player.status === Status.Suspended ||
+    player.status === Status.Unavailable
+  )
+    score = 0
 
   return Math.max(score, 0)
 }
@@ -101,6 +109,7 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
   const players = fpl.elements
     .map((currentPlayer: Player) => {
       if (!currentPlayer.can_select) return null
+      if (currentPlayer.status === Status.Unavailable) return null
 
       const getPlayerScore = (player: Player) => {
         const lastSeasonPPG = +player.total_points / NUMBER_OF_MATCHES
@@ -111,12 +120,13 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
           : player.minutes * (player.starts_per_90 || 1)
 
         const expectedGoalInvolvement = player.expected_goal_involvements // has better expected goal involvement
-        const isAvailable = player.status === Status.A // has status of 'a'
+        const isAvailable = player.status === Status.Available // has status of 'a'
         const cleanSheets = player.clean_sheets // For GK and Def the clean sheets should be high
         const goalsConceded = player.goals_conceded // and the goals conceded should be low
         let score = 0
 
         score += lastSeasonPPG * weights.lastSeasonPoints
+        score += +player.points_per_game * weights.pointsPerMatch
 
         if (player.element_type !== positionToElementType.GK)
           score += player.now_cost * weights.cost
@@ -130,9 +140,8 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
           (4 - (player.corners_and_indirect_freekicks_order || 4)) *
           weights.onCorners
 
-        score += isAvailable
-          ? 10 * weights.available
-          : 50 * weights.notAvailable
+        if (isAvailable) score += 50 * weights.available
+        else score /= 2
 
         score += parseFloat(player.form) * weights.form
 

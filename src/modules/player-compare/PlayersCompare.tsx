@@ -68,7 +68,7 @@ export default function PlayersCompare() {
         <Grid
           size={{
             xs: 12,
-            lg: 4,
+            lg: 3,
             md: 5,
           }}>
           <Stack spacing={1.5}>
@@ -159,7 +159,7 @@ export default function PlayersCompare() {
           size={{
             xs: 12,
             md: 7,
-            lg: 8,
+            lg: 9,
           }}>
           {selectedPlayers.length === 0 ? (
             <Paper

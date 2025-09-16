@@ -161,11 +161,11 @@ export interface Player {
 }
 
 export const Status = {
-  A: "a",
-  D: "d",
-  I: "i",
-  S: "s",
-  U: "u",
+  Available: "a",
+  Damaged: "d",
+  Injured: "i",
+  Suspended: "s",
+  Unavailable: "u",
 } as const
 
 export interface Event {

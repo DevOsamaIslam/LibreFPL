@@ -50,6 +50,7 @@ export const WEIGHTS = {
   lastSeasonPoints: 0.5,
   startRatio: 5,
   minutesPerMatch: 5,
+  pointsPerMatch: 5,
   available: 5,
   notAvailable: -5,
   cleanSheets: 3,
