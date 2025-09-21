@@ -39,6 +39,8 @@ const getXPoints = (params: {
 
   if (chanceOfPlaying < 50) score *= 0.5
 
+  score += parseInt(player.form) - 2
+
   if (["FWD", "MID"].includes(elementTypeToPosition[player.element_type])) {
     score +=
       (isHome
@@ -110,9 +112,13 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
     .map((currentPlayer: Player) => {
       if (!currentPlayer.can_select) return null
       if (currentPlayer.status === Status.Unavailable) return null
+      const lastSeasonPPG = +currentPlayer.total_points / NUMBER_OF_MATCHES
 
       const getPlayerScore = (player: Player) => {
-        const lastSeasonPPG = +player.total_points / NUMBER_OF_MATCHES
+        const team = teamMap.get(player.team)
+
+        if (!team) return null
+
         const startsRatio = player.starts_per_90 * 100
 
         const minutesPerMatch = !player.minutes
@@ -125,7 +131,6 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
         const goalsConceded = player.goals_conceded // and the goals conceded should be low
         let score = 0
 
-        score += lastSeasonPPG * weights.lastSeasonPoints
         score += +player.points_per_game * weights.pointsPerMatch
 
         if (player.element_type !== positionToElementType.GK)
@@ -140,10 +145,10 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
           (4 - (player.corners_and_indirect_freekicks_order || 4)) *
           weights.onCorners
 
-        if (isAvailable) score += 50 * weights.available
+        if (isAvailable) score += 10 * weights.available
         else score /= 2
 
-        score += parseFloat(player.form) * weights.form
+        score += parseFloat(player.form) * weights.form * 2
 
         const discipline = player.starts
           ? ((player.red_cards ?? 0) + (player.yellow_cards ?? 0)) /
@@ -152,11 +157,7 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
         score += discipline * weights.discipline
 
-        const team = teamMap.get(player.team)
-
-        if (!team) return null
-
-        const FDR = getTeamFDR(team.id, { span: 6 })
+        const FDR = getTeamFDR(team.id, { span: 1 })
 
         const teamAdvantageScore = FDR.average - 2.5
         const teamNextMatchDifficulty = (FDR.teamFDR[0]?.score ?? 2.5) - 2.5
@@ -181,7 +182,7 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
           score += goalsConceded * weights.conceded
         }
 
-        score = score / Object.keys(weights).length
+        score = score / (Object.keys(weights).length * 2)
 
         return {
           element: player,
@@ -192,7 +193,12 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
           xPoints: expectedPoints,
         } as IOptimalTeamPlayer
       }
+
       const playerScore = getPlayerScore(currentPlayer)
+      if (playerScore) {
+        playerScore.score += lastSeasonPPG * weights.lastSeasonPoints
+      }
+
       const lastSeasonPlayer = lastSeasonPlayersMap.get(currentPlayer.id)
 
       const lastSeasonScore = lastSeasonPlayer
