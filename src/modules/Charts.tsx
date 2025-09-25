@@ -16,7 +16,7 @@ export default function Charts(): React.ReactElement {
   const { SavedSquadSelector, activeSquad } = useSavedSquads()
 
   useEffect(() => {
-    query.set("players", (activeSquad?.playerIds ?? []).join(","))
+    query.set("players", (activeSquad?.playerIds ?? []).join("-"))
     if (activeSquad) setQuery(query)
     else setQuery({})
   }, [activeSquad])

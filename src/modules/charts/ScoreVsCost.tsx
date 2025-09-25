@@ -46,7 +46,7 @@ export default function ScoreVsCost() {
       ) // only players with positive score
     const wantedIds = new Set(
       raw
-        .split(",")
+        .split("-")
         .map((s) => Number(s.trim()))
         .filter((n) => Number.isFinite(n))
     )

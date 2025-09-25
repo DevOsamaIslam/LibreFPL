@@ -38,7 +38,7 @@ function useSquadRating({ players }: ControllerArgs) {
     const raw = searchParams.get(QUERY_KEYS.players as QueryKey)
     if (!raw) return [] as number[]
     return raw
-      .split(",")
+      .split("-")
       .map((s) => Number(s.trim()))
       .filter((n) => Number.isFinite(n) && validIds[n])
   }, [searchParams, validIds])
@@ -64,8 +64,8 @@ function useSquadRating({ players }: ControllerArgs) {
   // Reflect URL -> state when users navigate with back/forward and the query changes
   useEffect(() => {
     const urlIds = initialSelectionFromURL
-    const current = selectedSquad.join(",")
-    const next = urlIds.join(",")
+    const current = selectedSquad.join("-")
+    const next = urlIds.join("-")
     if (current !== next) {
       setSelectedSquad(urlIds)
       // set raw team score as simple sum (without bench weighting)
@@ -82,7 +82,7 @@ function useSquadRating({ players }: ControllerArgs) {
   useEffect(() => {
     const sp = new URLSearchParams(searchParams)
     if (selectedSquad.length > 0) {
-      sp.set(QUERY_KEYS.players, selectedSquad.join(","))
+      sp.set(QUERY_KEYS.players, selectedSquad.join("-"))
     } else {
       sp.delete(QUERY_KEYS.players)
     }

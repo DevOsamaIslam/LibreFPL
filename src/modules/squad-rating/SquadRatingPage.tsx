@@ -74,7 +74,7 @@ const SquadRatingPage: React.FC = ({}) => {
 
   // Sync hook with URL-driven state
   useEffect(() => {
-    if (selectedIds.join(",") !== selectedSquad.join(",")) {
+    if (selectedIds.join("-") !== selectedSquad.join("-")) {
       setSelectedIds(selectedSquad)
       setActiveSquad({
         title: "",
