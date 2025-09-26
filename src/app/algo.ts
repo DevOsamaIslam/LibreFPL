@@ -22,7 +22,7 @@ import {
   WEIGHTS,
 } from "./settings"
 
-const getXPoints = (params: {
+export const getXPoints = (params: {
   player: Player
   team: Team
   opponent: Team
@@ -45,12 +45,12 @@ const getXPoints = (params: {
     score +=
       (isHome
         ? team.strength_attack_home - opponent.strength_defence_away
-        : team.strength_attack_away - opponent.strength_defence_home) / 90
+        : team.strength_attack_away - opponent.strength_defence_home) / 100
   } else {
     score +=
       (isHome
         ? team.strength_defence_home - opponent.strength_attack_away
-        : team.strength_defence_away - opponent.strength_attack_home) / 120
+        : team.strength_defence_away - opponent.strength_attack_home) / 150
   }
 
   if (player.status === Status.Damaged || player.status === Status.Injured)

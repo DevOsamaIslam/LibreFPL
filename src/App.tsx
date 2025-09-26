@@ -14,6 +14,7 @@ import Snackbar from "./components/Snackbar"
 import SpaceBetween from "./components/SpaceBetween"
 import { initializeGlobalSnackbar, useSnackbarUtils } from "./lib/snackbar"
 import Charts from "./modules/Charts"
+import { CaptaincyPage } from "./modules/captaincy"
 import FDRPage from "./modules/FDR"
 import GenerateLineup from "./modules/GenerateLineup"
 import GWTodosDrawer from "./components/GWTodosDrawer"
@@ -91,6 +92,9 @@ function App() {
                     to="/suggested-transfers">
                     Suggested Transfers
                   </Button>
+                  <Button color="inherit" component={Link} to="/captaincy">
+                    Captaincy
+                  </Button>
                   <Button color="inherit" component={Link} to="/charts">
                     Charts
                   </Button>
@@ -131,6 +135,7 @@ function App() {
                 path="/suggested-transfers"
                 element={<SuggestedTransfersPage />}
               />
+              <Route path="/captaincy" element={<CaptaincyPage />} />
               <Route path="/charts" element={<Charts />} />
               <Route path="/fdr" element={<FDRPage />} />
               <Route path="/weight-settings" element={<TuneAlgo />} />

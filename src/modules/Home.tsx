@@ -32,6 +32,7 @@ const ROUTES = {
   rating: "/squad-rating",
   fdr: "/fdr",
   charts: "/charts",
+  captaincy: "/captaincy",
   suggestedTransfers: "/suggested-transfers",
   weightSettings: "/weight-settings",
   rules: "/rules",
@@ -74,6 +75,13 @@ const FEATURES = [
     description: "Visualizations of player stats and projections.",
     route: ROUTES.charts,
     badge: "Insights",
+  },
+  {
+    key: "captaincy",
+    title: "Captaincy",
+    description: "Find the best captaincy options by position with projected points.",
+    route: ROUTES.captaincy,
+    badge: "Analysis",
   },
   // {
   //   key: "generate-lineup",
