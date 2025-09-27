@@ -29,7 +29,7 @@ export const getXPoints = (params: {
   isHome: boolean
 }) => {
   const { player, team, opponent, isHome } = params
-  const expected = +(player.ep_this || player.ep_next || 0)
+  const expected = +(player.form || 0) * 0.8
 
   let score = expected
   const chanceOfPlaying =
