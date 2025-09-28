@@ -62,9 +62,6 @@ function CaptaincyPage() {
                       <Card
                         variant="outlined"
                         sx={{ p: 1, textAlign: "center" }}>
-                        <Typography variant="subtitle2" noWrap>
-                          {bestPlayer.element.web_name}
-                        </Typography>
                         <Chip
                           label={position}
                           size="small"
@@ -74,6 +71,9 @@ function CaptaincyPage() {
                             color: "white",
                           }}
                         />
+                        <Typography variant="subtitle2" noWrap>
+                          {bestPlayer.element.web_name}
+                        </Typography>
                         <Typography variant="body2" fontWeight={600}>
                           {bestPlayer.xPoints.toFixed(1)} pts
                         </Typography>

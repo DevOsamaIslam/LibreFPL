@@ -58,7 +58,7 @@ export const CaptaincyTable: React.FC<CaptaincyTableProps> = ({
   // Get xPoints color based on value
   const getxPointsColor = (xPoints: number) => {
     if (xPoints >= 8) return "#4caf50" // High - Green
-    if (xPoints >= 5) return "#ffeb3b" // Medium - Yellow
+    if (xPoints >= 5) return "gold" // Medium - Yellow
     return "#f44336" // Low - Red
   }
 
