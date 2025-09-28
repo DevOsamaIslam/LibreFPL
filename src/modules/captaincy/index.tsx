@@ -1,5 +1,5 @@
 import { Box, Card, CardContent, Chip, Grid, Typography } from "@mui/material"
-import { colorByPos } from "../../app/settings"
+import { colorByPos, useSettingsStore } from "../../app/settings"
 import PageTitle from "../../components/PageTitle"
 import { priceFmt } from "../../lib/helpers"
 import { CaptaincyHeader } from "./components/CaptaincyHeader"
@@ -9,6 +9,7 @@ import { useCaptaincyData } from "./hooks/useCaptaincyData"
 
 function CaptaincyPage() {
   const { data, stats, isLoading, error } = useCaptaincyData()
+  const players = useSettingsStore((state) => state.sortedPlayers)
 
   if (isLoading) {
     return (
@@ -36,7 +37,7 @@ function CaptaincyPage() {
       </Typography>
 
       {/* Header with stats */}
-      <CaptaincyHeader stats={stats} totalPlayers={data.totalPlayers} />
+      <CaptaincyHeader stats={stats} totalPlayers={players.length} />
 
       {/* Best Captaincy Options by Position */}
       {data.playersByPosition && (
