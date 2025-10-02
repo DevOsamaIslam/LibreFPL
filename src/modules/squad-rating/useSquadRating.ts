@@ -126,12 +126,13 @@ function useSquadRating({ players }: ControllerArgs) {
 
   const teamCost = useMemo(() => {
     let xPoints = 0
-    const totalCost = selectedSquad.reduce((acc, id) => {
-      const myPlayer = myPlayers[id]
-      const player = validIds[id]
-
-      if (myPlayer) xPoints += validIds[myPlayer.element].xPoints
-      else xPoints += player?.xPoints || 0
+    const totalCost = selectedSquad.reduce((acc, playerId, index) => {
+      const myPlayer = myPlayers[playerId]
+      const player = validIds[playerId]
+      if (index <= 11) {
+        if (myPlayer) xPoints += validIds[myPlayer.element].xPoints
+        else xPoints += player?.xPoints || 0
+      }
 
       if (myPlayer) return acc + myPlayer.selling_price
       if (player) return acc + player.element.now_cost
