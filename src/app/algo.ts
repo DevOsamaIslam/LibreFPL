@@ -125,7 +125,7 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
           ? 0
           : player.minutes * (player.starts_per_90 || 1)
 
-        const expectedGoalInvolvement = player.expected_goal_involvements // has better expected goal involvement
+        const expectedGoalInvolvement = player.expected_goal_involvements_per_90 // has better expected goal involvement
         const isAvailable = player.status === Status.Available // has status of 'a'
         const cleanSheets = player.clean_sheets // For GK and Def the clean sheets should be high
         const goalsConceded = player.goals_conceded // and the goals conceded should be low
@@ -138,7 +138,7 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
 
         score += startsRatio * weights.startRatio
         score += (minutesPerMatch / 2) * weights.minutesPerMatch
-        score += parseFloat(expectedGoalInvolvement ?? 0) * weights.xGI
+        score += expectedGoalInvolvement * weights.xGI
         score += (4 - (player.penalties_order || 4)) * weights.onPenalties
         score += (4 - (player.direct_freekicks_order || 4)) * weights.onFK
         score +=

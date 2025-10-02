@@ -47,8 +47,8 @@ export default function PlayerCard({
   onRemove?: () => void
 }) {
   const { element: player, score } = element
-  const xg = +(player.expected_goals || 0)
-  const xa = +(player.expected_assists || 0)
+  const xg = +(player.expected_goals_per_90 || 0)
+  const xa = +(player.expected_assists_per_90 || 0)
 
   const position = ELEMENT_TYPE[player.element_type]
 
@@ -138,6 +138,14 @@ export default function PlayerCard({
             right={String(numberFmt(element.xPoints, 0))}
           />
           <Row
+            left={label.xG}
+            right={xg !== undefined ? String(numberFmt(xg, 2)) : "-"}
+          />
+          <Row
+            left={label.xA}
+            right={xa !== undefined ? String(numberFmt(xa, 2)) : "-"}
+          />
+          <Row
             left={label.cleanSheet}
             right={String(numberFmt(player.clean_sheets, 0))}
           />
@@ -163,14 +171,6 @@ export default function PlayerCard({
                   } per match)`
                 : "-"
             }
-          />
-          <Row
-            left={label.xG}
-            right={xg !== undefined ? String(numberFmt(xg, 2)) : "-"}
-          />
-          <Row
-            left={label.xA}
-            right={xa !== undefined ? String(numberFmt(xa, 2)) : "-"}
           />
         </Section>
 
