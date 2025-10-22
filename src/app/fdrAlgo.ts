@@ -1,7 +1,7 @@
 import type { IFixture, ISnapshot, Team } from "../lib/types"
 import _fixtures from "../data/fixtures.json"
 import _snapshot from "../data/snapshot.json"
-import { CURRENT_GW, NUMBER_OF_MATCHES } from "./settings"
+import { addTeamForm, CURRENT_GW, NUMBER_OF_MATCHES } from "./settings"
 
 const fixtures = _fixtures as unknown as IFixture[]
 const snapshot = _snapshot as unknown as ISnapshot
@@ -71,16 +71,14 @@ export function interpolateColor(score: FDRScore): string {
 }
 
 export function computeFDR({
+  teamMap,
   spanGWs = 6,
   startingFrom = CURRENT_GW.id - 1,
 }: {
+  teamMap: Map<number, Team>
   spanGWs: number
   startingFrom: number
 }): TeamFDRByGw[] {
-  const teamMap = snapshot.teams.reduce(
-    (m, t) => m.set(t.id, t),
-    new Map<number, Team>()
-  )
   const matchesByTeam = fixtures.reduce((acc, curr) => {
     if (acc[curr.team_a]) acc[curr.team_a].push(curr)
     else acc[curr.team_a] = [curr]
@@ -128,15 +126,16 @@ function getTeamScore({
     teamFixture.team_h === opponent.id ? teamFixture.team_a : teamFixture.team_h
   const currentTeam = teamMap.get(currentTeamId)!
   const isHome = teamFixture.team_h === currentTeamId
-
-  let rawScore: number
+  const currentTeamForm = currentTeam.form || 0
+  const opponentForm = opponent.form || 0
+  let rawScore = (currentTeamForm - opponentForm) * 100
   if (isHome) {
-    rawScore =
+    rawScore +=
       currentTeam.strength_attack_home -
       opponent.strength_defence_away +
       (currentTeam.strength_defence_home - opponent.strength_attack_away)
   } else {
-    rawScore =
+    rawScore +=
       currentTeam.strength_attack_away -
       opponent.strength_defence_home +
       (currentTeam.strength_defence_away - opponent.strength_attack_home)
@@ -155,7 +154,11 @@ function getTeamScore({
   return Math.max(0.0, Math.min(normalizedScore, 5.0))
 }
 
-export const ALL_FDR = computeFDR({ spanGWs: 38, startingFrom: 1 })
+export const ALL_FDR = computeFDR({
+  spanGWs: 38,
+  startingFrom: 1,
+  teamMap: new Map(snapshot.teams.map((t) => [t.id, addTeamForm(t)])),
+})
 
 export const FDR_PER_TEAM = ALL_FDR.reduce((acc, curr) => {
   return {

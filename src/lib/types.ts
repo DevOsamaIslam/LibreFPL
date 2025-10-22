@@ -298,7 +298,7 @@ export interface Phase {
 export interface Team {
   code: number
   draw: number
-  form: null
+  form: number | null
   id: number
   loss: number
   name: string

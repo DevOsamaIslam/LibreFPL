@@ -161,6 +161,19 @@ interface SettingsState {
   setBudget: (budget: number) => void
 }
 
+export const addTeamForm = (team: Team): Team => {
+  const teamPlayers = snapshot.elements.filter(
+    (player) => team.id === player.team && Number(player.form) > 0
+  )
+
+  return {
+    ...team,
+    form:
+      teamPlayers.reduce((acc, player) => acc + Number(player.form), 0) /
+      teamPlayers.length,
+  }
+}
+
 export const useSettingsStore = create<SettingsState>((set) => ({
   desiredFormation: "4-4-2",
   benchBoostEnabled: false,
@@ -171,7 +184,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   playersMap: new Map(),
   weights: WEIGHTS,
   budget: BUDGET,
-  teams: new Map(snapshot.teams.map((t) => [t.id, t])),
+  teams: new Map(snapshot.teams.map((t) => [t.id, addTeamForm(t)])),
   myTeam: undefined,
   setSortedPlayers: (players) => set({ sortedPlayers: players }),
   setPlayersMap: (players) =>
