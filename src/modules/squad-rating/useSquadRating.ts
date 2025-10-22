@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router"
-import { useSettingsStore } from "../../app/settings"
+import { BUDGET, useSettingsStore } from "../../app/settings"
 import { calculateTeamScore } from "../../app/transfers"
 import type { Captaincy, IOptimalTeamPlayer, IPick } from "../../lib/types"
 
@@ -123,6 +123,12 @@ function useSquadRating({ players }: ControllerArgs) {
       ) || {},
     [players, myTeam]
   )
+
+  const budget = useMemo(() => {
+    if (!myTeam) return BUDGET
+
+    return myTeam.transfers.bank + myTeam.transfers.value
+  }, [myTeam])
 
   const teamCost = useMemo(() => {
     let xPoints = 0
@@ -266,6 +272,7 @@ function useSquadRating({ players }: ControllerArgs) {
     teamCost,
     xPoints,
     myPlayers,
+    budget,
   }
 }
 

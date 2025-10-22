@@ -29,6 +29,7 @@ const SquadRatingPage: React.FC = ({}) => {
     captaincy,
     teamCost,
     xPoints,
+    budget,
   } = useSquadRating({
     players,
   })
@@ -123,6 +124,7 @@ const SquadRatingPage: React.FC = ({}) => {
           positionCount={positionCount}
           teamCount={teamCount}
           teamCost={teamCost}
+          budget={budget}
         />
       </Grid>
 

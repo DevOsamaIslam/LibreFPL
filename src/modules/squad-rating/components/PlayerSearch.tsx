@@ -33,6 +33,7 @@ interface PlayerSearchProps {
   positionCount: PositionCount
   teamCount: TeamCount
   teamCost: number
+  budget: number
 }
 
 const PlayerSearch: React.FC<PlayerSearchProps> = ({
@@ -43,6 +44,7 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
   positionCount,
   teamCount,
   teamCost,
+  budget,
 }) => {
   const { q, setQ, result } = useSearchBase(players)
   const { teams } = useSettingsStore()
@@ -90,6 +92,7 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
               positionCount,
               teamCount,
               budgetUsed: teamCost,
+              budget,
             })
             const canAddMore = !chosen && selectedSquad.length >= max
 

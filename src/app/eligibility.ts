@@ -33,6 +33,7 @@ export interface EligibilityInput {
   budgetUsed: number
   teamCount: TeamCount
   positionCount: PositionCount
+  budget?: number
 }
 
 export interface EligibilityResult {
@@ -59,7 +60,8 @@ export interface EligibilityResult {
 // }
 
 export function checkEligibility(input: EligibilityInput): EligibilityResult {
-  const { selected, candidate, budgetUsed, teamCount, positionCount } = input
+  const { selected, candidate, budgetUsed, teamCount, positionCount, budget } =
+    input
   const reasons: RuleKey[] = []
 
   // Max players overall
@@ -90,7 +92,7 @@ export function checkEligibility(input: EligibilityInput): EligibilityResult {
   const effectiveFuture = used + candidate.element.now_cost
   if (
     !selected.includes(candidate.element.id) &&
-    effectiveFuture > SQUAD_CONSTRAINTS.BUDGET
+    effectiveFuture > (budget ?? SQUAD_CONSTRAINTS.BUDGET)
   ) {
     reasons.push(RULE_KEYS.budget)
   }
