@@ -167,7 +167,7 @@ export default function PlayerCard({
             right={
               player.defensive_contribution
                 ? `${numberFmt(player.defensive_contribution, 0)} (${
-                    player.defensive_contribution / (player.starts || 1)
+                    player.defensive_contribution_per_90
                   } per match)`
                 : "-"
             }

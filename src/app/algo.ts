@@ -139,6 +139,7 @@ const filterAndScorePlayers = (fpl: ISnapshot) => {
         score += startsRatio * weights.startRatio
         score += (minutesPerMatch / 2) * weights.minutesPerMatch
         score += expectedGoalInvolvement * weights.xGI
+        score += (player.goals_scored || 0) * 3 * weights.goalsPerMatch
         score += (4 - (player.penalties_order || 4)) * weights.onPenalties
         score += (4 - (player.direct_freekicks_order || 4)) * weights.onFK
         score +=

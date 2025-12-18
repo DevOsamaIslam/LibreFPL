@@ -45,6 +45,7 @@ export const WEIGHTS = {
   teamAdvantage: 3,
   nextDifficulty: 3,
   xGI: 5,
+  goalsPerMatch: 5,
   xGC: -1.5,
   BPS: 1,
   lastSeasonPoints: 0.5,
@@ -170,7 +171,8 @@ export const addTeamForm = (team: Team): Team => {
     ...team,
     form:
       teamPlayers.reduce((acc, player) => acc + Number(player.form), 0) /
-      teamPlayers.length,
+      teamPlayers.filter((player) => player.form).length /
+      2,
   }
 }
 
