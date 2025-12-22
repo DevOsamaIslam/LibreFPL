@@ -170,9 +170,8 @@ export const addTeamForm = (team: Team): Team => {
   return {
     ...team,
     form:
-      teamPlayers.reduce((acc, player) => acc + Number(player.form), 0) /
-      teamPlayers.filter((player) => player.form).length /
-      2,
+      teamPlayers.reduce((acc, player) => acc + Number(player.form) * 1.5, 0) /
+      teamPlayers.length,
   }
 }
 
